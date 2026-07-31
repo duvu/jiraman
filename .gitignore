@@ -1,0 +1,10 @@
+# Local packaging output
+*.zip
+*.tar.gz
+
+# Installer backups created inside this repository during development
+.jiraman-backup-*/
+
+# Editor and operating-system files
+.DS_Store
+*.swp

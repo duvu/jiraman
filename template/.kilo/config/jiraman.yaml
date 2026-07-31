@@ -1,0 +1,278 @@
+version: 3
+
+project:
+  key: AIPLATFORM
+  timezone: Asia/Bangkok
+  language: English
+  board_type: scrum
+  jira_source: existing-mcp-atlassian
+  discover_workflow_statuses: true
+
+issue_hierarchy:
+  allowed_levels:
+    epic:
+      canonical_issue_type: Epic
+      level: 1
+      parent_required: false
+      sprint_plannable: false
+    story:
+      canonical_issue_type: Story
+      level: 2
+      parent_issue_type: Epic
+      parent_required: true
+      sprint_plannable: true
+      minimum_subtasks: 1
+    subtask:
+      canonical_issue_type: Sub-task
+      accepted_issue_type_names:
+        - Sub-task
+        - Subtask
+      level: 3
+      parent_issue_type: Story
+      parent_required: true
+      sprint_plannable: false
+  allow_other_issue_types: false
+  require_exactly_one_parent_when_required: true
+  allow_orphans: false
+  allow_nested_epics: false
+  allow_story_under_story: false
+  allow_subtask_under_epic: false
+  allow_subtask_children: false
+  issue_links_do_not_replace_parent_relationships: true
+  sprint_scope_level: story
+  execution_level: subtask
+  wip_measurement_level: story
+  normalize_nonconforming_issues: propose_only
+
+spec_driven_delivery:
+  enabled: true
+  canonical_story_spec_sources:
+    - repository_spec_reference
+    - jira_description
+  repository_spec_patterns:
+    - openspec/**
+    - specs/**
+    - docs/specs/**
+  stable_spec_reference_required: true
+
+  epic_spec:
+    required_sections:
+      - outcome
+      - value_or_problem
+      - scope
+      - success_measures
+      - constraints
+      - dependencies
+      - story_map
+      - exit_criteria
+
+  story_spec:
+    required_sections:
+      - outcome
+      - context
+      - in_scope
+      - out_of_scope
+      - requirements
+      - acceptance_criteria
+      - constraints_and_nonfunctional_requirements
+      - dependencies_and_preconditions
+      - validation_plan
+      - rollout_or_recovery_when_applicable
+      - subtask_traceability_map
+    require_stable_requirement_ids: true
+    preferred_requirement_id_prefix: REQ
+    require_stable_acceptance_criteria_ids: true
+    preferred_acceptance_criteria_id_prefix: AC
+    acceptance_criteria_must_be_testable: true
+
+  subtask_spec:
+    required_sections:
+      - parent_story_and_spec_reference
+      - outcome
+      - traced_requirements
+      - traced_acceptance_criteria
+      - scope
+      - implementation_or_investigation_steps
+      - affected_modules_or_files
+      - dependencies_and_preconditions
+      - validation_commands_or_checks
+      - definition_of_done
+      - original_estimate
+    title_must_be_specific_and_imperative: true
+    one_primary_outcome_only: true
+    require_parent_story_spec_reference: true
+    require_requirement_traceability: true
+    require_acceptance_criteria_traceability: true
+    require_exact_validation: true
+    open_ended_research_allowed: false
+    investigation_requires_bounded_output: true
+    combined_investigate_and_implement_allowed_only_when_total_hours_at_most: 4
+    original_estimate_required: true
+    minimum_original_estimate_hours_exclusive: 0
+    maximum_original_estimate_hours: 4
+    maximum_actual_focused_time_hours: 4
+    on_timebox_expiry: stop_capture_evidence_and_replan
+    remaining_scope_requires_new_sibling_subtask: true
+    never_extend_estimate_above_maximum: true
+
+  traceability:
+    require_all_story_requirements_covered_before_ready: true
+    require_all_story_acceptance_criteria_covered_before_ready: true
+    allow_many_to_many_mapping: true
+    uncovered_requirement_makes_story_not_ready: true
+    uncovered_acceptance_criterion_makes_story_not_ready: true
+
+sprint_management:
+  sprint_length_calendar_days: 7
+  sprint_length_business_days: 5
+  active_sprint_limit: 1
+  parallel_active_sprints_allowed: false
+  ready_horizon_sprints: 2
+  ready_horizon_excludes_active_sprint: true
+  future_work_sources:
+    - future_sprints
+    - ranked_ready_backlog
+
+  capacity_forecast:
+    lookback_completed_sprints: 6
+    minimum_history_sprints: 3
+    statistic: median_completed_estimate
+    preferred_units:
+      - story_points_on_stories
+      - summed_original_estimate_hours_of_ready_subtasks_per_story
+    do_not_mix_units: true
+    count_story_once_only: true
+    never_count_epics: true
+    never_double_count_story_and_subtasks: true
+    allow_issue_count_fallback: false
+    availability_factor_default: 1.0
+
+  ready_runway:
+    hard_floor_sprint_equivalents: 2.0
+    operating_target_sprint_equivalents: 2.5
+    next_sprint_minimum_equivalents: 1.0
+    following_sprint_minimum_equivalents: 1.0
+    green_minimum_equivalents: 2.0
+    amber_minimum_equivalents: 1.0
+    count_only_ready_stories: true
+    require_complete_subtask_decomposition_for_both_future_sprints: true
+    active_sprint_work_does_not_count: true
+    blocked_items_do_not_count: true
+    unresolved_dependency_items_do_not_count: true
+
+  definition_of_ready_for_story:
+    required:
+      - issue_type_is_story
+      - exactly_one_epic_parent_exists
+      - story_spec_is_complete
+      - outcome_and_scope_are_clear
+      - requirements_have_stable_identifiers
+      - acceptance_criteria_are_testable_and_identified
+      - estimate_is_present_in_the_selected_capacity_unit
+      - dependencies_are_identified
+      - no_unresolved_blocker_or_required_access_gap
+      - validation_approach_is_defined
+      - required_product_or_architecture_decisions_are_resolved
+      - item_fits_within_one_one_week_sprint
+      - at_least_one_subtask_exists
+      - every_required_subtask_passes_subtask_definition_of_ready
+      - every_story_requirement_is_covered_by_at_least_one_subtask
+      - every_story_acceptance_criterion_is_covered_by_at_least_one_subtask
+    status_alone_is_not_readiness_evidence: true
+    assignee_is_not_required_for_future_ready_work: true
+
+  definition_of_ready_for_subtask:
+    required:
+      - issue_type_is_subtask
+      - exactly_one_story_parent_exists
+      - parent_story_has_exactly_one_epic_parent
+      - subtask_spec_is_complete
+      - one_primary_outcome_is_defined
+      - requirement_and_acceptance_criteria_traceability_is_present
+      - dependencies_and_preconditions_are_resolved_or_explicit
+      - exact_validation_command_or_check_is_defined
+      - definition_of_done_is_testable
+      - original_estimate_is_greater_than_zero_and_at_most_4_hours
+      - no_unresolved_product_or_architecture_decision
+    status_alone_is_not_readiness_evidence: true
+
+planning:
+  capacity_factor: 0.65
+  max_primary_subtasks_per_assignee: 1
+  max_fallback_subtasks_per_assignee: 1
+  per_subtask_estimate_multiplier: 1.0
+  use_sprint_capacity_reserve_instead_of_per_subtask_padding: true
+  minimum_subtask_estimate_hours_exclusive: 0
+  maximum_subtask_estimate_hours: 4
+  split_before_ready_when_estimate_exceeds_maximum: true
+  unknown_scope_requires_timeboxed_investigation_subtask: true
+  capacity_when_unavailable: not_verified
+
+wip:
+  active_story_limit: 4
+  per_assignee_active_story_limit: 1
+  per_assignee_in_progress_subtask_limit: 1
+  review_queue_limit: 3
+  testing_queue_limit: 2
+
+aging:
+  stale_in_progress_story_business_days: 2
+  stale_in_progress_subtask_business_hours: 8
+  stale_review_business_days: 1
+  blocked_escalation_business_days: 1
+  unassigned_active_subtask_is_risk: true
+
+priority_order:
+  - production_incident_security_compliance_or_mandatory_deadline
+  - unblock_existing_work
+  - clear_review_and_testing_queues
+  - finish_in_progress_subtasks
+  - finish_in_progress_stories
+  - protect_sprint_goal_critical_path
+  - complete_committed_sprint_scope
+  - restore_two_sprint_ready_runway_through_refinement
+  - explicit_user_requested_investigation
+  - pull_new_story_only_when_story_wip_capacity_exists
+
+completion:
+  subtask_done_requires:
+    - definition_of_done_satisfied
+    - validation_evidence_present
+    - affected_artifacts_identified
+    - parent_story_traceability_preserved
+  story_done_requires:
+    - all_required_subtasks_done
+    - all_acceptance_criteria_verified
+    - integration_validation_passed_when_applicable
+    - code_or_deliverable_evidence_present
+    - ci_passed_when_applicable
+  epic_done_requires:
+    - planned_stories_accepted
+    - epic_outcome_or_exit_criteria_verified
+  jira_status_alone_is_not_completion_evidence: true
+
+writes:
+  mode: approved_action_ids_only
+  action_prefix: PMA
+  action_ttl_hours: 24
+  allow_batch_apply: true
+  all_or_nothing_preflight: true
+  require_read_before_write: true
+  require_read_after_write: true
+  allowed_created_issue_types:
+    - Epic
+    - Story
+    - Sub-task
+  forbid_creating_other_issue_types: true
+  creating_story_requires_named_epic_parent: true
+  creating_subtask_requires_named_story_parent: true
+  subtask_creation_requires_complete_spec_and_estimate: true
+
+artifacts:
+  daily_directory: docs/project-management/daily
+  weekly_report_directory: docs/project-management/weekly-reports
+  sprint_review_directory: docs/project-management/sprint-reviews
+  templates_directory: docs/project-management/templates
+  risk_register: docs/project-management/risk-register.md
+  decision_log: docs/project-management/decision-log.md
+  state_file: .kilo/state/jiraman.json

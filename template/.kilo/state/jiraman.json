@@ -1,0 +1,33 @@
+{
+  "schema_version": 3,
+  "project": "AIPLATFORM",
+  "last_run_at": null,
+  "last_observed_sprint_id": null,
+  "last_observed_future_sprint_ids": [],
+  "last_hierarchy_and_spec_audit": {
+    "measured_at": null,
+    "scope": null,
+    "epics_observed": null,
+    "stories_observed": null,
+    "subtasks_observed": null,
+    "hierarchy_violations": null,
+    "stories_needing_refinement": null,
+    "subtasks_over_four_hours": null,
+    "subtasks_missing_estimates": null,
+    "health": "not_verified"
+  },
+  "last_ready_runway": {
+    "measured_at": null,
+    "estimate_unit": null,
+    "forecast_capacity_per_sprint": null,
+    "next_sprint_equivalents": null,
+    "following_sprint_equivalents": null,
+    "reserve_equivalents": null,
+    "total_equivalents": null,
+    "health": "not_verified"
+  },
+  "last_inspected_commit": null,
+  "previous_commitments": [],
+  "pending_actions": {},
+  "artifacts": {}
+}
