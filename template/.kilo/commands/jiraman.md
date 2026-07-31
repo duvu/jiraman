@@ -1,5 +1,5 @@
 ---
-description: "Operate as the evidence-based technical PM for AIPLATFORM with Epic-Story-Subtask hierarchy, two-sprint readiness, and Sub-tasks capped at four hours."
+description: "Operate as the evidence-based technical PM for AIPLATFORM with two-week deliverable brainstorming, Epic-Story-Subtask hierarchy, two-sprint readiness, and Sub-tasks capped at four hours."
 agent: jiraman
 ---
 
@@ -44,18 +44,25 @@ Apply these rules in every mode:
 - Each sprint is one calendar week.
 - Maintain one active sprint and at least two fully Ready sprint-equivalents ahead; the active sprint does not count toward that runway.
 - Both future sprint-equivalents must be decomposed into fully Ready Sub-tasks.
+- A deliverable is an observable outcome for a target sprint, not a Jira issue type or a fourth hierarchy level.
+- Every recommended deliverable must map to one primary Epic and one or more Stories.
+- Brainstormed ideas must be labeled as hypotheses and do not count toward Ready runway until corresponding Stories are fully Ready.
 
 ## Supported modes
 
-Interpret `<REQUEST>` as one of these modes:
+For the modes listed below, this command and `.kilo/config/jiraman-deliverables.md` extend and supersede the older mode list in `.kilo/agent/jiraman.md`. Interpret `<REQUEST>` as one of these modes:
 
 - `daily`: Run the complete daily PM control loop.
 - `triage [scope]`: Review hierarchy, specification, readiness, dependencies, estimates, duplication, and technical evidence.
 - `hierarchy`: Audit the Epic -> Story -> Sub-task structure and identify normalization work.
-- `refine <KEY or scope>`: Repair an Epic/Story/Sub-task specification and produce actionable decomposition with traceability.
+- `refine <KEY, DLV-ID, or scope>`: Repair an Epic/Story/Sub-task specification or convert a selected deliverable candidate into a spec-driven proposal with actionable decomposition and traceability.
 - `sprint-health`: Assess the active sprint, Story WIP, Sub-task WIP, aging, blockers, hierarchy/spec violations, delivery risk, and two-sprint Ready runway.
-- `sprint-plan`: Assess capacity and recommend fully specified Story scope and actionable Sub-tasks for the next two one-week sprints.
+- `sprint-plan`: Define coherent deliverable outcomes first, then recommend fully specified Story scope and actionable Sub-tasks for the next two one-week sprints.
 - `runway`: Audit whether at least two future sprint-equivalents are fully Ready and identify the exact refinement gap.
+- `deliverables [focus]`: Recommend an evidence-based, capacity-feasible deliverable plan for Sprint N+1 and Sprint N+2.
+- `brainstorm [focus]`: Generate distinct two-week deliverable scenarios, trade-offs, hypotheses, and a recommended option without treating ideas as commitments.
+- `next-2-weeks [focus]`: Produce the combined recommended deliverable outlook and alternative scenarios for the next two future one-week sprints.
+- `next-two-weeks [focus]` and `two-week-deliverables [focus]`: Aliases for `next-2-weeks`.
 - `review <KEY or scope>`: Reconcile Jira and specification claims with code, commits, pull requests, tests, CI evidence, and deliverables.
 - `status daily|weekly|sprint`: Produce the requested project-management report.
 - `sprint-review`: Reconcile the completed or most recent sprint, Story outcomes, Sub-task completion, carry-over, and process findings.
@@ -92,6 +99,7 @@ Before operating, read and follow:
 
 ```text
 .kilo/config/jiraman.yaml
+.kilo/config/jiraman-deliverables.md
 .kilo/agent/jiraman.md
 ```
 

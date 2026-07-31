@@ -7,13 +7,16 @@ files=(
   ".kilo/commands/jiraman.md"
   ".kilo/agent/jiraman.md"
   ".kilo/config/jiraman.yaml"
+  ".kilo/config/jiraman-deliverables.md"
   ".kilo/state/jiraman.json"
   "docs/project-management/templates/epic-spec.md"
   "docs/project-management/templates/story-spec.md"
   "docs/project-management/templates/subtask-spec.md"
   "docs/project-management/templates/hierarchy-policy.md"
+  "docs/project-management/templates/two-week-deliverable-plan.md"
   "docs/project-management/risk-register.md"
   "docs/project-management/decision-log.md"
+  "docs/project-management/two-week-deliverables/.gitkeep"
 )
 
 failed=0
@@ -60,6 +63,25 @@ else
   failed=1
 fi
 
+if grep -q '`deliverables \[focus\]`' "$ROOT/.kilo/commands/jiraman.md" 2>/dev/null && \
+   grep -q '`brainstorm \[focus\]`' "$ROOT/.kilo/commands/jiraman.md" 2>/dev/null && \
+   grep -q 'extend and supersede' "$ROOT/.kilo/commands/jiraman.md" 2>/dev/null && \
+   grep -q 'DLV-YYYYMMDD-NN' "$ROOT/.kilo/config/jiraman-deliverables.md" 2>/dev/null; then
+  echo "OK   two-week deliverable modes and policy extension are present"
+else
+  echo "FAIL two-week deliverable mode routing or policy is missing"
+  failed=1
+fi
+
+if grep -q 'not a Jira issue type' "$ROOT/.kilo/config/jiraman-deliverables.md" 2>/dev/null && \
+   grep -q 'does not create a fourth Jira hierarchy level' "$ROOT/.kilo/config/jiraman-deliverables.md" 2>/dev/null && \
+   grep -q 'does not count toward Ready runway' "$ROOT/.kilo/config/jiraman-deliverables.md" 2>/dev/null; then
+  echo "OK   deliverable hierarchy and runway safety guards are present"
+else
+  echo "FAIL deliverable hierarchy or runway safety guard is missing"
+  failed=1
+fi
+
 if command -v python3 >/dev/null 2>&1; then
   if python3 - "$ROOT" <<'PY'
 import json
@@ -69,8 +91,9 @@ import sys
 root = pathlib.Path(sys.argv[1])
 with (root / '.kilo/state/jiraman.json').open(encoding='utf-8') as fh:
     state = json.load(fh)
-assert state['schema_version'] == 3
-print('OK   state JSON validation passed')
+assert state['schema_version'] >= 3
+assert state['project'] == 'AIPLATFORM'
+print('OK   backward-compatible state JSON validation passed')
 
 try:
     import yaml
@@ -79,14 +102,13 @@ except ModuleNotFoundError:
 else:
     with (root / '.kilo/config/jiraman.yaml').open(encoding='utf-8') as fh:
         config = yaml.safe_load(fh)
-    assert config['version'] == 3
     assert config['issue_hierarchy']['allow_other_issue_types'] is False
     assert config['issue_hierarchy']['execution_level'] == 'subtask'
     assert config['spec_driven_delivery']['subtask_spec']['maximum_original_estimate_hours'] == 4
     assert config['spec_driven_delivery']['subtask_spec']['maximum_actual_focused_time_hours'] == 4
     assert config['sprint_management']['ready_horizon_sprints'] == 2
     assert config['sprint_management']['ready_runway']['count_only_ready_stories'] is True
-    print('OK   YAML policy validation passed')
+    print('OK   core YAML policy validation passed')
 PY
   then
     :

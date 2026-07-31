@@ -1,8 +1,8 @@
-# Jiraman for Kilo Code — v3
+# Jiraman for Kilo Code — v4
 
 Project-local technical PM agent for the fixed Jira project `AIPLATFORM`.
 
-It uses the existing `mcp-atlassian` integration, runs one-week sprints, maintains at least two fully Ready sprint-equivalents ahead of the active sprint, and enforces this delivery model:
+It uses the existing `mcp-atlassian` integration, runs one-week sprints, maintains at least two fully Ready sprint-equivalents ahead of the active sprint, recommends and brainstorms outcome-based deliverables for those next two weeks, and enforces this delivery model:
 
 ```text
 Epic -> Story -> Sub-task
@@ -42,17 +42,20 @@ If Jiraman files already exist:
 ├── agent/jiraman.md
 ├── commands/jiraman.md
 ├── config/jiraman.yaml
+├── config/jiraman-deliverables.md
 └── state/jiraman.json       # operational state; gitignored
 
 docs/project-management/
 ├── daily/
 ├── weekly-reports/
 ├── sprint-reviews/
+├── two-week-deliverables/
 ├── templates/
 │   ├── epic-spec.md
 │   ├── story-spec.md
 │   ├── subtask-spec.md
-│   └── hierarchy-policy.md
+│   ├── hierarchy-policy.md
+│   └── two-week-deliverable-plan.md
 ├── risk-register.md
 └── decision-log.md
 ```
@@ -86,6 +89,29 @@ A Story counts toward the active or future sprint runway only when:
 - the Story fits within one one-week sprint.
 
 Both future sprint-equivalents must be fully decomposed to Ready Sub-tasks. A Story outline without executable Sub-tasks does not count.
+
+## Next-two-week deliverables
+
+Jiraman can recommend or brainstorm deliverables for `Sprint N+1` and `Sprint N+2`:
+
+```text
+/jiraman deliverables
+/jiraman brainstorm platform reliability
+/jiraman next-2-weeks
+/jiraman next-two-weeks
+/jiraman two-week-deliverables
+```
+
+A deliverable is an observable, stakeholder-relevant outcome that can be accepted by the end of a target one-week sprint. It is a planning concept, not a fourth Jira level and not a new Jira issue type. Each deliverable maps to one primary Epic and one or more Stories.
+
+Jiraman separates:
+
+- `Ready-backed`: supported by fully Ready Stories and eligible for the recommended plan;
+- `Refinement candidate`: valuable but not yet Ready, with explicit gaps;
+- `New hypothesis`: a brainstormed idea not yet represented in Jira and not counted in runway;
+- `Excluded`: rejected for capacity, dependency, evidence, priority, or scope reasons.
+
+The recommended plan must fit verified capacity, dependencies, WIP policy, and the two-sprint runway. Brainstorm mode may present alternative flow-first, risk-reduction, and value-first scenarios, but it must label assumptions and confidence and must not treat ideas as commitments. Every candidate receives a stable `DLV-YYYYMMDD-NN` ID; select one for spec-driven refinement with `/jiraman refine <DLV-ID>`.
 
 ## Estimation and buffering
 
@@ -134,6 +160,18 @@ Audit the two-sprint runway:
 /jiraman runway
 ```
 
+Recommend the next two weeks of deliverables:
+
+```text
+/jiraman deliverables
+```
+
+Brainstorm alternative two-week outcomes around a focus area:
+
+```text
+/jiraman brainstorm platform reliability
+```
+
 Refine one Story into a complete specification and actionable Sub-tasks:
 
 ```text
@@ -156,6 +194,11 @@ Run the daily PM loop:
 /jiraman sprint-health
 /jiraman sprint-plan
 /jiraman runway
+/jiraman deliverables
+/jiraman brainstorm [focus]
+/jiraman next-2-weeks [focus]
+/jiraman next-two-weeks [focus]
+/jiraman two-week-deliverables [focus]
 /jiraman review AIPLATFORM-123
 /jiraman status weekly
 /jiraman sprint-review

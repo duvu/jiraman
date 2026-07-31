@@ -1,6 +1,6 @@
-# Upgrade to Jiraman v3
+# Upgrade to Jiraman v4
 
-Version 3 introduces mandatory Epic -> Story -> Sub-task hierarchy, spec-driven Story readiness, complete Sub-task traceability, and a hard four-hour maximum for each Sub-task.
+Version 4 adds evidence-based recommendations and brainstorming for the deliverables of the next two future one-week sprints while preserving the mandatory `Epic -> Story -> Sub-task` hierarchy.
 
 ## Upgrade
 
@@ -12,17 +12,15 @@ git pull --ff-only
 ./install.sh /absolute/path/to/project --force
 ```
 
-The installer creates a timestamped backup before replacing managed files.
-
-Review and preserve any pending action IDs from the old `.kilo/state/jiraman.json` before upgrading. Version 3 uses state schema 3 and resets operational state by default.
-
-The v2 per-item estimate multiplier is removed for Jira Sub-tasks. Version 3 holds contingency at sprint-capacity level so no planned Sub-task exceeds four hours.
+The installer creates a timestamped backup before replacing managed files. Review and preserve pending action IDs from `.kilo/state/jiraman.json` before upgrading. The deliverable capability is installed as a backward-compatible policy extension and does not require a state-schema reset.
 
 After installation, start a new Kilo chat and run:
 
 ```text
 /jiraman hierarchy
 /jiraman runway
+/jiraman deliverables
+/jiraman brainstorm platform reliability
 ```
 
-Expect existing Task, Bug, Spike, orphan Story, incomplete Story specification, and oversized Sub-task records to be reported as refinement or hierarchy findings. Jiraman will propose normalization actions but will not modify Jira until specific action IDs are applied.
+A deliverable is not a Jira issue type and does not add a fourth hierarchy level. It is an observable outcome mapped to one primary Epic and one or more Stories. Brainstormed hypotheses do not count toward the two-sprint Ready runway until their Stories and Sub-tasks satisfy the existing spec-driven Definition of Ready. Candidates receive stable `DLV-*` IDs and can be converted into a complete spec-driven proposal through `/jiraman refine <DLV-ID>`.

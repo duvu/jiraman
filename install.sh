@@ -5,7 +5,7 @@ usage() {
   cat <<'USAGE'
 Usage: ./install.sh [PROJECT_ROOT] [--force]
 
-Installs the project-local Jiraman v3 agent, command, policy, state, and
+Installs the project-local Jiraman v4 agent, command, policy, state, and
 specification templates. It does NOT install or modify MCP configuration.
 
 Options:
@@ -33,11 +33,13 @@ managed=(
   ".kilo/commands/jiraman.md"
   ".kilo/agent/jiraman.md"
   ".kilo/config/jiraman.yaml"
+  ".kilo/config/jiraman-deliverables.md"
   ".kilo/state/jiraman.json"
   "docs/project-management/templates/epic-spec.md"
   "docs/project-management/templates/story-spec.md"
   "docs/project-management/templates/subtask-spec.md"
   "docs/project-management/templates/hierarchy-policy.md"
+  "docs/project-management/templates/two-week-deliverable-plan.md"
 )
 
 for rel in "${managed[@]}"; do
@@ -75,6 +77,7 @@ mkdir -p \
   "$ROOT/docs/project-management/daily" \
   "$ROOT/docs/project-management/weekly-reports" \
   "$ROOT/docs/project-management/sprint-reviews" \
+  "$ROOT/docs/project-management/two-week-deliverables" \
   "$ROOT/docs/project-management/templates"
 
 for rel in "${managed[@]}"; do
@@ -87,7 +90,8 @@ for rel in \
   "docs/project-management/decision-log.md" \
   "docs/project-management/daily/.gitkeep" \
   "docs/project-management/weekly-reports/.gitkeep" \
-  "docs/project-management/sprint-reviews/.gitkeep"; do
+  "docs/project-management/sprint-reviews/.gitkeep" \
+  "docs/project-management/two-week-deliverables/.gitkeep"; do
   if [[ ! -e "$ROOT/$rel" ]]; then
     mkdir -p "$ROOT/$(dirname "$rel")"
     cp "$TEMPLATE/$rel" "$ROOT/$rel"
@@ -101,12 +105,13 @@ if ! grep -qxF '.kilo/state/' "$GITIGNORE"; then
 fi
 
 cat <<EOF2
-Installed Jiraman v3 into: $ROOT
+Installed Jiraman v4 into: $ROOT
 
 Managed files:
   .kilo/commands/jiraman.md
   .kilo/agent/jiraman.md
   .kilo/config/jiraman.yaml
+  .kilo/config/jiraman-deliverables.md
   .kilo/state/jiraman.json
   docs/project-management/templates/*.md
 
@@ -114,5 +119,8 @@ MCP configuration was not changed.
 Start a new Kilo chat, verify the existing mcp-atlassian server is enabled, then run:
   /jiraman hierarchy
   /jiraman runway
+  /jiraman deliverables
+  /jiraman brainstorm <FOCUS>
+  /jiraman refine DLV-YYYYMMDD-NN
   /jiraman refine AIPLATFORM-<STORY>
 EOF2

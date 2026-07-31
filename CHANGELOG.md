@@ -1,5 +1,18 @@
 # Changelog
 
+## v4
+
+- Added `deliverables`, `brainstorm`, and `next-2-weeks` modes plus `next-two-weeks` and `two-week-deliverables` aliases for outcome-based planning across Sprint N+1 and Sprint N+2.
+- Defined deliverables as planning outcomes mapped to one primary Epic and one or more Stories, never as a fourth Jira hierarchy level.
+- Added Ready-backed, refinement-candidate, new-hypothesis, and excluded classifications.
+- Added stable `DLV-*` candidate IDs and `refine <DLV-ID>` handoff.
+- Added Flow-first, Risk-reduction, and Value-first scenario generation with an evidence-based recommendation and explicit trade-offs.
+- Required acceptance signals, rationale, capacity/dependency fit, confidence, assumptions, and hypotheses for proposed deliverables.
+- Prevented brainstormed hypotheses from counting toward Ready runway.
+- Integrated a compact two-week deliverable outlook into daily reports and deliverable-first selection into sprint planning.
+- Added a durable two-week deliverable artifact directory and template.
+- Added a backward-compatible deliverable policy extension without requiring a destructive operational-state migration.
+
 ## v3
 
 - Enforced exactly three logical delivery levels: `Epic -> Story -> Sub-task`.
