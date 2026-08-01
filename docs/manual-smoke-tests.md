@@ -8,7 +8,7 @@ Run only against a designated test Jira project/Confluence space while the insta
 4. Page lookup: test configured ID, metadata, label, title, and duplicate title; expect the ordered match or an ambiguity block.
 5. Meeting/risk/decision: inspect one page of each type; expect source-section evidence, missing fields, duplicate checks, and proposals only.
 6. Refinement: inspect one Confluence spec and one repository spec; expect stable ID/gap/traceability output and no write.
-7. Reject: reject a proposed PMA; expect only local state mutation and no MCP write.
+7. Reject: reject one PMA in a multi-action proposed group; expect the named action and containing PMG to become terminal `rejected`, sibling action statuses to remain audit history, sibling apply to be blocked, and no MCP call. Confirm continuing sibling work requires a new proposal.
 8. Apply: approve one test comment PMA, keep Kilo write permission `ask`, and use the call boundary below.
 9. Stale/failure/replay: drift a target, simulate a write error, then replay an applied ID; use the zero-write and stop boundaries below.
 10. Rollback: restore a backed-up v4 fixture and confirm pending state remains recoverable.

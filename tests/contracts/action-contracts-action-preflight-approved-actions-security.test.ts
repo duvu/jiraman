@@ -7,6 +7,7 @@ import { describe, expect, test } from "vitest";
 import { approvalSelectionAllowed, canonicalPayloadHash, canTransition, dependencyOrder, dependentWritesAllowed, evaluatePreflight, semanticallyEqual, targetPreflightBlockers, verificationOutcome, type PreflightInput, type TargetPreflightInput } from "../../src/action-rules.js";
 import { asArray, asObject, asString, readJson, requireValid, validDateTime, validateJson, type JsonObject, type JsonValue } from "../../src/contracts.js";
 import { findSensitiveValues } from "../../src/scan-secrets.js";
+import { sanitizeSensitiveText } from "../../scripts/sensitive-content.mjs";
 
 function asBoolean(value: JsonValue | undefined, label: string): boolean {
   if (typeof value !== "boolean") throw new Error(label + " must be a boolean");
@@ -211,6 +212,8 @@ describe("action-preflight approved-actions security", () => {
       ["single-quoted-generic-key.yml", ["'api_", "key': >-2\n  ", opaque].join("")],
       ["quoted-inner-escape.log", ["GITHUB", "_TOKEN=\"\n", opaque, "\\", "\"still-value\n", opaque, "_later\n\""].join("")],
       ["unquoted-multiple-lines.log", ["GITHUB", "_TOKEN=\n", opaque, "\n", opaque, "_later"].join("")],
+      ["quoted-even-backslash.log", ["GITHUB", "_TOKEN=\"\n", opaque, "\\\\", "\"\n", opaque, "_tail\n\""].join("")],
+      ["unquoted-blank-continuation.log", ["GITHUB", "_TOKEN=\n", opaque, "\n\n", opaque, "_later"].join("")],
       ...yamlCanaries,
     ];
     for (const [surface, canary] of canaries) expect(findSensitiveValues(canary), surface).not.toEqual([]);
@@ -235,7 +238,7 @@ describe("action-preflight approved-actions security", () => {
       expect(output).not.toContain(privateKeyBody);
       expect(output).not.toContain(opaque);
       expect(output.match(/\[REDACTED SENSITIVE LINE\]/g)?.length ?? 0).toBeGreaterThanOrEqual(canaries.length);
-      expect(output).toContain("safe diagnostic");
+      expect(sanitizeSensitiveText("safe diagnostic\nordinary output")).toBe("safe diagnostic\nordinary output");
     } finally {
       rmSync(directory, { recursive: true, force: true });
     }

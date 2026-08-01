@@ -56,14 +56,7 @@ export function sanitizeSensitiveText(text) {
         const indentation = line.match(/^[ \t]*/)?.[0].length ?? 0;
         if (line.trim().length === 0 || indentation > pendingCredentialIndent) return "[REDACTED SENSITIVE LINE]";
         pendingCredential = null;
-      } else if (pendingCredential === "unquoted") {
-        if (line.trim().length === 0) pendingCredential = null;
-        return "[REDACTED SENSITIVE LINE]";
       } else {
-        const escapedDelimiter = pendingCredential.startsWith("escaped-");
-        const quote = pendingCredential.endsWith("double") ? "\"" : "'";
-        const closes = escapedDelimiter ? line.trim() === "\\" + quote : hasUnescapedQuote(line, quote);
-        if (closes) pendingCredential = null;
         return "[REDACTED SENSITIVE LINE]";
       }
     }
@@ -79,9 +72,9 @@ export function sanitizeSensitiveText(text) {
       }
       if (quote !== null) {
         const closesInline = escapedQuote ? value.trimEnd().endsWith("\\" + quote) : hasUnescapedQuote(value, quote);
-        if (!closesInline) pendingCredential = (escapedQuote ? "escaped-" : "") + (quote === "\"" ? "double" : "single");
+        if (!closesInline) pendingCredential = "remainder";
       }
-      if (quote === null && value.trim().length === 0) pendingCredential = "unquoted";
+      if (quote === null && value.trim().length === 0) pendingCredential = "remainder";
       return "[REDACTED SENSITIVE LINE]";
     }
     return findSensitiveNames(line).length > 0 ? "[REDACTED SENSITIVE LINE]" : line;
