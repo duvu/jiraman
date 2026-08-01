@@ -7,7 +7,7 @@ import { describe, expect, test } from "vitest";
 import { approvalSelectionAllowed, canonicalPayloadHash, canTransition, dependencyOrder, dependentWritesAllowed, evaluatePreflight, semanticallyEqual, targetPreflightBlockers, verificationOutcome, type PreflightInput, type TargetPreflightInput } from "../../src/action-rules.js";
 import { asArray, asObject, asString, readJson, requireValid, validDateTime, validateJson, type JsonObject, type JsonValue } from "../../src/contracts.js";
 import { findSensitiveValues } from "../../src/scan-secrets.js";
-import { sanitizeSensitiveText } from "../../scripts/sensitive-content.mjs";
+import { releaseInvariantNames, sanitizeSensitiveText } from "../../scripts/sensitive-content.mjs";
 
 function asBoolean(value: JsonValue | undefined, label: string): boolean {
   if (typeof value !== "boolean") throw new Error(label + " must be a boolean");
@@ -129,6 +129,20 @@ describe("action-preflight approved-actions security", () => {
     const group: JsonObject = { ...fixture, payload_hash: canonicalPayloadHash(actions) };
     const validation = validateJson("action-group.schema.json", group);
     expect(validation).toEqual({ valid: true, errors: [] });
+    const rejectedPartialApproval: JsonObject = {
+      ...group,
+      approval: {
+        group_approved_by: "reviewer",
+        approved_action_ids: [],
+        approved_at: "2026-08-01T00:30:00Z",
+        payload_hash: asString(group.payload_hash, "rejected payload hash"),
+      },
+    };
+    const rejectedPartialValidation = validateJson("action-group.schema.json", rejectedPartialApproval);
+    expect(rejectedPartialValidation.valid).toBe(false);
+    expect(rejectedPartialValidation.errors).toEqual(expect.arrayContaining([
+      expect.objectContaining({ instancePath: "/approval", keyword: "approvalTuple", schemaPath: "#/x-action-group-approval/tuple" }),
+    ]));
     expect(group.status).toBe("rejected");
     expect(canTransition("rejected", "approved")).toBe(false);
 
@@ -147,6 +161,9 @@ describe("action-preflight approved-actions security", () => {
       writeFileSync(statePath, JSON.stringify(state));
       const installedValidation = spawnSync("./verify.sh", ["--validate-state-file", statePath], { encoding: "utf8" });
       expect(installedValidation.status, installedValidation.stderr).toBe(0);
+      writeFileSync(statePath, JSON.stringify({ ...state, pending_action_groups: { [groupId]: rejectedPartialApproval } }));
+      const rejectedPartialState = spawnSync("./verify.sh", ["--validate-state-file", statePath], { encoding: "utf8" });
+      expect(rejectedPartialState.status).toBe(5);
     } finally {
       rmSync(directory, { recursive: true, force: true });
     }
@@ -249,11 +266,27 @@ describe("action-preflight approved-actions security", () => {
         "prefixAuthor",
         "ization: Bearer\n",
         opaque,
-        "\nFAIL invariant=SCOPE_PROJECT action blocked",
+        "\nFAIL invariant=SECURITY_INVARIANTS action blocked",
       ].join(""));
-      expect(combined).toContain("FAIL invariant=SCOPE_PROJECT");
+      expect(combined).toContain("FAIL invariant=SECURITY_INVARIANTS");
       expect(combined).not.toContain("action blocked");
       expect(combined).not.toContain(opaque);
+      expect(sanitizeSensitiveText("FAIL invariant=SECURITY_INVARIANTS " + opaque)).toBe("FAIL invariant=SECURITY_INVARIANTS");
+      expect(sanitizeSensitiveText("FAIL invariant=UNKNOWN " + opaque)).toBe("[REDACTED SENSITIVE LINE]");
+      expect(releaseInvariantNames.has("SECURITY_INVARIANTS")).toBe(true);
+      const failedGate = spawnSync("./scripts/ci.sh", [
+        "--run-invariant",
+        "SECURITY_INVARIANTS",
+        "node",
+        "-e",
+        'process.stderr.write(["prefixAuthor", "ization: Bearer\\n", process.argv[1], "\\nuntrusted suffix\\n"].join("")); process.exit(19);',
+        opaque,
+      ], { encoding: "utf8" });
+      expect(failedGate.status).toBe(19);
+      const failedGateOutput = sanitizeSensitiveText(failedGate.stdout + failedGate.stderr);
+      expect(failedGateOutput).toContain("FAIL invariant=SECURITY_INVARIANTS");
+      expect(failedGateOutput).not.toContain("untrusted suffix");
+      expect(failedGateOutput).not.toContain(opaque);
       expect(sanitizeSensitiveText("safe diagnostic\nordinary output")).toBe("safe diagnostic\nordinary output");
     } finally {
       rmSync(directory, { recursive: true, force: true });

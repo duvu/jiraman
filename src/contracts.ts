@@ -164,17 +164,29 @@ function actionGroupApprovalErrors(value: JsonValue): ErrorObject[] {
 
   const errors: ErrorObject[] = [];
   const approvedIds = value.approval.approved_action_ids;
-  if (executable) {
-    const approvedIdSet = Array.isArray(approvedIds) && approvedIds.every((id) => typeof id === "string") ? new Set(approvedIds) : null;
-    if (approvedIdSet === null || approvedIdSet.size !== actionIds.length || actionIds.some((id) => !approvedIdSet.has(id))) {
-      errors.push({
-        instancePath: "/approval/approved_action_ids",
-        schemaPath: "#/x-action-group-approval/approved-action-ids",
-        keyword: "approvalActionIds",
-        params: {},
-        message: "must contain every action ID exactly once",
-      });
-    }
+  const approvedIdSet = Array.isArray(approvedIds) && approvedIds.every((id) => typeof id === "string") ? new Set(approvedIds) : null;
+  const emptyApproval = value.approval.group_approved_by === null && value.approval.approved_at === null && value.approval.payload_hash === null && Array.isArray(approvedIds) && approvedIds.length === 0;
+  const completeApproval = typeof value.approval.group_approved_by === "string" && value.approval.group_approved_by.length > 0 &&
+    typeof value.approval.approved_at === "string" && validDateTime(value.approval.approved_at) &&
+    typeof value.approval.payload_hash === "string" && value.approval.payload_hash === value.payload_hash &&
+    approvedIdSet !== null && approvedIdSet.size === actionIds.length && actionIds.every((id) => approvedIdSet.has(id));
+  if ((!emptyApproval && !completeApproval) || (value.status === "proposed" && !emptyApproval)) {
+    errors.push({
+      instancePath: "/approval",
+      schemaPath: "#/x-action-group-approval/tuple",
+      keyword: "approvalTuple",
+      params: {},
+      message: "must be empty or contain a complete approval for every action",
+    });
+  }
+  if (executable && !completeApproval) {
+    errors.push({
+      instancePath: "/approval/approved_action_ids",
+      schemaPath: "#/x-action-group-approval/approved-action-ids",
+      keyword: "approvalActionIds",
+      params: {},
+      message: "must contain every action ID exactly once",
+    });
   }
   if (!actionStatusesMatchGroup(value.status, actionStatuses)) {
     errors.push({

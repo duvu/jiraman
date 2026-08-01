@@ -11,3 +11,9 @@
 - [ ] <!-- gate:package-verification checks:tar,zip,no-state,no-backup,no-runtime --> TAR and ZIP verify and exclude operational state, backups, credentials, development output, and application runtime files.
 - [ ] <!-- gate:manual-smoke checks:read,degraded,proposal,reject,apply,failure,read-after-write --> Manual KiloCode read, degraded, proposal, reject, apply, failure, and read-after-write smoke cases pass.
 - [ ] <!-- gate:rollback checks:package,managed-files,action-state --> Previous package, managed-file backup, and action-state recovery instructions were tested.
+
+## Release Failure Invariants
+
+`scripts/ci.sh` wraps each release-critical command with a stable identifier: `SHELL_SYNTAX`, `TYPE_SAFETY`, `SECURITY_INVARIANTS`, `CONTRACT_VALIDATION`, `SECRET_OUTPUT`, `SOURCE_CONTRACT`, `CLEAN_INSTALL`, `V4_MIGRATION`, `PACKAGE_BUILD`, `PACKAGE_REPRODUCIBILITY`, or `PACKAGE_INTEGRITY`. A failed command exits non-zero and emits `FAIL invariant=<IDENTIFIER>`.
+
+The CI sanitizer preserves only the recognized identifier, removes all trailing diagnostic content, and redacts unknown invariant-like lines. GitHub Actions publishes the identifier in the job summary and retains only the sanitized failure log.

@@ -84,11 +84,11 @@ const validGroup = (value) => {
   if (value.payload_hash !== canonicalPayloadHash(value.actions)) return false;
   const approval = value.approval;
   const emptyApproval = approval.group_approved_by === null && approval.approved_at === null && approval.payload_hash === null && approval.approved_action_ids.length === 0;
-  const completeApproval = nonEmpty(approval.group_approved_by) && validDateTime(approval.approved_at) && approval.payload_hash === value.payload_hash && approval.approved_action_ids.length > 0;
+  const completeApproval = nonEmpty(approval.group_approved_by) && validDateTime(approval.approved_at) && approval.payload_hash === value.payload_hash && sameSet(approval.approved_action_ids, ids);
   if (!emptyApproval && !completeApproval) return false;
   if (approval.approved_action_ids.some((id) => !ids.includes(id))) return false;
   const executable = ["approved", "applying", "applied", "failed", "verification-failed"].includes(value.status);
-  if (executable && (!completeApproval || !sameSet(approval.approved_action_ids, ids))) return false;
+  if (executable && !completeApproval) return false;
   if (value.status === "proposed" && !emptyApproval) return false;
   const actionStatuses = value.actions.map((action) => action.status);
   const lifecycleValid =

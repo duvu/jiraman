@@ -32,6 +32,12 @@ jobs:
             echo "## Jiraman release gate"
             echo "- Commit: \`${GITHUB_SHA}\`"
             echo "- Result: \`${{ steps.release-gate.outcome }}\`"
+            if [[ -f .ci-release.log ]]; then
+              invariant="$(awk '/^FAIL invariant=[A-Z][A-Z0-9_]*$/ { sub(/^FAIL invariant=/, ""); print; exit }' .ci-release.log)"
+              if [[ -n "$invariant" ]]; then
+                echo "- Invariant: \`$invariant\`"
+              fi
+            fi
           } >> "$GITHUB_STEP_SUMMARY"
       - name: Prepare sanitized failure diagnostics
         if: failure()

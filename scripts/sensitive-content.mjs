@@ -2,7 +2,22 @@ const privateKeyBegin = /-----BEGIN (?:[A-Z0-9 ]+ )?PRIVATE KEY(?: BLOCK)?-----/
 const privateKeyEnd = /-----END (?:[A-Z0-9 ]+ )?PRIVATE KEY(?: BLOCK)?-----/i;
 const credentialAssignmentLine = /["']?\b(?:(?:password|passwd|access[_-]?token|refresh[_-]?token|client[_-]?secret|api[_-]?key|secret[_-]?key|auth[_-]?token)|(?:[A-Z0-9]+[_-])+(?:TOKEN|SECRET|PASSWORD|PASSWD|(?:ACCESS|SECRET|PRIVATE|API)[_-]?KEY))\b["']?\s*[=:]\s*(.*)$/i;
 const sensitiveHeaderContinuationLine = /(?:Authorization|Cookie|Set-Cookie):\s*(?:(?:Basic|Bearer)\s*)?$/i;
-const releaseInvariantLine = /^\s*FAIL\s+invariant=(SCOPE_PROJECT)\b/;
+const releaseInvariantPrefix = /^\s*FAIL\s+invariant=/i;
+const releaseInvariantLine = /^\s*FAIL\s+invariant=([A-Z][A-Z0-9_]{2,63})\b/;
+
+export const releaseInvariantNames = new Set([
+  "SHELL_SYNTAX",
+  "TYPE_SAFETY",
+  "SECURITY_INVARIANTS",
+  "CONTRACT_VALIDATION",
+  "SECRET_OUTPUT",
+  "SOURCE_CONTRACT",
+  "CLEAN_INSTALL",
+  "V4_MIGRATION",
+  "PACKAGE_BUILD",
+  "PACKAGE_REPRODUCIBILITY",
+  "PACKAGE_INTEGRITY",
+]);
 
 export const sensitivePatterns = [
   { name: "private-key", expression: privateKeyBegin },
@@ -40,6 +55,14 @@ function hasUnescapedQuote(line, quote) {
   return false;
 }
 
+function sanitizedReleaseInvariant(line) {
+  if (!releaseInvariantPrefix.test(line)) return null;
+  const invariant = releaseInvariantLine.exec(line)?.[1];
+  return invariant !== undefined && releaseInvariantNames.has(invariant)
+    ? "FAIL invariant=" + invariant
+    : "[REDACTED SENSITIVE LINE]";
+}
+
 export function sanitizeSensitiveText(text) {
   let privateKeyBlock = false;
   let pendingCredential = null;
@@ -53,15 +76,14 @@ export function sanitizeSensitiveText(text) {
       if (!privateKeyEnd.test(line)) privateKeyBlock = true;
       return "[REDACTED SENSITIVE LINE]";
     }
+    const releaseInvariant = sanitizedReleaseInvariant(line);
     if (pendingCredential !== null) {
       if (pendingCredential === "yaml") {
         const indentation = line.match(/^[ \t]*/)?.[0].length ?? 0;
         if (line.trim().length === 0 || indentation > pendingCredentialIndent) return "[REDACTED SENSITIVE LINE]";
         pendingCredential = null;
       } else {
-        const invariant = releaseInvariantLine.exec(line)?.[1];
-        if (invariant !== undefined) return "FAIL invariant=" + invariant;
-        return "[REDACTED SENSITIVE LINE]";
+        return releaseInvariant ?? "[REDACTED SENSITIVE LINE]";
       }
     }
     if (sensitiveHeaderContinuationLine.test(line)) {
@@ -85,6 +107,6 @@ export function sanitizeSensitiveText(text) {
       if (quote === null && value.trim().length === 0) pendingCredential = "remainder";
       return "[REDACTED SENSITIVE LINE]";
     }
-    return findSensitiveNames(line).length > 0 ? "[REDACTED SENSITIVE LINE]" : line;
+    return releaseInvariant ?? (findSensitiveNames(line).length > 0 ? "[REDACTED SENSITIVE LINE]" : line);
   }).join("\n");
 }
