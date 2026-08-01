@@ -210,6 +210,9 @@ rmdir "$STAGE/new/.kilo/agent" 2>/dev/null || true
 for pattern in ".kilo/state/" ".jiraman-backup-*/"; do
   if ! grep -qxF "$pattern" "$STAGE/new/.gitignore"; then printf '\n%s\n' "$pattern" >> "$STAGE/new/.gitignore"; fi
 done
+chmod u+rwx,go-w "$STAGE/new/.kilo"
+find "$STAGE/new/.kilo/state" -type d -exec chmod 700 {} +
+find "$STAGE/new/.kilo/state" -type f -exec chmod 600 {} +
 
 "$SCRIPT_DIR/verify.sh" "$STAGE/new" >/dev/null
 

@@ -9,3 +9,5 @@ Fixtures, action state, reports, packages, and run records must exclude credenti
 Approval integrity binds the pending-state map key to the PMG ID, requires every approved PMA ID to belong to that group, and requires the approval hash to equal a freshly recomputed group hash. The hash is SHA-256 over UTF-8 canonical JSON of actions sorted by PMA ID, excluding only top-level action `status`, recursively sorting object keys, and preserving nested array order.
 
 Release archives are scanned in full before dependency installation. CI captures raw diagnostics privately, sanitizes sensitive lines before console or artifact output, and deletes the raw file. Installation snapshots `.kilo`, `docs`, and `.gitignore` into a private staging directory, verifies the staged tree, then replaces only those boundaries with no-follow atomic renames.
+
+Installed private state directories use mode `0700` and state files use `0600` regardless of the caller's umask; the `.kilo` boundary is never group- or world-writable.

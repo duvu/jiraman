@@ -6,7 +6,8 @@ SYMLINK_TARGET="$ROOT/tests/install/output/symlink-project"
 OUTSIDE="$ROOT/tests/install/output/outside-agents"
 RACE_TARGET="$ROOT/tests/install/output/race-project"
 RACE_OUTSIDE="$ROOT/tests/install/output/race-outside"
-rm -rf "$TARGET" "$SYMLINK_TARGET" "$OUTSIDE" "$RACE_TARGET" "$RACE_OUTSIDE"
+PERMISSION_TARGET="$ROOT/tests/install/output/permission-project"
+rm -rf "$TARGET" "$SYMLINK_TARGET" "$OUTSIDE" "$RACE_TARGET" "$RACE_OUTSIDE" "$PERMISSION_TARGET"
 mkdir -p "$TARGET/.kilo"
 printf '%s\n' '{"servers":{"mcp-atlassian":{"command":"USER-OWNED-SENTINEL"}}}' > "$TARGET/.kilo/mcp.json"
 cp "$TARGET/.kilo/mcp.json" "$TARGET/mcp.before"
@@ -30,20 +31,40 @@ mkdir -p "$RACE_TARGET/.kilo/agents" "$RACE_OUTSIDE"
 printf 'OUTSIDE-RACE-SENTINEL\n' > "$RACE_OUTSIDE/jiraman.md"
 cp "$RACE_OUTSIDE/jiraman.md" "$RACE_TARGET/sentinel.before"
 printf 'old managed file\n' > "$RACE_TARGET/.kilo/agents/jiraman.md"
-(
-  for _ in $(seq 1 400); do
-    rm -rf "$RACE_TARGET/.kilo/agents"
-    ln -s "$RACE_OUTSIDE" "$RACE_TARGET/.kilo/agents" 2>/dev/null || true
-    rm -f "$RACE_TARGET/.kilo/agents" 2>/dev/null || true
-    mkdir -p "$RACE_TARGET/.kilo/agents"
-    printf 'old managed file\n' > "$RACE_TARGET/.kilo/agents/jiraman.md"
-    sleep 0.001
-  done
-) &
-racer=$!
-set +e
-"$ROOT/install.sh" "$RACE_TARGET" --force >"$RACE_TARGET/race.out" 2>&1
-wait "$racer"
-set -e
+RACE_BIN="$RACE_TARGET/test-bin"
+RACE_SIGNAL="$RACE_TARGET/snapshot-complete"
+RACE_CONTINUE="$RACE_TARGET/continue-install"
+mkdir -p "$RACE_BIN"
+cat > "$RACE_BIN/cp" <<'WRAPPER'
+#!/usr/bin/env bash
+set -euo pipefail
+if [[ "$*" == *"/template/.kilo/agents/jiraman.md"* ]]; then
+  : > "$RACE_SIGNAL"
+  while [[ ! -e "$RACE_CONTINUE" ]]; do sleep 0.01; done
+fi
+exec "$REAL_CP" "$@"
+WRAPPER
+chmod +x "$RACE_BIN/cp"
+REAL_CP="$(command -v cp)" RACE_SIGNAL="$RACE_SIGNAL" RACE_CONTINUE="$RACE_CONTINUE" PATH="$RACE_BIN:$PATH" \
+  "$ROOT/install.sh" "$RACE_TARGET" --force >"$RACE_TARGET/race.out" 2>&1 &
+installer=$!
+for _ in $(seq 1 500); do
+  if [[ -e "$RACE_SIGNAL" ]]; then break; fi
+  if ! kill -0 "$installer" 2>/dev/null; then wait "$installer"; exit 1; fi
+  sleep 0.01
+done
+[[ -e "$RACE_SIGNAL" ]] || { echo "installer did not reach synchronized snapshot boundary" >&2; exit 1; }
+mv -T "$RACE_TARGET/.kilo/agents" "$RACE_TARGET/agents.snapshot"
+ln -s "$RACE_OUTSIDE" "$RACE_TARGET/.kilo/agents"
+: > "$RACE_CONTINUE"
+wait "$installer"
 cmp "$RACE_TARGET/sentinel.before" "$RACE_OUTSIDE/jiraman.md"
+"$ROOT/verify.sh" "$RACE_TARGET" >/dev/null
+
+mkdir -p "$PERMISSION_TARGET"
+(umask 000; "$ROOT/install.sh" "$PERMISSION_TARGET" >/dev/null)
+[[ "$(stat -c '%a' "$PERMISSION_TARGET/.kilo/state")" == "700" ]]
+[[ "$(stat -c '%a' "$PERMISSION_TARGET/.kilo/state/jiraman.json")" == "600" ]]
+kilo_mode="$(stat -c '%a' "$PERMISSION_TARGET/.kilo")"
+(( (8#$kilo_mode & 022) == 0 ))
 echo "clean install: PASS"
