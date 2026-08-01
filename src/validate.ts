@@ -2,6 +2,7 @@ import { existsSync } from "node:fs";
 import { dirname, resolve, sep } from "node:path";
 
 import { missingCapabilityCoverage } from "./capability-rules.js";
+import { canonicalPayloadHash } from "./action-rules.js";
 import {
   asArray,
   asObject,
@@ -192,6 +193,12 @@ function validateActions(): void {
   requireInvalid("action-group.schema.json", "examples/action-group.invalid.json");
   requireValid("action-group.schema.json", "tests/fixtures/actions/valid.json");
   requireValid("action-group.schema.json", "tests/fixtures/actions/high-risk-approved.json");
+  for (const path of ["examples/action-group.valid.json", "tests/fixtures/actions/valid.json", "tests/fixtures/actions/high-risk-approved.json"]) {
+    const group = asObject(readJson(path), path);
+    invariant(group.payload_hash === canonicalPayloadHash(asArray(group.actions, path + " actions")), path + " has a non-canonical payload hash");
+    const approval = asObject(group.approval ?? null, path + " approval");
+    if (group.status === "approved") invariant(approval.payload_hash === group.payload_hash, path + " approval hash does not bind the payload");
+  }
   requireValid("fixture.schema.json", "tests/fixtures/actions/lifecycle.json");
   requireValid("audit-record.schema.json", "tests/fixtures/actions/audit-record.valid.json");
 }
@@ -216,7 +223,7 @@ function validateDocs(): void {
   }
   invariant(missingChecklistGates().length === 0, `release checklist missing gates: ${missingChecklistGates().join(", ")}`);
   const workflow = readText(".github/workflows/ci.yml");
-  invariant(workflow.includes("GITHUB_STEP_SUMMARY") && workflow.includes("actions/upload-artifact@v4") && workflow.includes("sanitized-ci-failure"), "CI summary or sanitized failure artifact retention is missing");
+  invariant(workflow.includes("GITHUB_STEP_SUMMARY") && workflow.includes("actions/upload-artifact@") && workflow.includes("sanitized-ci-failure") && workflow.includes("sanitize_ci_log.sh"), "CI summary or sanitized failure artifact retention is missing");
 }
 
 function validateNoRuntimeLanguage(): void {

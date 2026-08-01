@@ -8,62 +8,39 @@
     "semantic_capability": "actions.preflight"
   },
   "expected": {
-    "writes_before_complete_preflight": 0,
-    "replay_writes": 0
+    "replay_transition_allowed": false,
+    "dependent_write_after_failure": false,
+    "mismatch_outcome": "verification-failed"
   },
-  "data": [
-    {
-      "case": "valid",
-      "from": "approved",
-      "preflight": "pass",
-      "to": "applied",
-      "verification": "passed"
+  "data": {
+    "base": {
+      "status": "approved",
+      "expired": false,
+      "payloadHashMatches": true,
+      "scopeAllowed": true,
+      "approvalComplete": true,
+      "targetFresh": true,
+      "hierarchyValid": true,
+      "subtaskHours": 3,
+      "ownershipAllowed": true,
+      "fieldsExact": true,
+      "dependenciesResolved": true
     },
-    {
-      "case": "expired",
-      "from": "approved",
-      "preflight": "blocked",
-      "to": "stale",
-      "writes": 0
-    },
-    {
-      "case": "modified",
-      "from": "approved",
-      "hash_match": false,
-      "preflight": "blocked",
-      "writes": 0
-    },
-    {
-      "case": "rejected",
-      "from": "rejected",
-      "preflight": "blocked",
-      "writes": 0
-    },
-    {
-      "case": "partial",
-      "risk": "high",
-      "approved_ids": [],
-      "preflight": "blocked",
-      "writes": 0
-    },
-    {
-      "case": "replay",
-      "from": "applied",
-      "preflight": "blocked",
-      "writes": 0
-    },
-    {
-      "case": "write-failure",
-      "preflight": "pass",
-      "first_write": "failed",
-      "dependent_writes": 0,
-      "to": "failed"
-    },
-    {
-      "case": "verification",
-      "write_result": "success",
-      "read_after_write": "mismatch",
-      "to": "verification-failed"
-    }
-  ]
+    "cases": [
+      {"case": "valid", "override": {}, "expected": {"allowed": true, "violations": []}},
+      {"case": "expired", "override": {"expired": true}, "expected": {"allowed": false, "violations": ["expired"]}},
+      {"case": "modified", "override": {"payloadHashMatches": false}, "expected": {"allowed": false, "violations": ["modified"]}},
+      {"case": "rejected", "override": {"status": "rejected"}, "expected": {"allowed": false, "violations": ["status-rejected"]}},
+      {"case": "stale", "override": {"status": "stale"}, "expected": {"allowed": false, "violations": ["status-stale"]}},
+      {"case": "replay", "override": {"status": "applied"}, "expected": {"allowed": false, "violations": ["status-applied"]}},
+      {"case": "scope", "override": {"scopeAllowed": false}, "expected": {"allowed": false, "violations": ["scope"]}},
+      {"case": "partial", "override": {"approvalComplete": false}, "expected": {"allowed": false, "violations": ["partial-approval"]}},
+      {"case": "stale-target", "override": {"targetFresh": false}, "expected": {"allowed": false, "violations": ["stale-target"]}},
+      {"case": "hierarchy", "override": {"hierarchyValid": false}, "expected": {"allowed": false, "violations": ["invalid-hierarchy"]}},
+      {"case": "oversized", "override": {"subtaskHours": 5}, "expected": {"allowed": false, "violations": ["invalid-subtask-estimate"]}},
+      {"case": "ownership", "override": {"ownershipAllowed": false}, "expected": {"allowed": false, "violations": ["ownership"]}},
+      {"case": "fields", "override": {"fieldsExact": false}, "expected": {"allowed": false, "violations": ["field-expansion"]}},
+      {"case": "dependency", "override": {"dependenciesResolved": false}, "expected": {"allowed": false, "violations": ["dependency"]}}
+    ]
+  }
 }

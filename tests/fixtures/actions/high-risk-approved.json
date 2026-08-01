@@ -6,14 +6,14 @@
   "created_at": "2026-08-01T00:00:00Z",
   "expires_at": "2026-08-02T00:00:00Z",
   "status": "approved",
-  "payload_hash": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+  "payload_hash": "896e14ea5273d13d7d6d3a3eb2c009646e2e40884ca4024a95e354127ca48f27",
   "approval": {
     "group_approved_by": "release-lead",
     "approved_action_ids": [
       "PMA-20260801-02"
     ],
     "approved_at": "2026-08-01T01:00:00Z",
-    "payload_hash": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+    "payload_hash": "896e14ea5273d13d7d6d3a3eb2c009646e2e40884ca4024a95e354127ca48f27"
   },
   "actions": [
     {

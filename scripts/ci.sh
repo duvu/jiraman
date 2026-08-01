@@ -2,7 +2,7 @@
 set -euo pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$ROOT"
-bash -n install.sh verify.sh scripts/package.sh scripts/verify_package.sh tests/install/run-clean-install.sh tests/install/run-v4-upgrade.sh
+bash -n install.sh verify.sh scripts/package.sh scripts/sanitize_ci_log.sh scripts/scan_package_sensitive.sh scripts/verify_package.sh tests/install/run-clean-install.sh tests/install/run-v4-upgrade.sh
 npm run typecheck
 npm test
 npm run validate

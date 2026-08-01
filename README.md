@@ -11,7 +11,7 @@ cd jiraman
 ./verify.sh /absolute/project/path
 ```
 
-Use `./install.sh /absolute/project/path --check` for a non-mutating check. Reinstalling managed files requires `--force`, which creates `.jiraman-backup-<timestamp>/` first. The installer never runs `npm install` in the target.
+Use `./install.sh /absolute/project/path --check` for a non-mutating check. Reinstalling managed files requires `--force`, which creates a private `.jiraman-backup-<timestamp>.<random>/` first. Installation is staged and verified before top-level atomic replacement; the installer never runs `npm install` in the target.
 
 ## Installed Layout
 

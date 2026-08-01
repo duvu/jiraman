@@ -44,9 +44,79 @@ legacy=(
   ".kilo/config/jiraman-deliverables.md"
 )
 
+STAGE="$(mktemp -d "$ROOT/.jiraman-stage.XXXXXX")"
+chmod 700 "$STAGE"
+mkdir -p "$STAGE/new" "$STAGE/original" "$STAGE/failed"
+committed=0
+swapping=0
+declare -A had_original=()
+swapped=()
+
+rollback_swaps() {
+  local index relative
+  set +e
+  for ((index=${#swapped[@]} - 1; index >= 0; index--)); do
+    relative="${swapped[$index]}"
+    if [[ -e "$ROOT/$relative" || -L "$ROOT/$relative" ]]; then
+      mkdir -p "$STAGE/failed/$(dirname "$relative")"
+      mv -T -- "$ROOT/$relative" "$STAGE/failed/$relative"
+    fi
+    if [[ "${had_original[$relative]:-0}" -eq 1 ]]; then
+      mv -T -- "$STAGE/original/$relative" "$ROOT/$relative"
+    fi
+  done
+  set -e
+}
+
+cleanup() {
+  if [[ "$swapping" -eq 1 && "$committed" -eq 0 ]]; then rollback_swaps; fi
+  rm -rf "$STAGE"
+}
+trap cleanup EXIT
+
+snapshot_directory() {
+  local relative="$1"
+  if [[ -L "$ROOT/$relative" ]]; then
+    echo "Refusing unsafe symbolic link at installation boundary: $ROOT/$relative" >&2
+    exit 1
+  fi
+  if [[ -e "$ROOT/$relative" ]]; then
+    if [[ ! -d "$ROOT/$relative" ]]; then
+      echo "Refusing non-directory installation boundary: $ROOT/$relative" >&2
+      exit 1
+    fi
+    cp -a --no-dereference "$ROOT/$relative" "$STAGE/new/$relative"
+  else
+    mkdir -p "$STAGE/new/$relative"
+  fi
+  if [[ -L "$STAGE/new/$relative" || ! -d "$STAGE/new/$relative" ]]; then
+    echo "Refusing unsafe snapshot boundary: $relative" >&2
+    exit 1
+  fi
+}
+
+snapshot_directory ".kilo"
+snapshot_directory "docs"
+if [[ -L "$ROOT/.gitignore" ]]; then
+  echo "Refusing unsafe symbolic link at installation boundary: $ROOT/.gitignore" >&2
+  exit 1
+elif [[ -e "$ROOT/.gitignore" ]]; then
+  if [[ ! -f "$ROOT/.gitignore" ]]; then
+    echo "Refusing non-file installation boundary: $ROOT/.gitignore" >&2
+    exit 1
+  fi
+  cp --no-dereference "$ROOT/.gitignore" "$STAGE/new/.gitignore"
+else
+  : > "$STAGE/new/.gitignore"
+fi
+if [[ -L "$STAGE/new/.gitignore" || ! -f "$STAGE/new/.gitignore" ]]; then
+  echo "Refusing unsafe .gitignore snapshot" >&2
+  exit 1
+fi
+
 reject_symlink_path() {
   local relative="$1"
-  local current="$ROOT"
+  local current="$STAGE/new"
   local component
   IFS='/' read -r -a components <<< "$relative"
   for component in "${components[@]}"; do
@@ -64,13 +134,14 @@ done
 
 preserve_v5_state=0
 migrate_v4_state=0
-if [[ -f "$ROOT/.kilo/state/jiraman.json" ]]; then
+state_path="$STAGE/new/.kilo/state/jiraman.json"
+if [[ -f "$state_path" ]]; then
   if ! command -v node >/dev/null 2>&1; then
     echo "Existing state requires Node verification tooling before installation." >&2
     exit 1
   fi
   set +e
-  "$SCRIPT_DIR/verify.sh" --validate-state-file "$ROOT/.kilo/state/jiraman.json" >/dev/null
+  "$SCRIPT_DIR/verify.sh" --validate-state-file "$state_path" >/dev/null
   state_status=$?
   set -e
   case "$state_status" in
@@ -85,7 +156,7 @@ fi
 existing=()
 declare -A seen=()
 for relative in "${managed[@]}" "${legacy[@]}"; do
-  if [[ -e "$ROOT/$relative" && -z "${seen[$relative]:-}" ]]; then
+  if [[ -e "$STAGE/new/$relative" && -z "${seen[$relative]:-}" ]]; then
     existing+=("$relative")
     seen[$relative]=1
   fi
@@ -100,26 +171,26 @@ fi
 backup=""
 if [[ "${#existing[@]}" -gt 0 ]]; then
   timestamp="$(date +%Y%m%d-%H%M%S)"
-  backup="$ROOT/.jiraman-backup-$timestamp"
-  mkdir -p "$backup"
+  backup="$(mktemp -d "$ROOT/.jiraman-backup-$timestamp.XXXXXX")"
+  chmod 700 "$backup"
   for relative in "${existing[@]}"; do
     mkdir -p "$backup/$(dirname "$relative")"
-    cp -a "$ROOT/$relative" "$backup/$relative"
+    cp -a --no-dereference "$STAGE/new/$relative" "$backup/$relative"
   done
   echo "Existing managed files backed up to: $backup"
 fi
 
 for relative in "${managed[@]}"; do
   if [[ "$relative" == ".kilo/state/jiraman.json" && "$preserve_v5_state" -eq 1 ]]; then continue; fi
-  mkdir -p "$ROOT/$(dirname "$relative")"
-  cp "$TEMPLATE/$relative" "$ROOT/$relative"
+  mkdir -p "$STAGE/new/$(dirname "$relative")"
+  cp --no-dereference "$TEMPLATE/$relative" "$STAGE/new/$relative"
 done
 
 if [[ "$migrate_v4_state" -eq 1 ]]; then
   old_state="$backup/.kilo/state/jiraman.json"
-  preserved="$ROOT/.kilo/state/jiraman.v4.json"
-  cp "$old_state" "$preserved"
-  node - "$old_state" "$ROOT/.kilo/state/jiraman.json" <<'NODE'
+  preserved="$STAGE/new/.kilo/state/jiraman.v4.json"
+  cp --no-dereference "$old_state" "$preserved"
+  node - "$old_state" "$STAGE/new/.kilo/state/jiraman.json" <<'NODE'
 const fs = require("fs");
 const [oldPath, newPath] = process.argv.slice(2);
 const oldText = fs.readFileSync(oldPath, "utf8");
@@ -128,19 +199,40 @@ const ids = [...new Set(oldText.match(/PM[AG]-[0-9]{8}-[0-9]{2}/g) ?? [])].sort(
 const state = JSON.parse(fs.readFileSync(newPath, "utf8"));
 state.migration.legacy_state_file = ".kilo/state/jiraman.v4.json";
 state.migration.reapproval_required_ids = ids;
-fs.writeFileSync(newPath, `${JSON.stringify(state, null, 2)}\n`);
+fs.writeFileSync(newPath, JSON.stringify(state, null, 2) + "\n");
 NODE
 fi
 
 for relative in "${legacy[@]}"; do
-  if [[ -e "$ROOT/$relative" ]]; then rm -f "$ROOT/$relative"; fi
+  if [[ -e "$STAGE/new/$relative" ]]; then rm -f "$STAGE/new/$relative"; fi
 done
-rmdir "$ROOT/.kilo/agent" 2>/dev/null || true
-
-touch "$ROOT/.gitignore"
+rmdir "$STAGE/new/.kilo/agent" 2>/dev/null || true
 for pattern in ".kilo/state/" ".jiraman-backup-*/"; do
-  if ! grep -qxF "$pattern" "$ROOT/.gitignore"; then printf '\n%s\n' "$pattern" >> "$ROOT/.gitignore"; fi
+  if ! grep -qxF "$pattern" "$STAGE/new/.gitignore"; then printf '\n%s\n' "$pattern" >> "$STAGE/new/.gitignore"; fi
 done
+
+"$SCRIPT_DIR/verify.sh" "$STAGE/new" >/dev/null
+
+swap_path() {
+  local relative="$1"
+  had_original["$relative"]=0
+  if [[ -e "$ROOT/$relative" || -L "$ROOT/$relative" ]]; then
+    mv -T -- "$ROOT/$relative" "$STAGE/original/$relative"
+    had_original["$relative"]=1
+  fi
+  if ! mv -T -- "$STAGE/new/$relative" "$ROOT/$relative"; then
+    if [[ "${had_original[$relative]}" -eq 1 ]]; then mv -T -- "$STAGE/original/$relative" "$ROOT/$relative"; fi
+    return 1
+  fi
+  swapped+=("$relative")
+}
+
+swapping=1
+swap_path ".kilo"
+swap_path "docs"
+swap_path ".gitignore"
+committed=1
+
 cat <<SUMMARY
 Installed Jiraman v5 into: $ROOT
 Primary agent: .kilo/agents/jiraman.md

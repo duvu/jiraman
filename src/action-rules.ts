@@ -1,3 +1,5 @@
+import { createHash } from "node:crypto";
+
 import { type JsonValue } from "./contracts.js";
 
 export interface PreflightInput {
@@ -50,6 +52,33 @@ export function dependentWritesAllowed(preflightAllowed: boolean, priorWriteResu
 export function verificationOutcome(writeResult: "success" | "failure", readAfterWriteMatches: boolean): "applied" | "failed" | "verification-failed" {
   if (writeResult === "failure") return "failed";
   return readAfterWriteMatches ? "applied" : "verification-failed";
+}
+
+function canonicalPayloadValue(value: JsonValue): JsonValue {
+  if (Array.isArray(value)) return value.map(canonicalPayloadValue);
+  if (value !== null && typeof value === "object") {
+    return Object.fromEntries(
+      Object.entries(value)
+        .sort(([left], [right]) => left.localeCompare(right))
+        .map(([key, item]) => [key, canonicalPayloadValue(item)]),
+    );
+  }
+  return value;
+}
+
+function immutableAction(value: JsonValue): JsonValue {
+  if (value === null || typeof value !== "object" || Array.isArray(value)) return value;
+  return Object.fromEntries(Object.entries(value).filter(([key]) => key !== "status"));
+}
+
+function actionId(value: JsonValue): string {
+  if (value === null || typeof value !== "object" || Array.isArray(value)) return "";
+  return typeof value.id === "string" ? value.id : "";
+}
+
+export function canonicalPayloadHash(actions: readonly JsonValue[]): string {
+  const immutable = actions.map(immutableAction).sort((left, right) => actionId(left).localeCompare(actionId(right)));
+  return createHash("sha256").update(JSON.stringify(canonicalPayloadValue(immutable))).digest("hex");
 }
 
 function canonical(value: JsonValue): JsonValue {

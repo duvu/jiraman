@@ -4,7 +4,9 @@ ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 TARGET="$ROOT/tests/install/output/upgraded-project"
 SPOOFED="$ROOT/tests/install/output/spoofed-v5-project"
 INVALID="$ROOT/tests/install/output/invalid-v5-project"
-rm -rf "$TARGET" "$SPOOFED" "$INVALID"
+MALFORMED="$ROOT/tests/install/output/malformed-v5-project"
+INTEGRITY="$ROOT/tests/install/output/state-integrity"
+rm -rf "$TARGET" "$SPOOFED" "$INVALID" "$MALFORMED" "$INTEGRITY"
 mkdir -p "$TARGET"
 cp -a "$ROOT/tests/install/fixtures/v4-project/." "$TARGET/"
 cp "$TARGET/.kilo/mcp.json" "$TARGET/mcp.before"
@@ -50,4 +52,40 @@ grep -q 'full state schema' "$INVALID/invalid-state.out"
 cmp "$INVALID/state.before" "$INVALID/.kilo/state/jiraman.json"
 if find "$INVALID" -maxdepth 1 -type d -name '.jiraman-backup-*' -print -quit | grep -q .; then echo "invalid v5 state was backed up or mutated" >&2; exit 1; fi
 if "$ROOT/verify.sh" "$INVALID" >/dev/null 2>&1; then echo "expected verifier rejection for invalid v5 state" >&2; exit 1; fi
+
+mkdir -p "$MALFORMED/.kilo/state"
+printf '%s\n' '{"schema_version":5,"project":"AIPLATFORM","pending_action_groups":{}}' > "$MALFORMED/.kilo/state/jiraman.json"
+cp "$MALFORMED/.kilo/state/jiraman.json" "$MALFORMED/state.before"
+if "$ROOT/install.sh" "$MALFORMED" --force >"$MALFORMED/malformed-state.out" 2>&1; then echo "expected malformed v5 state rejection" >&2; exit 1; fi
+grep -q 'full state schema' "$MALFORMED/malformed-state.out"
+cmp "$MALFORMED/state.before" "$MALFORMED/.kilo/state/jiraman.json"
+if find "$MALFORMED" -maxdepth 1 -type d -name '.jiraman-backup-*' -print -quit | grep -q .; then echo "malformed v5 state was backed up or mutated" >&2; exit 1; fi
+
+mkdir -p "$INTEGRITY"
+node - "$ROOT" "$INTEGRITY" <<'NODE'
+const fs = require("fs"), path = require("path");
+const [root, directory] = process.argv.slice(2);
+const group = JSON.parse(fs.readFileSync(path.join(root, "tests/fixtures/actions/high-risk-approved.json"), "utf8"));
+const state = {schema_version: 5, project: "AIPLATFORM", pending_action_groups: {[group.id]: group}, deliverable_candidates: {}, run_records: [], migration: {legacy_state_file: null, reapproval_required_ids: []}};
+fs.writeFileSync(path.join(directory, "valid.json"), JSON.stringify(state));
+state.pending_action_groups = {"PMG-20260801-99": group};
+fs.writeFileSync(path.join(directory, "wrong-map-key.json"), JSON.stringify(state));
+state.pending_action_groups = {[group.id]: group};
+group.approval.approved_action_ids = ["PMA-20260801-99"];
+fs.writeFileSync(path.join(directory, "wrong-approved-id.json"), JSON.stringify(state));
+group.approval.approved_action_ids = [group.actions[0].id];
+group.approval.payload_hash = "0".repeat(64);
+fs.writeFileSync(path.join(directory, "wrong-approval-hash.json"), JSON.stringify(state));
+group.approval.payload_hash = group.payload_hash;
+group.payload_hash = "1".repeat(64);
+fs.writeFileSync(path.join(directory, "wrong-payload-hash.json"), JSON.stringify(state));
+NODE
+"$ROOT/verify.sh" --validate-state-file "$INTEGRITY/valid.json"
+for state in wrong-map-key wrong-approved-id wrong-approval-hash wrong-payload-hash; do
+  set +e
+  "$ROOT/verify.sh" --validate-state-file "$INTEGRITY/$state.json"
+  status=$?
+  set -e
+  [[ "$status" -eq 5 ]] || { echo "expected integrity rejection for $state" >&2; exit 1; }
+done
 echo "v4 upgrade: PASS"

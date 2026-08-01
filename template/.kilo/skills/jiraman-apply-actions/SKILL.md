@@ -30,7 +30,7 @@ Reads: `jira.issue.read`, `confluence.page.read`; approved writes as required: `
 
 ## Workflow
 
-1. PMG IDs use `PMG-YYYYMMDD-NN`; PMA IDs use `PMA-YYYYMMDD-NN`. Approved payloads are immutable; material change requires a new ID.
+1. PMG IDs use `PMG-YYYYMMDD-NN`; PMA IDs use `PMA-YYYYMMDD-NN`. Compute `payload_hash` as SHA-256 over UTF-8 canonical JSON of actions sorted by PMA ID, excluding only each action's top-level `status`, recursively sorting object keys, and preserving nested array order. Approved payloads are immutable; material change requires a new ID.
 2. Classify operations low, medium, high, or forbidden. High risk requires per-action approval; eligible lower risk may use group approval. Delete is forbidden.
 3. Load only named IDs and validate state, hash, identity, approval set, expiry, scope, operation/risk, and replay state.
 4. Resolve one exact schema-compatible exposed MCP tool for every action. Re-read every target and compare status, parent, sprint, fields, links, page version, ownership markers, and stored preconditions. Resolve parent-before-child/create-then-link draft references deterministically.

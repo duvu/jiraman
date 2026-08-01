@@ -5,6 +5,7 @@ if [[ "${1:-}" == "--validate-state-file" ]]; then
   [[ "$#" -eq 2 ]] || { echo "usage: ./verify.sh --validate-state-file PATH" >&2; exit 2; }
   node - "$2" <<'NODE' || exit $?
 const fs = require("fs");
+const crypto = require("crypto");
 let state;
 try { state = JSON.parse(fs.readFileSync(process.argv[2], "utf8")); } catch { process.exit(4); }
 const object = (value) => value !== null && typeof value === "object" && !Array.isArray(value);
@@ -30,6 +31,17 @@ const statuses = new Set(["proposed", "approved", "rejected", "stale", "applying
 const operations = new Set(["issue.create", "issue.update", "issue.comment", "issue.link", "issue.transition", "page.create", "page.update", "page.section-update", "page.comment"]);
 const updateOperations = new Set(["issue.update", "page.update", "page.section-update"]);
 const hash = (value) => typeof value === "string" && /^[a-f0-9]{64}$/.test(value);
+const canonical = (value) => {
+  if (Array.isArray(value)) return value.map(canonical);
+  if (object(value)) return Object.fromEntries(Object.entries(value).sort(([left], [right]) => left.localeCompare(right)).map(([key, item]) => [key, canonical(item)]));
+  return value;
+};
+const canonicalPayloadHash = (actions) => {
+  const immutable = actions
+    .map((action) => Object.fromEntries(Object.entries(action).filter(([key]) => key !== "status")))
+    .sort((left, right) => left.id.localeCompare(right.id));
+  return crypto.createHash("sha256").update(JSON.stringify(canonical(immutable))).digest("hex");
+};
 const validAction = (value) => {
   const keys = ["id", "system", "operation", "target_ref", "target_version", "before_state", "desired_state", "evidence", "reason", "preconditions", "dependencies", "risk", "approval_required", "expires_at", "rollback_guidance", "status"];
   if (!exact(value, keys)) return false;
@@ -45,9 +57,41 @@ const validAction = (value) => {
 const validApproval = (value) => exact(value, ["group_approved_by", "approved_action_ids", "approved_at", "payload_hash"]) &&
   (value.group_approved_by === null || nonEmpty(value.group_approved_by)) && Array.isArray(value.approved_action_ids) && unique(value.approved_action_ids) && value.approved_action_ids.every(actionId) &&
   (value.approved_at === null || validDateTime(value.approved_at)) && (value.payload_hash === null || hash(value.payload_hash));
-const validGroup = (value) => exact(value, ["schema_version", "id", "project", "summary", "created_at", "expires_at", "status", "payload_hash", "approval", "actions"]) &&
-  value.schema_version === 5 && groupId(value.id) && value.project === "AIPLATFORM" && nonEmpty(value.summary) && validDateTime(value.created_at) && validDateTime(value.expires_at) &&
-  statuses.has(value.status) && hash(value.payload_hash) && validApproval(value.approval) && Array.isArray(value.actions) && value.actions.length > 0 && value.actions.every(validAction);
+const sameSet = (left, right) => left.length === right.length && left.every((item) => right.includes(item));
+const acyclic = (actions) => {
+  const byId = new Map(actions.map((action) => [action.id, action]));
+  const visiting = new Set(), visited = new Set();
+  const visit = (id) => {
+    if (visiting.has(id)) return false;
+    if (visited.has(id)) return true;
+    visiting.add(id);
+    for (const dependency of byId.get(id).dependencies) if (!visit(dependency)) return false;
+    visiting.delete(id);
+    visited.add(id);
+    return true;
+  };
+  return actions.every((action) => visit(action.id));
+};
+const validGroup = (value) => {
+  if (!exact(value, ["schema_version", "id", "project", "summary", "created_at", "expires_at", "status", "payload_hash", "approval", "actions"]) ||
+      value.schema_version !== 5 || !groupId(value.id) || value.project !== "AIPLATFORM" || !nonEmpty(value.summary) ||
+      !validDateTime(value.created_at) || !validDateTime(value.expires_at) || Date.parse(value.created_at) >= Date.parse(value.expires_at) ||
+      !statuses.has(value.status) || !hash(value.payload_hash) || !validApproval(value.approval) ||
+      !Array.isArray(value.actions) || value.actions.length === 0 || !value.actions.every(validAction)) return false;
+  const ids = value.actions.map((action) => action.id);
+  if (!unique(ids) || value.actions.some((action) => action.dependencies.includes(action.id) || action.dependencies.some((dependency) => !ids.includes(dependency))) || !acyclic(value.actions)) return false;
+  if (value.actions.some((action) => Date.parse(action.expires_at) > Date.parse(value.expires_at))) return false;
+  if (value.payload_hash !== canonicalPayloadHash(value.actions)) return false;
+  const approval = value.approval;
+  const emptyApproval = approval.group_approved_by === null && approval.approved_at === null && approval.payload_hash === null && approval.approved_action_ids.length === 0;
+  const completeApproval = nonEmpty(approval.group_approved_by) && validDateTime(approval.approved_at) && approval.payload_hash === value.payload_hash && approval.approved_action_ids.length > 0;
+  if (!emptyApproval && !completeApproval) return false;
+  if (approval.approved_action_ids.some((id) => !ids.includes(id))) return false;
+  const executable = ["approved", "applying", "applied", "failed", "verification-failed"].includes(value.status);
+  if (executable && (!completeApproval || !sameSet(approval.approved_action_ids, ids))) return false;
+  if (value.status === "proposed" && !emptyApproval) return false;
+  return true;
+};
 const validRun = (value) => exact(value, ["workflow_id", "command_mode", "started_at", "ended_at", "capability_health", "tool_results", "action_ids", "verification_result", "artifact_refs"]) &&
   nonEmpty(value.workflow_id) && nonEmpty(value.command_mode) && validDateTime(value.started_at) && validDateTime(value.ended_at) && ["healthy", "degraded", "blocked"].includes(value.capability_health) &&
   Array.isArray(value.tool_results) && value.tool_results.every((item) => ["success", "tool-failure", "missing-evidence", "policy-rejection", "stale-action", "verification-failure"].includes(item)) &&
@@ -56,10 +100,12 @@ const stateKeys = ["schema_version", "project", "pending_action_groups", "delive
 const looksV5 = exact(state, stateKeys);
 const validMigration = exact(state?.migration, ["legacy_state_file", "reapproval_required_ids"]) && (state.migration.legacy_state_file === null || typeof state.migration.legacy_state_file === "string") &&
   Array.isArray(state.migration.reapproval_required_ids) && unique(state.migration.reapproval_required_ids) && state.migration.reapproval_required_ids.every(stateId);
-const valid = looksV5 && state.schema_version === 5 && state.project === "AIPLATFORM" && object(state.pending_action_groups) && Object.values(state.pending_action_groups).every(validGroup) &&
+const valid = looksV5 && state.schema_version === 5 && state.project === "AIPLATFORM" && object(state.pending_action_groups) && Object.entries(state.pending_action_groups).every(([key, value]) => validGroup(value) && key === value.id) &&
   object(state.deliverable_candidates) && Object.entries(state.deliverable_candidates).every(([key, value]) => /^DLV-[0-9]{8}-[0-9]{2}$/.test(key) && object(value)) &&
   Array.isArray(state.run_records) && state.run_records.length <= 100 && state.run_records.every(validRun) && validMigration;
-process.exit(valid ? 0 : looksV5 ? 5 : 3);
+const recognizableLegacy = object(state) && Object.prototype.hasOwnProperty.call(state, "pending_actions");
+const declaresV5 = object(state) && state.schema_version === 5;
+process.exit(valid ? 0 : recognizableLegacy ? 3 : declaresV5 ? 5 : 3);
 NODE
   exit 0
 fi
@@ -116,7 +162,7 @@ while IFS= read -r path; do
   if [[ "$extension" == "p""y" || "$extension" == "p""yc" ]]; then echo "FAIL application runtime file: $path"; failed=1; fi
 done < <(find "$scan_root" -type f -print)
 if [[ "$SOURCE" -eq 1 ]]; then
-  for executable in install.sh verify.sh scripts/ci.sh scripts/package.sh scripts/verify_package.sh tests/install/run-clean-install.sh tests/install/run-v4-upgrade.sh; do if [[ ! -x "$ROOT/$executable" ]]; then echo "FAIL not executable: $executable"; failed=1; fi; done
+  for executable in install.sh verify.sh scripts/ci.sh scripts/package.sh scripts/sanitize_ci_log.sh scripts/scan_package_sensitive.sh scripts/verify_package.sh tests/install/run-clean-install.sh tests/install/run-v4-upgrade.sh; do if [[ ! -x "$ROOT/$executable" ]]; then echo "FAIL not executable: $executable"; failed=1; fi; done
 fi
 if [[ "$failed" -eq 0 ]]; then echo "Jiraman verification: PASS"; fi
 exit "$failed"

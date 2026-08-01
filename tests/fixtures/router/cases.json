@@ -37,6 +37,54 @@
       "write": false
     },
     {
+      "input": "sprint-plan platform",
+      "mode": "plan next-2-weeks",
+      "focus": "platform",
+      "write": false
+    },
+    {
+      "input": "deliverables platform",
+      "mode": "plan next-2-weeks",
+      "focus": "platform",
+      "write": false
+    },
+    {
+      "input": "next-2-weeks platform",
+      "mode": "plan next-2-weeks",
+      "focus": "platform",
+      "write": false
+    },
+    {
+      "input": "two-week-deliverables platform",
+      "mode": "plan next-2-weeks",
+      "focus": "platform",
+      "write": false
+    },
+    {
+      "input": "hierarchy AIPLATFORM-101",
+      "mode": "refine",
+      "focus": "AIPLATFORM-101",
+      "write": false
+    },
+    {
+      "input": "triage AIPLATFORM-101",
+      "mode": "refine",
+      "focus": "AIPLATFORM-101",
+      "write": false
+    },
+    {
+      "input": "review AIPLATFORM-101",
+      "mode": "status",
+      "focus": "AIPLATFORM-101",
+      "write": false
+    },
+    {
+      "input": "sprint-review AIPLATFORM-101",
+      "mode": "status",
+      "focus": "AIPLATFORM-101",
+      "write": false
+    },
+    {
       "input": "create tickets for auth",
       "mode": null,
       "focus": "create tickets for auth",

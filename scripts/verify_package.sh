@@ -16,6 +16,7 @@ ROOT="${roots[0]}"
   cd "$ROOT"
   sha256sum -c MANIFEST.sha256 >/dev/null
 )
+"$ROOT/scripts/scan_package_sensitive.sh" "$ROOT" >/dev/null
 for forbidden in "$ROOT/.git" "$ROOT/node_modules" "$ROOT/dist" "$ROOT/coverage" "$ROOT/release" "$ROOT/.test-output" "$ROOT/.kilo/state" "$ROOT/tests/install/output"; do
   if [[ -e "$forbidden" ]]; then echo "forbidden package path: ${forbidden#"$ROOT/"}" >&2; exit 1; fi
 done

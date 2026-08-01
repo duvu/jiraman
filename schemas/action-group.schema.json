@@ -239,7 +239,8 @@
     },
     "payload_hash": {
       "type": "string",
-      "pattern": "^[a-f0-9]{64}$"
+      "pattern": "^[a-f0-9]{64}$",
+      "description": "SHA-256 of the canonical immutable action payload defined by the apply-actions skill."
     },
     "approval": {
       "type": "object",
@@ -278,7 +279,8 @@
             "string",
             "null"
           ],
-          "pattern": "^[a-f0-9]{64}$"
+          "pattern": "^[a-f0-9]{64}$",
+          "description": "Must equal the group's freshly recomputed payload_hash when approval is present."
         }
       }
     },

@@ -21,6 +21,7 @@ describe("command-router", () => {
     const wrapper = asObject(readJson("tests/fixtures/router/cases.json"), "router fixture");
     const cases = asArray(wrapper.data, "router cases");
     const router = asObject(readJson("template/.kilo/config/command-router.json"), "router");
+    const aliases = asObject(router.aliases ?? null, "aliases");
     const documented = commandTableRoutes(readText("template/.kilo/commands/jiraman.md"));
     for (const [mode, skill] of Object.entries(asObject(router.canonical ?? null, "canonical"))) expect(documented.get(mode)).toBe(skill);
     for (const item of cases) {
@@ -31,6 +32,8 @@ describe("command-router", () => {
       expect(result.mayWriteMcp).toBe(entry.write);
       if (result.mayWriteMcp) expect(result.focus).toMatch(/^(?:PMG|PMA)-[0-9]{8}-[0-9]{2}/);
     }
+    const fixtureInputs = cases.map((item) => asString(asObject(item, "route case").input, "input"));
+    for (const alias of Object.keys(aliases)) expect(fixtureInputs.some((input) => input === alias || input.startsWith(alias + " ")), alias).toBe(true);
     expect(parseRoute(router, "reject PMG-20260801-01").mutatesState).toBe(true);
     expect(parseRoute(router, "reject arbitrary prose").mutatesState).toBe(false);
     expect(parseRoute(router, "apply PMA-20260801-01 extra").mayWriteMcp).toBe(false);
