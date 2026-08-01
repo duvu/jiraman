@@ -123,6 +123,7 @@ fi
 SOURCE=0
 if [[ "${1:-}" == "--source-tree" ]]; then SOURCE=1; ROOT="$SCRIPT_DIR"; else ROOT="${1:-$PWD}"; fi
 ROOT="$(cd "$ROOT" && pwd)"
+if [[ "$SOURCE" -eq 0 && "$ROOT" == "$SCRIPT_DIR/template" ]]; then SOURCE=1; ROOT="$SCRIPT_DIR"; fi
 MANIFEST="$SCRIPT_DIR/packaging/managed-files.txt"
 failed=0
 while IFS= read -r relative; do

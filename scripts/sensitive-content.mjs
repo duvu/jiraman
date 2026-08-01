@@ -8,7 +8,8 @@ export const sensitivePatterns = [
   { name: "authorization-header", expression: /Authorization:\s*(?:Basic|Bearer)\s+\S{8,}/i },
   { name: "cookie-header", expression: /(?:Cookie|Set-Cookie):\s*[^\r\n]{8,}/i },
   { name: "credential-assignment", expression: /\b(?:password|passwd|access[_-]?token|refresh[_-]?token|client[_-]?secret|api[_-]?key|secret[_-]?key|auth[_-]?token)\s*[=:]\s*["']?[^\s"']{8,}/i },
-  { name: "provider-credential", expression: /\b(?:[A-Z0-9]+[_-])+(?:TOKEN|SECRET|PASSWORD|PASSWD|(?:ACCESS|SECRET|PRIVATE|API)[_-]?KEY)\s*[=:]\s*["']?\s*[^\s"']{8,}/i },
+  { name: "provider-credential", expression: /\b(?:[A-Z0-9]+[_-])+(?:TOKEN|SECRET|PASSWORD|PASSWD|(?:ACCESS|SECRET|PRIVATE|API)[_-]?KEY)\s*[=:]\s*\\?["']?\s*[^\s"']{8,}/i },
+  { name: "credential-block-scalar", expression: /\b(?:[A-Z0-9]+[_-])+(?:TOKEN|SECRET|PASSWORD|PASSWD|(?:ACCESS|SECRET|PRIVATE|API)[_-]?KEY)\s*:\s*[|>][+-]?(?:[ \t]+#[^\r\n]*)?\r?\n[ \t]+\S+/i },
   { name: "github-token", expression: new RegExp("\\bgh(?:p|o|u|s|r)_[A-Za-z0-9]{20,}\\b", "i") },
   { name: "github-fine-grained-token", expression: new RegExp("\\bgithub_pat_[A-Za-z0-9_]{20,}\\b", "i") },
   { name: "npm-token", expression: new RegExp("\\bnpm_[A-Za-z0-9]{20,}\\b", "i") },
@@ -28,6 +29,7 @@ export function findSensitiveNames(text) {
 export function sanitizeSensitiveText(text) {
   let privateKeyBlock = false;
   let pendingCredential = null;
+  let pendingCredentialIndent = 0;
   return text.split(/\r?\n/).map((line) => {
     if (privateKeyBlock) {
       if (privateKeyEnd.test(line)) privateKeyBlock = false;
@@ -38,18 +40,30 @@ export function sanitizeSensitiveText(text) {
       return "[REDACTED SENSITIVE LINE]";
     }
     if (pendingCredential !== null) {
-      if (pendingCredential === "") {
+      if (pendingCredential === "yaml") {
+        const indentation = line.match(/^[ \t]*/)?.[0].length ?? 0;
+        if (line.trim().length === 0 || indentation > pendingCredentialIndent) return "[REDACTED SENSITIVE LINE]";
+        pendingCredential = null;
+      } else if (pendingCredential === "") {
         if (line.trim().length > 0) pendingCredential = null;
+        return "[REDACTED SENSITIVE LINE]";
       } else if (line.includes(pendingCredential)) {
         pendingCredential = null;
+        return "[REDACTED SENSITIVE LINE]";
+      } else {
+        return "[REDACTED SENSITIVE LINE]";
       }
-      return "[REDACTED SENSITIVE LINE]";
     }
     const assignment = credentialAssignmentLine.exec(line);
     if (assignment !== null) {
       const remainder = (assignment[1] ?? "").trimStart();
-      const quote = remainder.startsWith("\"") ? "\"" : remainder.startsWith("'") ? "'" : null;
-      const value = quote === null ? remainder : remainder.slice(1);
+      const escapedQuote = remainder.startsWith("\\\"") || remainder.startsWith("\\'");
+      const quote = remainder.startsWith("\"") || remainder.startsWith("\\\"") ? "\"" : remainder.startsWith("'") || remainder.startsWith("\\'") ? "'" : null;
+      const value = quote === null ? remainder : remainder.slice(escapedQuote ? 2 : 1);
+      if (/^[|>][+-]?(?:\s+#.*)?\s*$/.test(remainder)) {
+        pendingCredential = "yaml";
+        pendingCredentialIndent = line.match(/^[ \t]*/)?.[0].length ?? 0;
+      }
       if (quote !== null && !value.includes(quote)) pendingCredential = quote;
       if (quote === null && value.trim().length === 0) pendingCredential = "";
       return "[REDACTED SENSITIVE LINE]";

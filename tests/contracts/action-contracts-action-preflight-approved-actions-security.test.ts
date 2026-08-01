@@ -84,6 +84,16 @@ describe("action-contracts", () => {
       expect.objectContaining({ instancePath: "/approval/payload_hash", keyword: "type", schemaPath: "#/allOf/0/then/properties/approval/properties/payload_hash/type" }),
       expect.objectContaining({ instancePath: "/approval/approved_action_ids", keyword: "approvalActionIds", schemaPath: "#/x-action-group-approval/approved-action-ids" }),
     ]));
+    const incompleteGroupApproval = validateJson("action-group.schema.json", readJson("tests/fixtures/actions/group-approved-invalid.json"));
+    expect(incompleteGroupApproval.valid).toBe(false);
+    expect(incompleteGroupApproval.errors).toEqual(expect.arrayContaining([
+      expect.objectContaining({ instancePath: "/approval/approved_action_ids", keyword: "approvalActionIds", schemaPath: "#/x-action-group-approval/approved-action-ids" }),
+    ]));
+    const lifecycleMismatch = validateJson("action-group.schema.json", readJson("tests/fixtures/actions/approved-action-status-invalid.json"));
+    expect(lifecycleMismatch.valid).toBe(false);
+    expect(lifecycleMismatch.errors).toEqual(expect.arrayContaining([
+      expect.objectContaining({ instancePath: "/actions", keyword: "actionLifecycle", schemaPath: "#/x-action-group-lifecycle/status" }),
+    ]));
   });
 
   test("create preflight and complete PMA selection are executable contracts", () => {
@@ -158,6 +168,8 @@ describe("action-preflight approved-actions security", () => {
       ["aws-secret-access-key.log", ["AWS_SECRET", "_ACCESS_KEY=", opaque].join("")],
       ["quoted-multiline-provider.log", ["GITHUB", "_TOKEN=\"\n", opaque, "\n\""].join("")],
       ["unquoted-multiline-provider.log", ["GITHUB", "_TOKEN=\n", opaque].join("")],
+      ["yaml-block-provider.yml", ["AWS_SECRET", "_ACCESS_KEY: |\n  ", opaque, "\n  continuation"].join("")],
+      ["escaped-quote-provider.log", ["GITHUB", "_TOKEN=", "\\", "\"", "\n", opaque, "\n", "\\", "\""].join("")],
     ];
     for (const [surface, canary] of canaries) expect(findSensitiveValues(canary), surface).not.toEqual([]);
     expect(findSensitiveValues("authorization=redacted; cookie=redacted")).toEqual([]);
@@ -185,5 +197,11 @@ describe("action-preflight approved-actions security", () => {
     } finally {
       rmSync(directory, { recursive: true, force: true });
     }
+  });
+
+  test("documented source-template verification command passes", () => {
+    const verification = spawnSync("./verify.sh", ["template"], { encoding: "utf8" });
+    expect(verification.status, verification.stderr).toBe(0);
+    expect(verification.stdout).toContain("Jiraman verification: PASS");
   });
 });

@@ -135,23 +135,36 @@ export interface ValidationResult {
   readonly errors: readonly ErrorObject[];
 }
 
+function actionStatusesMatchGroup(groupStatus: string, actionStatuses: readonly string[]): boolean {
+  if (groupStatus === "proposed") return actionStatuses.every((status) => status === "proposed");
+  if (groupStatus === "approved") return actionStatuses.every((status) => status === "approved");
+  if (groupStatus === "rejected") return actionStatuses.every((status) => status === "rejected");
+  if (groupStatus === "stale") return actionStatuses.every((status) => status === "stale");
+  if (groupStatus === "applying") return actionStatuses.includes("applying") && actionStatuses.every((status) => ["approved", "applying", "applied", "failed", "verification-failed"].includes(status));
+  if (groupStatus === "applied") return actionStatuses.every((status) => status === "applied");
+  if (groupStatus === "failed") return actionStatuses.includes("failed") && actionStatuses.every((status) => ["approved", "applied", "failed"].includes(status));
+  if (groupStatus === "verification-failed") return actionStatuses.includes("verification-failed") && actionStatuses.every((status) => ["approved", "applied", "verification-failed"].includes(status));
+  return false;
+}
+
 function actionGroupApprovalErrors(value: JsonValue): ErrorObject[] {
   if (value === null || typeof value !== "object" || Array.isArray(value)) return [];
   const executableStatuses = new Set(["approved", "applying", "applied", "failed", "verification-failed"]);
-  if (typeof value.status !== "string" || !executableStatuses.has(value.status)) return [];
+  if (typeof value.status !== "string") return [];
+  const executable = executableStatuses.has(value.status);
   if (!Array.isArray(value.actions) || value.approval === null || typeof value.approval !== "object" || Array.isArray(value.approval)) return [];
 
   const actionIds: string[] = [];
-  let requiresPerActionApproval = false;
+  const actionStatuses: string[] = [];
   for (const action of value.actions) {
-    if (action === null || typeof action !== "object" || Array.isArray(action) || typeof action.id !== "string") return [];
+    if (action === null || typeof action !== "object" || Array.isArray(action) || typeof action.id !== "string" || typeof action.status !== "string") return [];
     actionIds.push(action.id);
-    if (action.approval_required === "per-action") requiresPerActionApproval = true;
+    actionStatuses.push(action.status);
   }
 
   const errors: ErrorObject[] = [];
   const approvedIds = value.approval.approved_action_ids;
-  if (requiresPerActionApproval) {
+  if (executable) {
     const approvedIdSet = Array.isArray(approvedIds) && approvedIds.every((id) => typeof id === "string") ? new Set(approvedIds) : null;
     if (approvedIdSet === null || approvedIdSet.size !== actionIds.length || actionIds.some((id) => !approvedIdSet.has(id))) {
       errors.push({
@@ -162,6 +175,15 @@ function actionGroupApprovalErrors(value: JsonValue): ErrorObject[] {
         message: "must contain every action ID exactly once",
       });
     }
+  }
+  if (!actionStatusesMatchGroup(value.status, actionStatuses)) {
+    errors.push({
+      instancePath: "/actions",
+      schemaPath: "#/x-action-group-lifecycle/status",
+      keyword: "actionLifecycle",
+      params: {},
+      message: "must match the action group lifecycle state",
+    });
   }
   if (typeof value.payload_hash === "string" && typeof value.approval.payload_hash === "string" && value.approval.payload_hash !== value.payload_hash) {
     errors.push({
