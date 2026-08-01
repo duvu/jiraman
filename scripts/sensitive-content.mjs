@@ -1,17 +1,17 @@
 const privateKeyBegin = /-----BEGIN (?:[A-Z0-9 ]+ )?PRIVATE KEY(?: BLOCK)?-----/i;
 const privateKeyEnd = /-----END (?:[A-Z0-9 ]+ )?PRIVATE KEY(?: BLOCK)?-----/i;
-const credentialAssignmentLine = /\b(?:(?:password|passwd|access[_-]?token|refresh[_-]?token|client[_-]?secret|api[_-]?key|secret[_-]?key|auth[_-]?token)|(?:[A-Z0-9]+[_-])+(?:TOKEN|SECRET|PASSWORD|PASSWD|(?:ACCESS|SECRET|PRIVATE|API)[_-]?KEY))\s*[=:]\s*(.*)$/i;
+const credentialAssignmentLine = /["']?\b(?:(?:password|passwd|access[_-]?token|refresh[_-]?token|client[_-]?secret|api[_-]?key|secret[_-]?key|auth[_-]?token)|(?:[A-Z0-9]+[_-])+(?:TOKEN|SECRET|PASSWORD|PASSWD|(?:ACCESS|SECRET|PRIVATE|API)[_-]?KEY))\b["']?\s*[=:]\s*(.*)$/i;
 
 export const sensitivePatterns = [
   { name: "private-key", expression: privateKeyBegin },
   { name: "aws-access-key", expression: /\bAKIA[0-9A-Z]{16}\b/ },
   { name: "authorization-header", expression: /Authorization:\s*(?:Basic|Bearer)\s+\S{8,}/i },
   { name: "cookie-header", expression: /(?:Cookie|Set-Cookie):\s*[^\r\n]{8,}/i },
-  { name: "credential-assignment", expression: /\b(?:password|passwd|access[_-]?token|refresh[_-]?token|client[_-]?secret|api[_-]?key|secret[_-]?key|auth[_-]?token)\s*[=:]\s*["']?[^\s"']{8,}/i },
-  { name: "generic-multiline-credential", expression: /\b(?:password|passwd|access[_-]?token|refresh[_-]?token|client[_-]?secret|api[_-]?key|secret[_-]?key|auth[_-]?token)\s*[=:]\s*\\?["']?\s*[^\s"']{8,}/i },
-  { name: "provider-credential", expression: /\b(?:[A-Z0-9]+[_-])+(?:TOKEN|SECRET|PASSWORD|PASSWD|(?:ACCESS|SECRET|PRIVATE|API)[_-]?KEY)\s*[=:]\s*\\?["']?\s*[^\s"']{8,}/i },
-  { name: "credential-block-scalar", expression: /\b(?:[A-Z0-9]+[_-])+(?:TOKEN|SECRET|PASSWORD|PASSWD|(?:ACCESS|SECRET|PRIVATE|API)[_-]?KEY)\s*:\s*[|>][1-9+-]{0,2}(?:[ \t]+#[^\r\n]*)?\r?\n[ \t]+\S+/i },
-  { name: "generic-credential-block-scalar", expression: /\b(?:password|passwd|access[_-]?token|refresh[_-]?token|client[_-]?secret|api[_-]?key|secret[_-]?key|auth[_-]?token)\s*:\s*[|>][1-9+-]{0,2}(?:[ \t]+#[^\r\n]*)?\r?\n[ \t]+\S+/i },
+  { name: "credential-assignment", expression: /["']?\b(?:password|passwd|access[_-]?token|refresh[_-]?token|client[_-]?secret|api[_-]?key|secret[_-]?key|auth[_-]?token)\b["']?\s*[=:]\s*["']?[^\s"']{8,}/i },
+  { name: "generic-multiline-credential", expression: /["']?\b(?:password|passwd|access[_-]?token|refresh[_-]?token|client[_-]?secret|api[_-]?key|secret[_-]?key|auth[_-]?token)\b["']?\s*[=:]\s*\\?["']?\s*[^\s"']{8,}/i },
+  { name: "provider-credential", expression: /["']?\b(?:[A-Z0-9]+[_-])+(?:TOKEN|SECRET|PASSWORD|PASSWD|(?:ACCESS|SECRET|PRIVATE|API)[_-]?KEY)\b["']?\s*[=:]\s*\\?["']?\s*[^\s"']{8,}/i },
+  { name: "credential-block-scalar", expression: /["']?\b(?:[A-Z0-9]+[_-])+(?:TOKEN|SECRET|PASSWORD|PASSWD|(?:ACCESS|SECRET|PRIVATE|API)[_-]?KEY)\b["']?\s*:\s*[|>][1-9+-]{0,2}(?:[ \t]+#[^\r\n]*)?\r?\n(?:[ \t]*\r?\n)*[ \t]+\S+/i },
+  { name: "generic-credential-block-scalar", expression: /["']?\b(?:password|passwd|access[_-]?token|refresh[_-]?token|client[_-]?secret|api[_-]?key|secret[_-]?key|auth[_-]?token)\b["']?\s*:\s*[|>][1-9+-]{0,2}(?:[ \t]+#[^\r\n]*)?\r?\n(?:[ \t]*\r?\n)*[ \t]+\S+/i },
   { name: "github-token", expression: new RegExp("\\bgh(?:p|o|u|s|r)_[A-Za-z0-9]{20,}\\b", "i") },
   { name: "github-fine-grained-token", expression: new RegExp("\\bgithub_pat_[A-Za-z0-9_]{20,}\\b", "i") },
   { name: "npm-token", expression: new RegExp("\\bnpm_[A-Za-z0-9]{20,}\\b", "i") },

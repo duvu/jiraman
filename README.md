@@ -49,7 +49,7 @@ docs/project-management/templates/
 /jiraman reject <PMG/PMA-ID...>
 ```
 
-Empty input resolves to `daily`. V4 aliases remain documented in [the command reference](docs/command-reference.md). Ordinary write-like prose stays read-only. Exact `propose` persists the displayed action envelope locally; exact `reject <ID>` changes only named local state. Only exact `apply <PMG-ID|PMA-ID...>` can approve the immutable named payload and call an MCP write after all-or-nothing preflight; Kilo write permissions remain `ask`.
+Empty input resolves to `daily`. V4 aliases remain documented in [the command reference](docs/command-reference.md). Ordinary write-like prose stays read-only. Exact `propose` persists the displayed action envelope locally. Exact `reject <PMG-ID>` rejects the whole group; rejecting named PMAs changes only those actions but terminalizes their group, so continuing sibling work requires a new proposal. Only exact `apply <PMG-ID|PMA-ID...>` can approve the immutable named payload and call an MCP write after all-or-nothing preflight; Kilo write permissions remain `ask`.
 
 ## Development
 

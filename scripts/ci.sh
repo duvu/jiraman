@@ -11,11 +11,15 @@ npm run scan:secrets
 ./tests/install/run-clean-install.sh
 ./tests/install/run-v4-upgrade.sh
 OUTPUT="$(mktemp -d)"
-trap 'rm -rf "$OUTPUT"' EXIT
+RELATIVE_OUTPUT=".test-output/package-relative-$$"
+trap 'rm -rf "$OUTPUT" "$RELATIVE_OUTPUT"' EXIT
 ./scripts/package.sh --output "$OUTPUT/a" >/dev/null
 ./scripts/package.sh --output "$OUTPUT/b" >/dev/null
+./scripts/package.sh --output "$RELATIVE_OUTPUT" >/dev/null
 cmp "$OUTPUT/a/jiraman-5.0.0.tar.gz" "$OUTPUT/b/jiraman-5.0.0.tar.gz"
 cmp "$OUTPUT/a/jiraman-5.0.0.zip" "$OUTPUT/b/jiraman-5.0.0.zip"
+cmp "$OUTPUT/a/jiraman-5.0.0.tar.gz" "$RELATIVE_OUTPUT/jiraman-5.0.0.tar.gz"
+cmp "$OUTPUT/a/jiraman-5.0.0.zip" "$RELATIVE_OUTPUT/jiraman-5.0.0.zip"
 ./scripts/verify_package.sh "$OUTPUT/a/jiraman-5.0.0.tar.gz"
 ./scripts/verify_package.sh "$OUTPUT/a/jiraman-5.0.0.zip"
 echo "Jiraman release gates: PASS"

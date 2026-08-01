@@ -92,9 +92,9 @@ const validGroup = (value) => {
   if (value.status === "proposed" && !emptyApproval) return false;
   const actionStatuses = value.actions.map((action) => action.status);
   const lifecycleValid =
-    (value.status === "proposed" && actionStatuses.includes("proposed") && actionStatuses.every((status) => ["proposed", "rejected"].includes(status))) ||
+    (value.status === "proposed" && actionStatuses.every((status) => status === "proposed")) ||
     (value.status === "approved" && actionStatuses.every((status) => status === "approved")) ||
-    (value.status === "rejected" && actionStatuses.every((status) => status === "rejected")) ||
+    (value.status === "rejected" && actionStatuses.includes("rejected") && actionStatuses.every((status) => ["proposed", "approved", "rejected"].includes(status))) ||
     (value.status === "stale" && actionStatuses.every((status) => status === "stale")) ||
     (value.status === "applying" && actionStatuses.includes("applying") && actionStatuses.every((status) => ["approved", "applying", "applied", "failed", "verification-failed"].includes(status))) ||
     (value.status === "applied" && actionStatuses.every((status) => status === "applied")) ||

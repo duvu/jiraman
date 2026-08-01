@@ -5,7 +5,7 @@
   "summary": "Retain the unreviewed action after rejecting one proposal",
   "created_at": "2026-08-01T00:00:00Z",
   "expires_at": "2026-08-02T00:00:00Z",
-  "status": "proposed",
+  "status": "rejected",
   "payload_hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
   "approval": {
     "group_approved_by": null,

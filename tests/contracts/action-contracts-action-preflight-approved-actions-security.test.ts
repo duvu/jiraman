@@ -122,12 +122,14 @@ describe("action-contracts", () => {
   });
 });
 describe("action-preflight approved-actions security", () => {
-  test("rejecting one PMA preserves a valid proposed group without write authority", () => {
+  test("rejecting one PMA terminalizes its group without changing sibling action history", () => {
     const fixture = asObject(readJson("tests/fixtures/actions/partially-rejected.json"), "partially rejected");
     const actions = asArray(fixture.actions, "partially rejected actions");
     const group: JsonObject = { ...fixture, payload_hash: canonicalPayloadHash(actions) };
     const validation = validateJson("action-group.schema.json", group);
     expect(validation).toEqual({ valid: true, errors: [] });
+    expect(group.status).toBe("rejected");
+    expect(canTransition("rejected", "approved")).toBe(false);
 
     const directory = mkdtempSync(join(tmpdir(), "jiraman-partial-reject-"));
     try {
@@ -182,6 +184,8 @@ describe("action-preflight approved-actions security", () => {
     for (const [index, indicator] of ["|2", "|-2", "|+2", ">2", ">-2"].entries()) {
       yamlCanaries.push(["yaml-provider-" + index + ".yml", ["AWS_SECRET", "_ACCESS_KEY: ", indicator, "\n  ", opaque, "\n  continuation"].join("")]);
       yamlCanaries.push(["yaml-generic-" + index + ".yml", ["api_", "key: ", indicator, "\n  ", opaque, "\n  continuation"].join("")]);
+      yamlCanaries.push(["yaml-provider-blank-" + index + ".yml", ["AWS_SECRET", "_ACCESS_KEY: ", indicator, "\n\n  ", opaque, "\n  continuation"].join("")]);
+      yamlCanaries.push(["yaml-generic-blank-" + index + ".yml", ["api_", "key: ", indicator, "\n\n  ", opaque, "\n  continuation"].join("")]);
     }
     const canaries: ReadonlyArray<readonly [string, string]> = [
       ["fixture.json", ["Author", "ization: Bearer ", secret, "-fixture"].join("")],
@@ -203,6 +207,8 @@ describe("action-preflight approved-actions security", () => {
       ["yaml-block-provider.yml", ["AWS_SECRET", "_ACCESS_KEY: |\n  ", opaque, "\n  continuation"].join("")],
       ["escaped-quote-provider.log", ["GITHUB", "_TOKEN=", "\\", "\"", "\n", opaque, "\n", "\\", "\""].join("")],
       ["generic-quoted-multiline.log", ["pass", "word=\"\n", opaque, "\n\""].join("")],
+      ["quoted-provider-key.yml", ["\"AWS_SECRET", "_ACCESS_KEY\": |2\n  ", opaque].join("")],
+      ["single-quoted-generic-key.yml", ["'api_", "key': >-2\n  ", opaque].join("")],
       ...yamlCanaries,
     ];
     for (const [surface, canary] of canaries) expect(findSensitiveValues(canary), surface).not.toEqual([]);
