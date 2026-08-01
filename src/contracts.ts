@@ -135,10 +135,51 @@ export interface ValidationResult {
   readonly errors: readonly ErrorObject[];
 }
 
+function actionGroupApprovalErrors(value: JsonValue): ErrorObject[] {
+  if (value === null || typeof value !== "object" || Array.isArray(value)) return [];
+  const executableStatuses = new Set(["approved", "applying", "applied", "failed", "verification-failed"]);
+  if (typeof value.status !== "string" || !executableStatuses.has(value.status)) return [];
+  if (!Array.isArray(value.actions) || value.approval === null || typeof value.approval !== "object" || Array.isArray(value.approval)) return [];
+
+  const actionIds: string[] = [];
+  let requiresPerActionApproval = false;
+  for (const action of value.actions) {
+    if (action === null || typeof action !== "object" || Array.isArray(action) || typeof action.id !== "string") return [];
+    actionIds.push(action.id);
+    if (action.approval_required === "per-action") requiresPerActionApproval = true;
+  }
+
+  const errors: ErrorObject[] = [];
+  const approvedIds = value.approval.approved_action_ids;
+  if (requiresPerActionApproval) {
+    const approvedIdSet = Array.isArray(approvedIds) && approvedIds.every((id) => typeof id === "string") ? new Set(approvedIds) : null;
+    if (approvedIdSet === null || approvedIdSet.size !== actionIds.length || actionIds.some((id) => !approvedIdSet.has(id))) {
+      errors.push({
+        instancePath: "/approval/approved_action_ids",
+        schemaPath: "#/x-action-group-approval/approved-action-ids",
+        keyword: "approvalActionIds",
+        params: {},
+        message: "must contain every action ID exactly once",
+      });
+    }
+  }
+  if (typeof value.payload_hash === "string" && typeof value.approval.payload_hash === "string" && value.approval.payload_hash !== value.payload_hash) {
+    errors.push({
+      instancePath: "/approval/payload_hash",
+      schemaPath: "#/x-action-group-approval/payload-hash",
+      keyword: "approvalPayloadHash",
+      params: {},
+      message: "must equal the action group payload_hash",
+    });
+  }
+  return errors;
+}
+
 export function validateJson(schemaName: string, value: JsonValue): ValidationResult {
   const validator = schemaValidator(schemaName);
-  const valid = validator(value);
-  return { valid, errors: validator.errors ?? [] };
+  const schemaValid = validator(value);
+  const semanticErrors = schemaName === "action-group.schema.json" ? actionGroupApprovalErrors(value) : [];
+  return { valid: schemaValid && semanticErrors.length === 0, errors: [...(validator.errors ?? []), ...semanticErrors] };
 }
 
 export function requireValid(schemaName: string, path: string): void {

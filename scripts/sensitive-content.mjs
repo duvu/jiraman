@@ -1,5 +1,6 @@
 const privateKeyBegin = /-----BEGIN (?:[A-Z0-9 ]+ )?PRIVATE KEY(?: BLOCK)?-----/i;
 const privateKeyEnd = /-----END (?:[A-Z0-9 ]+ )?PRIVATE KEY(?: BLOCK)?-----/i;
+const credentialAssignmentLine = /\b(?:(?:password|passwd|access[_-]?token|refresh[_-]?token|client[_-]?secret|api[_-]?key|secret[_-]?key|auth[_-]?token)|(?:[A-Z0-9]+[_-])+(?:TOKEN|SECRET|PASSWORD|PASSWD|(?:ACCESS|SECRET|PRIVATE|API)[_-]?KEY))\s*[=:]\s*(.*)$/i;
 
 export const sensitivePatterns = [
   { name: "private-key", expression: privateKeyBegin },
@@ -7,7 +8,7 @@ export const sensitivePatterns = [
   { name: "authorization-header", expression: /Authorization:\s*(?:Basic|Bearer)\s+\S{8,}/i },
   { name: "cookie-header", expression: /(?:Cookie|Set-Cookie):\s*[^\r\n]{8,}/i },
   { name: "credential-assignment", expression: /\b(?:password|passwd|access[_-]?token|refresh[_-]?token|client[_-]?secret|api[_-]?key|secret[_-]?key|auth[_-]?token)\s*[=:]\s*["']?[^\s"']{8,}/i },
-  { name: "provider-credential", expression: /\b(?:[A-Z0-9]+[_-])+(?:TOKEN|SECRET|PASSWORD|PASSWD|API[_-]?KEY)\s*[=:]\s*["']?[A-Za-z0-9._~+/=-]{8,}/i },
+  { name: "provider-credential", expression: /\b(?:[A-Z0-9]+[_-])+(?:TOKEN|SECRET|PASSWORD|PASSWD|(?:ACCESS|SECRET|PRIVATE|API)[_-]?KEY)\s*[=:]\s*["']?\s*[^\s"']{8,}/i },
   { name: "github-token", expression: new RegExp("\\bgh(?:p|o|u|s|r)_[A-Za-z0-9]{20,}\\b", "i") },
   { name: "github-fine-grained-token", expression: new RegExp("\\bgithub_pat_[A-Za-z0-9_]{20,}\\b", "i") },
   { name: "npm-token", expression: new RegExp("\\bnpm_[A-Za-z0-9]{20,}\\b", "i") },
@@ -26,6 +27,7 @@ export function findSensitiveNames(text) {
 
 export function sanitizeSensitiveText(text) {
   let privateKeyBlock = false;
+  let pendingCredential = null;
   return text.split(/\r?\n/).map((line) => {
     if (privateKeyBlock) {
       if (privateKeyEnd.test(line)) privateKeyBlock = false;
@@ -33,6 +35,23 @@ export function sanitizeSensitiveText(text) {
     }
     if (privateKeyBegin.test(line)) {
       if (!privateKeyEnd.test(line)) privateKeyBlock = true;
+      return "[REDACTED SENSITIVE LINE]";
+    }
+    if (pendingCredential !== null) {
+      if (pendingCredential === "") {
+        if (line.trim().length > 0) pendingCredential = null;
+      } else if (line.includes(pendingCredential)) {
+        pendingCredential = null;
+      }
+      return "[REDACTED SENSITIVE LINE]";
+    }
+    const assignment = credentialAssignmentLine.exec(line);
+    if (assignment !== null) {
+      const remainder = (assignment[1] ?? "").trimStart();
+      const quote = remainder.startsWith("\"") ? "\"" : remainder.startsWith("'") ? "'" : null;
+      const value = quote === null ? remainder : remainder.slice(1);
+      if (quote !== null && !value.includes(quote)) pendingCredential = quote;
+      if (quote === null && value.trim().length === 0) pendingCredential = "";
       return "[REDACTED SENSITIVE LINE]";
     }
     return findSensitiveNames(line).length > 0 ? "[REDACTED SENSITIVE LINE]" : line;

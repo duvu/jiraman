@@ -46,7 +46,7 @@ export function canTransition(from: string, to: string): boolean {
 }
 
 export function dependentWritesAllowed(preflightAllowed: boolean, priorWriteResult: "not-started" | "success" | "failure"): boolean {
-  return preflightAllowed && priorWriteResult !== "failure";
+  return preflightAllowed && priorWriteResult === "success";
 }
 
 export function verificationOutcome(writeResult: "success" | "failure", readAfterWriteMatches: boolean): "applied" | "failed" | "verification-failed" {

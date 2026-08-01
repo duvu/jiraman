@@ -75,6 +75,15 @@ describe("action-contracts", () => {
     expect(proposed.status).toBe("proposed");
     expect(asArray(asObject(proposed.approval ?? null, "approval").approved_action_ids, "proposed ids")).toEqual([]);
     expect(proposed.payload_hash).toBe(canonicalPayloadHash(asArray(proposed.actions, "proposed actions")));
+
+    const incompleteApproval = validateJson("action-group.schema.json", readJson("tests/fixtures/actions/high-risk-approved-invalid.json"));
+    expect(incompleteApproval.valid).toBe(false);
+    expect(incompleteApproval.errors).toEqual(expect.arrayContaining([
+      expect.objectContaining({ instancePath: "/approval/group_approved_by", keyword: "type", schemaPath: "#/allOf/0/then/properties/approval/properties/group_approved_by/type" }),
+      expect.objectContaining({ instancePath: "/approval/approved_at", keyword: "type", schemaPath: "#/allOf/0/then/properties/approval/properties/approved_at/type" }),
+      expect.objectContaining({ instancePath: "/approval/payload_hash", keyword: "type", schemaPath: "#/allOf/0/then/properties/approval/properties/payload_hash/type" }),
+      expect.objectContaining({ instancePath: "/approval/approved_action_ids", keyword: "approvalActionIds", schemaPath: "#/x-action-group-approval/approved-action-ids" }),
+    ]));
   });
 
   test("create preflight and complete PMA selection are executable contracts", () => {
@@ -120,6 +129,8 @@ describe("action-preflight approved-actions security", () => {
     expect(canTransition("proposed", "approved")).toBe(asBoolean(operational.proposal_transition_allowed, "proposal transition"));
     expect(canTransition("applied", "applying")).toBe(asBoolean(operational.replay_transition_allowed, "replay transition"));
     expect(dependentWritesAllowed(true, "failure")).toBe(asBoolean(operational.dependent_write_after_failure, "dependent write"));
+    expect(dependentWritesAllowed(true, "not-started")).toBe(false);
+    expect(dependentWritesAllowed(true, "success")).toBe(true);
     expect(verificationOutcome("success", false)).toBe(asString(operational.mismatch_outcome, "mismatch outcome"));
     const ordering = asObject(asObject(readJson("tests/fixtures/actions/response-ordering.json"), "ordering").data ?? null, "ordering data");
     expect(semanticallyEqual(ordering.left ?? null, ordering.right ?? null)).toBe(true);
@@ -144,6 +155,9 @@ describe("action-preflight approved-actions security", () => {
       ["credential-url.log", ["https://", "user:", opaque, "@example.com"].join("")],
       ["private-key.log", ["-----BEGIN ", "PRIVATE KEY-----\n", privateKeyBody, "\n-----END ", "PRIVATE KEY-----"].join("")],
       ["provider-token.log", ["GITHUB", "_TOKEN=", opaque].join("")],
+      ["aws-secret-access-key.log", ["AWS_SECRET", "_ACCESS_KEY=", opaque].join("")],
+      ["quoted-multiline-provider.log", ["GITHUB", "_TOKEN=\"\n", opaque, "\n\""].join("")],
+      ["unquoted-multiline-provider.log", ["GITHUB", "_TOKEN=\n", opaque].join("")],
     ];
     for (const [surface, canary] of canaries) expect(findSensitiveValues(canary), surface).not.toEqual([]);
     expect(findSensitiveValues("authorization=redacted; cookie=redacted")).toEqual([]);
@@ -165,6 +179,7 @@ describe("action-preflight approved-actions security", () => {
       const output = readFileSync(sanitized, "utf8");
       for (const [, canary] of canaries) expect(output).not.toContain(canary);
       expect(output).not.toContain(privateKeyBody);
+      expect(output).not.toContain(opaque);
       expect(output.match(/\[REDACTED SENSITIVE LINE\]/g)?.length ?? 0).toBeGreaterThanOrEqual(canaries.length);
       expect(output).toContain("safe diagnostic");
     } finally {
