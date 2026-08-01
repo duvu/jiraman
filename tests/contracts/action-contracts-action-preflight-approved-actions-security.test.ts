@@ -218,6 +218,9 @@ describe("action-preflight approved-actions security", () => {
       ["authorization-basic-crlf.log", ["Author", "ization: Basic\r\n", opaque].join("")],
       ["cookie-lf.log", ["Cook", "ie:\n", opaque].join("")],
       ["set-cookie-crlf.log", ["Set-", "Cook", "ie:\r\n", opaque].join("")],
+      ["prefixed-authorization.log", ["prefixAuthor", "ization: Basic\n", opaque].join("")],
+      ["prefixed-proxy-authorization.log", ["prefixProxyAuthor", "ization: Bearer\r\n", opaque].join("")],
+      ["prefixed-cookie.log", ["prefixCook", "ie:\n", opaque].join("")],
       ...yamlCanaries,
     ];
     for (const [surface, canary] of canaries) expect(findSensitiveValues(canary), surface).not.toEqual([]);
