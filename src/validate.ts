@@ -1,4 +1,5 @@
 import { existsSync } from "node:fs";
+import { dirname, resolve, sep } from "node:path";
 
 import { missingCapabilityCoverage } from "./capability-rules.js";
 import {
@@ -9,6 +10,7 @@ import {
   invariant,
   listSkillFiles,
   parseFrontmatter,
+  ROOT,
   readJson,
   readText,
   requireInvalid,
@@ -17,6 +19,7 @@ import {
   walkFiles,
 } from "./contracts.js";
 import { missingChecklistGates } from "./release-rules.js";
+import { commandTableRoutes } from "./routing-rules.js";
 
 const REQUIRED_SKILL_SECTIONS = ["Purpose", "Triggers", "Required Evidence", "Output Contract", "Semantic Capabilities", "Workflow", "Side Effects", "Degraded Mode", "Shared Policy"] as const;
 const FIXTURE_DOMAINS: Readonly<Record<string, readonly string[]>> = {
@@ -91,6 +94,8 @@ function validateCommands(): void {
   }
   invariant(canonical.apply === "jiraman-apply-actions" && canonical.reject === "jiraman-apply-actions", "write modes must route to apply skill");
   invariant(router.precedence === "longest-exact-prefix", "router must define deterministic precedence");
+  const documented = commandTableRoutes(readText("template/.kilo/commands/jiraman.md"));
+  for (const [mode, skill] of Object.entries(canonical)) invariant(documented.get(mode) === skill, `command Markdown route mismatch: ${mode}`);
   requireValid("fixture.schema.json", "tests/fixtures/router/cases.json");
 }
 
@@ -172,6 +177,14 @@ function validateFixtures(domain: string): void {
       invariant(!validateJson("subtask-draft.schema.json", wrapper.data ?? null).valid, `${path} unexpectedly passed`);
     }
   }
+  if (domain === "backlog-drafts") {
+    const matrix = asArray(asObject(asObject(readJson("tests/fixtures/drafts/backlog-matrix.json"), "backlog matrix").data ?? null, "matrix data").cases, "matrix cases");
+    for (const value of matrix) {
+      const entry = asObject(value, "backlog matrix case");
+      const result = validateJson("backlog-draft.schema.json", entry.draft ?? null);
+      invariant(result.valid, `backlog matrix case ${asString(entry.case, "case name")} failed: ${JSON.stringify(result.errors)}`);
+    }
+  }
 }
 
 function validateActions(): void {
@@ -184,14 +197,26 @@ function validateActions(): void {
 }
 
 function validateDocs(): void {
-  for (const path of ["README.md", "UPGRADE.md", "CHANGELOG.md", "docs/architecture/jiraman-v5.md", "docs/command-reference.md", "docs/configuration-reference.md", "docs/security-model.md", "docs/manual-smoke-tests.md", "docs/release-checklist.md", "docs/rollback.md", "docs/troubleshooting.md", "docs/run-records.md"]) {
+  const paths = ["README.md", "UPGRADE.md", "CHANGELOG.md", "docs/architecture/jiraman-v5.md", "docs/command-reference.md", "docs/configuration-reference.md", "docs/security-model.md", "docs/manual-smoke-tests.md", "docs/release-checklist.md", "docs/rollback.md", "docs/troubleshooting.md", "docs/run-records.md"] as const;
+  for (const path of paths) {
     invariant(existsSync(path), `missing documentation: ${path}`);
+    for (const match of readText(path).matchAll(/\[[^\]]+\]\(([^)]+)\)/g)) {
+      const target = match[1];
+      invariant(target !== undefined, `${path} has an empty link`);
+      if (/^(?:https?:|mailto:|#)/.test(target)) continue;
+      const localTarget = target.split(/[?#]/, 1)[0] ?? "";
+      invariant(localTarget.length > 0, `${path} has an empty local link`);
+      const absolute = resolve(ROOT, dirname(path), localTarget);
+      invariant(absolute.startsWith(`${ROOT}${sep}`) && existsSync(absolute), `${path} has a broken local link: ${target}`);
+    }
   }
   const readme = readText("README.md");
   for (const mode of ["daily", "health", "runway", "plan next-2-weeks", "brainstorm", "refine", "meeting", "risks", "decision", "status", "retrospective", "propose", "apply", "reject"]) {
     invariant(readme.includes(mode), `README missing command: ${mode}`);
   }
   invariant(missingChecklistGates().length === 0, `release checklist missing gates: ${missingChecklistGates().join(", ")}`);
+  const workflow = readText(".github/workflows/ci.yml");
+  invariant(workflow.includes("GITHUB_STEP_SUMMARY") && workflow.includes("actions/upload-artifact@v4") && workflow.includes("sanitized-ci-failure"), "CI summary or sanitized failure artifact retention is missing");
 }
 
 function validateNoRuntimeLanguage(): void {

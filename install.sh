@@ -70,32 +70,15 @@ if [[ -f "$ROOT/.kilo/state/jiraman.json" ]]; then
     exit 1
   fi
   set +e
-  node - "$ROOT/.kilo/state/jiraman.json" <<'NODE'
-const fs = require("fs");
-let state;
-try {
-  state = JSON.parse(fs.readFileSync(process.argv[2], "utf8"));
-} catch {
-  process.exit(4);
-}
-const object = (value) => value !== null && typeof value === "object" && !Array.isArray(value);
-const keys = object(state) ? Object.keys(state).sort() : [];
-const expected = ["deliverable_candidates", "migration", "pending_action_groups", "project", "run_records", "schema_version"];
-const migration = object(state?.migration) ? state.migration : null;
-const valid = state?.schema_version === 5 && state?.project === "AIPLATFORM" &&
-  JSON.stringify(keys) === JSON.stringify(expected) && object(state.pending_action_groups) &&
-  object(state.deliverable_candidates) && Array.isArray(state.run_records) && migration !== null &&
-  Object.keys(migration).sort().join(",") === "legacy_state_file,reapproval_required_ids" &&
-  (migration.legacy_state_file === null || typeof migration.legacy_state_file === "string") &&
-  Array.isArray(migration.reapproval_required_ids);
-process.exit(valid ? 0 : 3);
-NODE
+  "$SCRIPT_DIR/verify.sh" --validate-state-file "$ROOT/.kilo/state/jiraman.json" >/dev/null
   state_status=$?
   set -e
   case "$state_status" in
     0) preserve_v5_state=1 ;;
     3) migrate_v4_state=1 ;;
-    *) echo "Existing state is not valid JSON; installation stopped before backup or mutation." >&2; exit 1 ;;
+    4) echo "Existing state is not valid JSON; installation stopped before backup or mutation." >&2; exit 1 ;;
+    5) echo "Existing v5 state fails the full state schema; installation stopped before backup or mutation." >&2; exit 1 ;;
+    *) echo "Existing state validation failed; installation stopped before backup or mutation." >&2; exit 1 ;;
   esac
 fi
 

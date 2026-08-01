@@ -46,3 +46,10 @@ export function governanceDisposition(data: JsonObject): "update-link" | "create
       invariant(false, `unknown duplicate result: ${result}`);
   }
 }
+
+export function reconciliationDisposition(input: JsonObject): "reuse" | "split" | "review" | "link" {
+  if (input.status === "Done") return "link";
+  if (Array.isArray(input.uncovered) && input.uncovered.length > 0) return "split";
+  if (Array.isArray(input.ids) && input.ids.length > 0) return "reuse";
+  return "review";
+}

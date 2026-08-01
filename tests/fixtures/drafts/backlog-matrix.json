@@ -1,0 +1,522 @@
+{
+  "fixture_version": 1,
+  "kind": "backlog-draft-matrix",
+  "metadata": {
+    "source": "synthetic-sanitized",
+    "version": "5.0",
+    "sanitized": true,
+    "semantic_capability": "refinement.draft"
+  },
+  "expected": {
+    "case_count": 7
+  },
+  "data": {
+    "cases": [
+      {
+        "case": "one-story",
+        "evidence_id": "evidence-one",
+        "draft": {
+          "epic": {
+            "disposition": "create",
+            "outcome": "Safe upgrades",
+            "value_problem": "Operators need recoverable upgrades",
+            "in_scope": [
+              "managed files"
+            ],
+            "out_of_scope": [
+              "MCP configuration"
+            ],
+            "success_measures": [
+              "restore drill passes"
+            ],
+            "constraints": [
+              "one-week sprint"
+            ],
+            "dependencies": [],
+            "risks": [
+              "backup drift"
+            ],
+            "story_map": [
+              "story-1"
+            ],
+            "exit_criteria": [
+              "rollback evidence accepted"
+            ],
+            "blocking_gaps": [],
+            "draft_ref": "epic-1"
+          },
+          "stories": [
+            {
+              "draft_ref": "story-1",
+              "disposition": "create",
+              "outcome": "Operators restore a v4 backup",
+              "canonical_spec": "Confluence page-200",
+              "context": "v5 migration safety",
+              "in_scope": [
+                "managed files"
+              ],
+              "out_of_scope": [
+                "MCP"
+              ],
+              "requirements": [
+                "REQ-1"
+              ],
+              "acceptance_criteria": [
+                "AC-1"
+              ],
+              "constraints": [
+                "one sprint"
+              ],
+              "dependencies": [],
+              "validation": [
+                "backup byte comparison"
+              ],
+              "rollout": "install into a temporary project",
+              "recovery": "restore timestamped backup",
+              "estimate_basis": "verified team unit",
+              "blocking_gaps": []
+            }
+          ]
+        }
+      },
+      {
+        "case": "multi-story",
+        "evidence_id": "evidence-multi",
+        "draft": {
+          "epic": {
+            "disposition": "create",
+            "outcome": "Safe upgrades",
+            "value_problem": "Operators need recoverable upgrades",
+            "in_scope": [
+              "managed files"
+            ],
+            "out_of_scope": [
+              "MCP configuration"
+            ],
+            "success_measures": [
+              "restore drill passes"
+            ],
+            "constraints": [
+              "one-week sprint"
+            ],
+            "dependencies": [],
+            "risks": [
+              "backup drift"
+            ],
+            "story_map": [
+              "story-1",
+              "story-2"
+            ],
+            "exit_criteria": [
+              "rollback evidence accepted"
+            ],
+            "blocking_gaps": [],
+            "draft_ref": "epic-1"
+          },
+          "stories": [
+            {
+              "draft_ref": "story-1",
+              "disposition": "create",
+              "outcome": "Operators restore a v4 backup",
+              "canonical_spec": "Confluence page-200",
+              "context": "v5 migration safety",
+              "in_scope": [
+                "managed files"
+              ],
+              "out_of_scope": [
+                "MCP"
+              ],
+              "requirements": [
+                "REQ-1"
+              ],
+              "acceptance_criteria": [
+                "AC-1"
+              ],
+              "constraints": [
+                "one sprint"
+              ],
+              "dependencies": [],
+              "validation": [
+                "backup byte comparison"
+              ],
+              "rollout": "install into a temporary project",
+              "recovery": "restore timestamped backup",
+              "estimate_basis": "verified team unit",
+              "blocking_gaps": []
+            },
+            {
+              "draft_ref": "story-2",
+              "disposition": "create",
+              "outcome": "Maintainers verify the rollback guide",
+              "canonical_spec": "Confluence page-200",
+              "context": "v5 migration safety",
+              "in_scope": [
+                "managed files"
+              ],
+              "out_of_scope": [
+                "MCP"
+              ],
+              "requirements": [
+                "REQ-2"
+              ],
+              "acceptance_criteria": [
+                "AC-2"
+              ],
+              "constraints": [
+                "one sprint"
+              ],
+              "dependencies": [],
+              "validation": [
+                "rollback guide walkthrough"
+              ],
+              "rollout": "install into a temporary project",
+              "recovery": "restore timestamped backup",
+              "estimate_basis": "verified team unit",
+              "blocking_gaps": []
+            }
+          ]
+        }
+      },
+      {
+        "case": "existing-epic",
+        "evidence_id": "evidence-existing-epic",
+        "draft": {
+          "epic": {
+            "disposition": "reuse",
+            "key": "AIPLATFORM-100",
+            "outcome": "Safe upgrades",
+            "value_problem": "Operators need recoverable upgrades",
+            "in_scope": [
+              "managed files"
+            ],
+            "out_of_scope": [
+              "MCP configuration"
+            ],
+            "success_measures": [
+              "restore drill passes"
+            ],
+            "constraints": [
+              "one-week sprint"
+            ],
+            "dependencies": [],
+            "risks": [
+              "backup drift"
+            ],
+            "story_map": [
+              "story-1"
+            ],
+            "exit_criteria": [
+              "rollback evidence accepted"
+            ],
+            "blocking_gaps": []
+          },
+          "stories": [
+            {
+              "draft_ref": "story-1",
+              "disposition": "create",
+              "outcome": "Operators restore a v4 backup",
+              "canonical_spec": "Confluence page-200",
+              "context": "v5 migration safety",
+              "in_scope": [
+                "managed files"
+              ],
+              "out_of_scope": [
+                "MCP"
+              ],
+              "requirements": [
+                "REQ-1"
+              ],
+              "acceptance_criteria": [
+                "AC-1"
+              ],
+              "constraints": [
+                "one sprint"
+              ],
+              "dependencies": [],
+              "validation": [
+                "backup byte comparison"
+              ],
+              "rollout": "install into a temporary project",
+              "recovery": "restore timestamped backup",
+              "estimate_basis": "verified team unit",
+              "blocking_gaps": []
+            }
+          ]
+        }
+      },
+      {
+        "case": "update-existing-story",
+        "evidence_id": "evidence-update-story",
+        "draft": {
+          "epic": {
+            "disposition": "reuse",
+            "key": "AIPLATFORM-100",
+            "outcome": "Safe upgrades",
+            "value_problem": "Operators need recoverable upgrades",
+            "in_scope": [
+              "managed files"
+            ],
+            "out_of_scope": [
+              "MCP configuration"
+            ],
+            "success_measures": [
+              "restore drill passes"
+            ],
+            "constraints": [
+              "one-week sprint"
+            ],
+            "dependencies": [],
+            "risks": [
+              "backup drift"
+            ],
+            "story_map": [
+              "story-1"
+            ],
+            "exit_criteria": [
+              "rollback evidence accepted"
+            ],
+            "blocking_gaps": []
+          },
+          "stories": [
+            {
+              "draft_ref": "story-1",
+              "disposition": "update",
+              "outcome": "Operators restore a v4 backup",
+              "canonical_spec": "Confluence page-200",
+              "context": "v5 migration safety",
+              "in_scope": [
+                "managed files"
+              ],
+              "out_of_scope": [
+                "MCP"
+              ],
+              "requirements": [
+                "REQ-1"
+              ],
+              "acceptance_criteria": [
+                "AC-1"
+              ],
+              "constraints": [
+                "one sprint"
+              ],
+              "dependencies": [],
+              "validation": [
+                "backup byte comparison"
+              ],
+              "rollout": "install into a temporary project",
+              "recovery": "restore timestamped backup",
+              "estimate_basis": "verified team unit",
+              "blocking_gaps": [],
+              "existing_key": "AIPLATFORM-101"
+            }
+          ]
+        }
+      },
+      {
+        "case": "unresolved-decision",
+        "evidence_id": "evidence-unresolved",
+        "draft": {
+          "epic": {
+            "disposition": "create",
+            "outcome": "Safe upgrades",
+            "value_problem": "Operators need recoverable upgrades",
+            "in_scope": [
+              "managed files"
+            ],
+            "out_of_scope": [
+              "MCP configuration"
+            ],
+            "success_measures": [
+              "restore drill passes"
+            ],
+            "constraints": [
+              "one-week sprint"
+            ],
+            "dependencies": [],
+            "risks": [
+              "backup drift"
+            ],
+            "story_map": [
+              "story-1"
+            ],
+            "exit_criteria": [
+              "rollback evidence accepted"
+            ],
+            "blocking_gaps": [
+              "architecture decision unresolved"
+            ],
+            "draft_ref": "epic-1"
+          },
+          "stories": [
+            {
+              "draft_ref": "story-1",
+              "disposition": "create",
+              "outcome": "Operators restore a v4 backup",
+              "canonical_spec": "Confluence page-200",
+              "context": "v5 migration safety",
+              "in_scope": [
+                "managed files"
+              ],
+              "out_of_scope": [
+                "MCP"
+              ],
+              "requirements": [
+                "REQ-1"
+              ],
+              "acceptance_criteria": [
+                "AC-1"
+              ],
+              "constraints": [
+                "one sprint"
+              ],
+              "dependencies": [],
+              "validation": [
+                "backup byte comparison"
+              ],
+              "rollout": "install into a temporary project",
+              "recovery": "restore timestamped backup",
+              "estimate_basis": "verified team unit",
+              "blocking_gaps": [
+                "capacity and estimate evidence not verified"
+              ]
+            }
+          ]
+        }
+      },
+      {
+        "case": "determinism-a",
+        "evidence_id": "evidence-deterministic",
+        "draft": {
+          "epic": {
+            "disposition": "reuse",
+            "key": "AIPLATFORM-100",
+            "outcome": "Safe upgrades",
+            "value_problem": "Operators need recoverable upgrades",
+            "in_scope": [
+              "managed files"
+            ],
+            "out_of_scope": [
+              "MCP configuration"
+            ],
+            "success_measures": [
+              "restore drill passes"
+            ],
+            "constraints": [
+              "one-week sprint"
+            ],
+            "dependencies": [],
+            "risks": [
+              "backup drift"
+            ],
+            "story_map": [
+              "story-1"
+            ],
+            "exit_criteria": [
+              "rollback evidence accepted"
+            ],
+            "blocking_gaps": []
+          },
+          "stories": [
+            {
+              "draft_ref": "story-1",
+              "disposition": "create",
+              "outcome": "Operators restore a v4 backup",
+              "canonical_spec": "Confluence page-200",
+              "context": "v5 migration safety",
+              "in_scope": [
+                "managed files"
+              ],
+              "out_of_scope": [
+                "MCP"
+              ],
+              "requirements": [
+                "REQ-1"
+              ],
+              "acceptance_criteria": [
+                "AC-1"
+              ],
+              "constraints": [
+                "one sprint"
+              ],
+              "dependencies": [],
+              "validation": [
+                "backup byte comparison"
+              ],
+              "rollout": "install into a temporary project",
+              "recovery": "restore timestamped backup",
+              "estimate_basis": "verified team unit",
+              "blocking_gaps": []
+            }
+          ]
+        }
+      },
+      {
+        "case": "determinism-b",
+        "evidence_id": "evidence-deterministic",
+        "draft": {
+          "epic": {
+            "disposition": "reuse",
+            "key": "AIPLATFORM-100",
+            "outcome": "Safe upgrades",
+            "value_problem": "Operators need recoverable upgrades",
+            "in_scope": [
+              "managed files"
+            ],
+            "out_of_scope": [
+              "MCP configuration"
+            ],
+            "success_measures": [
+              "restore drill passes"
+            ],
+            "constraints": [
+              "one-week sprint"
+            ],
+            "dependencies": [],
+            "risks": [
+              "backup drift"
+            ],
+            "story_map": [
+              "story-1"
+            ],
+            "exit_criteria": [
+              "rollback evidence accepted"
+            ],
+            "blocking_gaps": []
+          },
+          "stories": [
+            {
+              "draft_ref": "story-1",
+              "disposition": "create",
+              "outcome": "Operators restore a v4 backup",
+              "canonical_spec": "Confluence page-200",
+              "context": "v5 migration safety",
+              "in_scope": [
+                "managed files"
+              ],
+              "out_of_scope": [
+                "MCP"
+              ],
+              "requirements": [
+                "REQ-1"
+              ],
+              "acceptance_criteria": [
+                "AC-1"
+              ],
+              "constraints": [
+                "one sprint"
+              ],
+              "dependencies": [],
+              "validation": [
+                "backup byte comparison"
+              ],
+              "rollout": "install into a temporary project",
+              "recovery": "restore timestamped backup",
+              "estimate_basis": "verified team unit",
+              "blocking_gaps": []
+            }
+          ]
+        }
+      }
+    ]
+  }
+}

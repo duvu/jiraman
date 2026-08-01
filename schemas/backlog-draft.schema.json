@@ -11,8 +11,19 @@
       "type": "object",
       "required": [
         "disposition",
-        "outcome"
+        "outcome",
+        "value_problem",
+        "in_scope",
+        "out_of_scope",
+        "success_measures",
+        "constraints",
+        "dependencies",
+        "risks",
+        "story_map",
+        "exit_criteria",
+        "blocking_gaps"
       ],
+      "additionalProperties": false,
       "properties": {
         "disposition": {
           "enum": [
@@ -24,7 +35,19 @@
         "outcome": {
           "type": "string",
           "minLength": 1
-        }
+        },
+        "key": {"type": "string", "pattern": "^AIPLATFORM-[0-9]+$"},
+        "draft_ref": {"type": "string", "minLength": 1},
+        "value_problem": {"type": "string", "minLength": 1},
+        "in_scope": {"type": "array", "minItems": 1},
+        "out_of_scope": {"type": "array"},
+        "success_measures": {"type": "array", "minItems": 1},
+        "constraints": {"type": "array"},
+        "dependencies": {"type": "array"},
+        "risks": {"type": "array"},
+        "story_map": {"type": "array", "minItems": 1},
+        "exit_criteria": {"type": "array", "minItems": 1},
+        "blocking_gaps": {"type": "array"}
       }
     },
     "stories": {
@@ -35,7 +58,10 @@
         "additionalProperties": false,
         "required": [
           "draft_ref",
+          "disposition",
           "outcome",
+          "canonical_spec",
+          "context",
           "in_scope",
           "out_of_scope",
           "requirements",
@@ -43,6 +69,8 @@
           "constraints",
           "dependencies",
           "validation",
+          "rollout",
+          "recovery",
           "estimate_basis",
           "blocking_gaps"
         ],
@@ -51,10 +79,14 @@
             "type": "string",
             "minLength": 1
           },
+          "disposition": {"enum": ["create", "update", "reuse"]},
+          "existing_key": {"type": "string", "pattern": "^AIPLATFORM-[0-9]+$"},
           "outcome": {
             "type": "string",
             "minLength": 1
           },
+          "canonical_spec": {"type": "string", "minLength": 1},
+          "context": {"type": "string", "minLength": 1},
           "in_scope": {
             "type": "array",
             "minItems": 1
@@ -88,6 +120,8 @@
             "type": "array",
             "minItems": 1
           },
+          "rollout": {"type": "string", "minLength": 1},
+          "recovery": {"type": "string", "minLength": 1},
           "estimate_basis": {
             "type": "string",
             "minLength": 1

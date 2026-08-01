@@ -42,3 +42,30 @@ export function missingCapabilityCoverage(contract: JsonObject, coverage: JsonVa
     .map((item) => asString(asObject(item, "capability").semantic, "capability semantic"))
     .filter((semantic) => !covered.has(semantic));
 }
+
+export function responseFixtureViolations(contract: JsonObject, fixture: JsonObject): string[] {
+  const responses = asArray(asObject(fixture.data ?? null, "response fixture data").responses, "responses").map((item) => asObject(item, "response"));
+  const violations: string[] = [];
+  for (const item of asArray(contract.capabilities, "capabilities").map((value) => asObject(value, "capability"))) {
+    const semantic = asString(item.semantic, "capability semantic");
+    const access = asString(item.access, "capability access");
+    const matches = responses.filter((response) => response.semantic === semantic);
+    if (matches.length !== 1) {
+      violations.push(`${semantic}:response-count`);
+      continue;
+    }
+    const response = matches[0];
+    invariant(response !== undefined, "one response is required");
+    if (response.access !== access) violations.push(`${semantic}:access`);
+    if (response.sanitized !== true) violations.push(`${semantic}:sanitization`);
+    if (response.expected_compatibility !== "resolved") violations.push(`${semantic}:compatibility`);
+    if (response.response === null || typeof response.response !== "object" || Array.isArray(response.response)) violations.push(`${semantic}:payload`);
+    if (access === "write") {
+      const approval = response.approval;
+      const readAfterWrite = response.read_after_write;
+      if (approval === null || typeof approval !== "object" || Array.isArray(approval) || approval.status !== "approved" || typeof approval.action_id !== "string") violations.push(`${semantic}:approval`);
+      if (readAfterWrite === null || typeof readAfterWrite !== "object" || Array.isArray(readAfterWrite) || readAfterWrite.verified !== true) violations.push(`${semantic}:verification`);
+    }
+  }
+  return violations;
+}

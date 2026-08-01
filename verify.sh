@@ -1,6 +1,68 @@
 #!/usr/bin/env bash
 set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+if [[ "${1:-}" == "--validate-state-file" ]]; then
+  [[ "$#" -eq 2 ]] || { echo "usage: ./verify.sh --validate-state-file PATH" >&2; exit 2; }
+  node - "$2" <<'NODE' || exit $?
+const fs = require("fs");
+let state;
+try { state = JSON.parse(fs.readFileSync(process.argv[2], "utf8")); } catch { process.exit(4); }
+const object = (value) => value !== null && typeof value === "object" && !Array.isArray(value);
+const exact = (value, keys) => object(value) && JSON.stringify(Object.keys(value).sort()) === JSON.stringify([...keys].sort());
+const nonEmpty = (value) => typeof value === "string" && value.length > 0;
+const stringArray = (value, nonempty = false) => Array.isArray(value) && (!nonempty || value.length > 0) && value.every(nonEmpty);
+const unique = (value) => Array.isArray(value) && new Set(value).size === value.length;
+const validDate = (value) => {
+  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value);
+  if (match === null) return false;
+  const year = Number(match[1]), month = Number(match[2]), day = Number(match[3]);
+  return month >= 1 && month <= 12 && day >= 1 && day <= new Date(Date.UTC(year, month, 0)).getUTCDate();
+};
+const validDateTime = (value) => {
+  if (typeof value !== "string") return false;
+  const match = /^(\d{4}-\d{2}-\d{2})T(\d{2}):(\d{2}):(\d{2})(?:\.\d+)?(?:Z|[+-](\d{2}):(\d{2}))$/.exec(value);
+  return match !== null && validDate(match[1]) && Number(match[2]) <= 23 && Number(match[3]) <= 59 && Number(match[4]) <= 59 && Number(match[5] ?? 0) <= 23 && Number(match[6] ?? 0) <= 59;
+};
+const groupId = (value) => typeof value === "string" && /^PMG-[0-9]{8}-[0-9]{2}$/.test(value);
+const actionId = (value) => typeof value === "string" && /^PMA-[0-9]{8}-[0-9]{2}$/.test(value);
+const stateId = (value) => typeof value === "string" && /^PM[AG]-[0-9]{8}-[0-9]{2}$/.test(value);
+const statuses = new Set(["proposed", "approved", "rejected", "stale", "applying", "applied", "failed", "verification-failed"]);
+const operations = new Set(["issue.create", "issue.update", "issue.comment", "issue.link", "issue.transition", "page.create", "page.update", "page.section-update", "page.comment"]);
+const updateOperations = new Set(["issue.update", "page.update", "page.section-update"]);
+const hash = (value) => typeof value === "string" && /^[a-f0-9]{64}$/.test(value);
+const validAction = (value) => {
+  const keys = ["id", "system", "operation", "target_ref", "target_version", "before_state", "desired_state", "evidence", "reason", "preconditions", "dependencies", "risk", "approval_required", "expires_at", "rollback_guidance", "status"];
+  if (!exact(value, keys)) return false;
+  const targetVersion = value.target_version;
+  const validTargetVersion = targetVersion === null || typeof targetVersion === "string" || Number.isInteger(targetVersion);
+  const updateTarget = !updateOperations.has(value.operation) || (targetVersion !== null || (object(value.before_state) && Object.keys(value.before_state).length > 0));
+  return actionId(value.id) && ["jira", "confluence"].includes(value.system) && operations.has(value.operation) && nonEmpty(value.target_ref) && validTargetVersion &&
+    object(value.before_state) && object(value.desired_state) && Object.keys(value.desired_state).length > 0 && stringArray(value.evidence, true) && nonEmpty(value.reason) &&
+    stringArray(value.preconditions, true) && stringArray(value.dependencies) && unique(value.dependencies) && value.dependencies.every(actionId) &&
+    ["low", "medium", "high"].includes(value.risk) && ["group", "per-action"].includes(value.approval_required) &&
+    (value.risk !== "high" || value.approval_required === "per-action") && validDateTime(value.expires_at) && nonEmpty(value.rollback_guidance) && statuses.has(value.status) && updateTarget;
+};
+const validApproval = (value) => exact(value, ["group_approved_by", "approved_action_ids", "approved_at", "payload_hash"]) &&
+  (value.group_approved_by === null || nonEmpty(value.group_approved_by)) && Array.isArray(value.approved_action_ids) && unique(value.approved_action_ids) && value.approved_action_ids.every(actionId) &&
+  (value.approved_at === null || validDateTime(value.approved_at)) && (value.payload_hash === null || hash(value.payload_hash));
+const validGroup = (value) => exact(value, ["schema_version", "id", "project", "summary", "created_at", "expires_at", "status", "payload_hash", "approval", "actions"]) &&
+  value.schema_version === 5 && groupId(value.id) && value.project === "AIPLATFORM" && nonEmpty(value.summary) && validDateTime(value.created_at) && validDateTime(value.expires_at) &&
+  statuses.has(value.status) && hash(value.payload_hash) && validApproval(value.approval) && Array.isArray(value.actions) && value.actions.length > 0 && value.actions.every(validAction);
+const validRun = (value) => exact(value, ["workflow_id", "command_mode", "started_at", "ended_at", "capability_health", "tool_results", "action_ids", "verification_result", "artifact_refs"]) &&
+  nonEmpty(value.workflow_id) && nonEmpty(value.command_mode) && validDateTime(value.started_at) && validDateTime(value.ended_at) && ["healthy", "degraded", "blocked"].includes(value.capability_health) &&
+  Array.isArray(value.tool_results) && value.tool_results.every((item) => ["success", "tool-failure", "missing-evidence", "policy-rejection", "stale-action", "verification-failure"].includes(item)) &&
+  Array.isArray(value.action_ids) && unique(value.action_ids) && value.action_ids.every(stateId) && ["passed", "failed", "not-applicable", "not-verified"].includes(value.verification_result) && stringArray(value.artifact_refs);
+const stateKeys = ["schema_version", "project", "pending_action_groups", "deliverable_candidates", "run_records", "migration"];
+const looksV5 = exact(state, stateKeys);
+const validMigration = exact(state?.migration, ["legacy_state_file", "reapproval_required_ids"]) && (state.migration.legacy_state_file === null || typeof state.migration.legacy_state_file === "string") &&
+  Array.isArray(state.migration.reapproval_required_ids) && unique(state.migration.reapproval_required_ids) && state.migration.reapproval_required_ids.every(stateId);
+const valid = looksV5 && state.schema_version === 5 && state.project === "AIPLATFORM" && object(state.pending_action_groups) && Object.values(state.pending_action_groups).every(validGroup) &&
+  object(state.deliverable_candidates) && Object.entries(state.deliverable_candidates).every(([key, value]) => /^DLV-[0-9]{8}-[0-9]{2}$/.test(key) && object(value)) &&
+  Array.isArray(state.run_records) && state.run_records.length <= 100 && state.run_records.every(validRun) && validMigration;
+process.exit(valid ? 0 : looksV5 ? 5 : 3);
+NODE
+  exit 0
+fi
 SOURCE=0
 if [[ "${1:-}" == "--source-tree" ]]; then SOURCE=1; ROOT="$SCRIPT_DIR"; else ROOT="${1:-$PWD}"; fi
 ROOT="$(cd "$ROOT" && pwd)"
@@ -24,19 +86,17 @@ if grep -q '^project: AIPLATFORM$' "$agent" && grep -q '^mcp_server: mcp-atlassi
 if ! command -v node >/dev/null 2>&1; then echo "FAIL Node is required for verification tooling"; exit 1; fi
 if ! node - "$config_root" "$state" <<'NODE'
 const fs=require("fs"), path=require("path");
-const [configRoot,statePath]=process.argv.slice(2);
+const [configRoot]=process.argv.slice(2);
 const object=(value)=>value!==null&&typeof value==="object"&&!Array.isArray(value);
 const config=JSON.parse(fs.readFileSync(path.join(configRoot,"jiraman.json"),"utf8"));
 const router=JSON.parse(fs.readFileSync(path.join(configRoot,"command-router.json"),"utf8"));
 const mcp=JSON.parse(fs.readFileSync(path.join(configRoot,"mcp-atlassian.json"),"utf8"));
-const state=JSON.parse(fs.readFileSync(statePath,"utf8"));
 if(config.schema_version!==5||config.project?.key!=="AIPLATFORM"||!object(config.confluence)||!object(config.delivery)||!object(config.actions)||!object(config.state)) throw new Error("invalid config contract");
 if(router.schema_version!==5||router.default_mode!=="daily"||!object(router.canonical)||!object(router.aliases)||router.canonical.apply!=="jiraman-apply-actions") throw new Error("invalid router contract");
 if(mcp.schema_version!==5||mcp.server_ownership!=="external-user-owned"||!Array.isArray(mcp.capabilities)||!object(mcp.profiles)||!Array.isArray(mcp.denied)) throw new Error("invalid MCP contract");
-const stateKeys=object(state)?Object.keys(state).sort().join(","):"";
-if(stateKeys!=="deliverable_candidates,migration,pending_action_groups,project,run_records,schema_version"||state.schema_version!==5||state.project!=="AIPLATFORM"||!object(state.pending_action_groups)||!object(state.deliverable_candidates)||!Array.isArray(state.run_records)||!object(state.migration)||!Array.isArray(state.migration.reapproval_required_ids)) throw new Error("invalid state contract");
 NODE
 then echo "FAIL JSON contract validation"; failed=1; else echo "OK   JSON contracts"; fi
+if "$SCRIPT_DIR/verify.sh" --validate-state-file "$state"; then echo "OK   state schema contract"; else echo "FAIL state schema contract"; failed=1; fi
 if ! node - "$ROOT" "$SOURCE" <<'NODE'
 const fs=require("fs"), path=require("path");
 const [root,source]=process.argv.slice(2);

@@ -16,14 +16,14 @@ Canonical routing:
 | Mode | Skill |
 | --- | --- |
 | `daily` | `jiraman-daily` |
-| `health`, `runway` | `jiraman-flow-analysis` |
-| `plan next-2-weeks`, `brainstorm` | `jiraman-sprint-planning` |
+| `health`, `runway` | `jiraman-sprint-health` |
+| `plan next-2-weeks`, `brainstorm` | `jiraman-next-two-weeks` |
 | `refine` | `jiraman-refinement` |
 | `meeting` | `jiraman-meeting-actions` |
 | `risks` | `jiraman-risk-management` |
 | `decision` | `jiraman-decision-management` |
-| `status` | `jiraman-status-report` |
-| `retrospective` | `jiraman-sprint-planning` |
+| `status` | `jiraman-confluence-reporting` |
+| `retrospective` | `jiraman-sprint-cadence` |
 | `propose`, `apply`, `reject` | `jiraman-apply-actions` |
 
 Aliases: `sprint-health` -> `health`; `sprint-plan` -> `plan next-2-weeks`; `deliverables`, `next-2-weeks`, `next-two-weeks`, and `two-week-deliverables` -> `plan next-2-weeks`; `hierarchy` and `triage` -> `refine`; `review` and `sprint-review` -> `status`.

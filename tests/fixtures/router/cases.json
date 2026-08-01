@@ -49,6 +49,24 @@
       "write": true
     },
     {
+      "input": "apply",
+      "mode": "apply",
+      "focus": "",
+      "write": false
+    },
+    {
+      "input": "apply arbitrary prose",
+      "mode": "apply",
+      "focus": "arbitrary prose",
+      "write": false
+    },
+    {
+      "input": "apply PMA-invalid",
+      "mode": "apply",
+      "focus": "PMA-invalid",
+      "write": false
+    },
+    {
       "input": "reject PMG-20260801-01",
       "mode": "reject",
       "focus": "PMG-20260801-01",

@@ -49,7 +49,7 @@ docs/project-management/templates/
 /jiraman reject <PMG/PMA-ID...>
 ```
 
-Empty input resolves to `daily`. V4 aliases remain documented in [the command reference](docs/command-reference.md). Ordinary write-like prose stays read-only. Only exact `apply` can call an MCP write, after all-or-nothing preflight and explicit approval; Kilo write permissions should remain `ask`.
+Empty input resolves to `daily`. V4 aliases remain documented in [the command reference](docs/command-reference.md). Ordinary write-like prose stays read-only. Only exact `apply <PMG-ID|PMA-ID...>` can call an MCP write, after all-or-nothing preflight and explicit approval; Kilo write permissions should remain `ask`.
 
 ## Development
 

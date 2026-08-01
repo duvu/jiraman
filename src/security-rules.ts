@@ -1,4 +1,4 @@
-import { asArray, asObject, asString, type JsonObject } from "./contracts.js";
+import { asArray, asObject, asString, type JsonObject, type JsonValue } from "./contracts.js";
 
 export interface ScopeDecision {
   readonly allowed: boolean;
@@ -69,4 +69,24 @@ export function distinctScenarioSelections(plan: JsonObject): boolean {
     return JSON.stringify({ selected, displaced });
   });
   return new Set(signatures).size === signatures.length;
+}
+
+export function sensitiveKeyViolations(value: JsonValue): string[] {
+  const forbidden = /^(?:remote_body|authorization|cookie|set-cookie|password|access_token|refresh_token|client_secret|productivity)$/i;
+  const violations: string[] = [];
+  const visit = (item: JsonValue, path: string): void => {
+    if (Array.isArray(item)) {
+      item.forEach((child, index) => visit(child, `${path}[${index}]`));
+      return;
+    }
+    if (item !== null && typeof item === "object") {
+      for (const [key, child] of Object.entries(item)) {
+        const childPath = path === "" ? key : `${path}.${key}`;
+        if (forbidden.test(key)) violations.push(childPath);
+        visit(child, childPath);
+      }
+    }
+  };
+  visit(value, "");
+  return violations;
 }

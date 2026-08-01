@@ -25,6 +25,7 @@ while IFS= read -r path; do extension="${path##*.}"; if [[ "$extension" == "p""y
 (
   cd "$ROOT"
   npm ci --ignore-scripts --silent
+  npm run scan:secrets --silent >/dev/null
   npm run validate --silent >/dev/null
 )
 echo "package verification: PASS ($ARCHIVE)"

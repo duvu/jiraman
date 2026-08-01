@@ -1,5 +1,5 @@
 import { describe, expect, test } from "vitest";
-import { capabilityHealth, missingCapabilityCoverage, resolveCapability } from "../../src/capability-rules.js";
+import { capabilityHealth, missingCapabilityCoverage, resolveCapability, responseFixtureViolations } from "../../src/capability-rules.js";
 import { asArray, asObject, asString, readJson } from "../../src/contracts.js";
 import { evaluateScope, inspectUntrustedContent } from "../../src/security-rules.js";
 
@@ -17,6 +17,8 @@ describe("mcp-contract and mcp-profiles", () => {
     for (const item of asArray(contract.capabilities, "capabilities").map((value) => asObject(value, "capability")).filter((value) => value.access === "write")) expect(item.permission).toBe("ask");
     const coverage = asObject(readJson("tests/fixtures/mcp/capability_coverage.json"), "coverage");
     expect(missingCapabilityCoverage(contract, coverage.data ?? null)).toEqual([]);
+    const responses = asObject(readJson("tests/fixtures/mcp/capability_responses.json"), "capability responses");
+    expect(responseFixtureViolations(contract, responses)).toEqual([]);
     const health = asObject(readJson("tests/fixtures/mcp/health.json"), "health");
     const healthData = asObject(health.data ?? null, "health data");
     const requested = asArray(healthData.requested, "requested").map((value) => asString(value, "requested capability"));

@@ -14,4 +14,26 @@ jobs:
           node-version: 24
           cache: npm
       - run: npm ci
-      - run: npm run ci
+      - name: Run release gate
+        id: release-gate
+        run: npm run ci 2>&1 | tee .ci-release.log
+      - name: Publish concise CI summary
+        if: always()
+        run: |
+          {
+            echo "## Jiraman release gate"
+            echo "- Commit: \`${GITHUB_SHA}\`"
+            echo "- Result: \`${{ steps.release-gate.outcome }}\`"
+          } >> "$GITHUB_STEP_SUMMARY"
+      - name: Sanitize failure diagnostics
+        if: failure()
+        run: |
+          mkdir -p .ci-artifacts
+          sed -E 's/(Authorization: (Basic|Bearer)|Cookie:|Set-Cookie:|password=|access_token=|refresh_token=|client_secret=)[^[:space:]]+/\1 [REDACTED]/Ig' .ci-release.log > .ci-artifacts/release-gate.log
+      - name: Retain sanitized failure artifact
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: sanitized-ci-failure
+          path: .ci-artifacts/release-gate.log
+          retention-days: 7

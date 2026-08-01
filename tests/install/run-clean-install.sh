@@ -2,7 +2,9 @@
 set -euo pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 TARGET="$ROOT/tests/install/output/clean-project"
-rm -rf "$TARGET"
+SYMLINK_TARGET="$ROOT/tests/install/output/symlink-project"
+OUTSIDE="$ROOT/tests/install/output/outside-agents"
+rm -rf "$TARGET" "$SYMLINK_TARGET" "$OUTSIDE"
 mkdir -p "$TARGET/.kilo"
 printf '%s\n' '{"servers":{"mcp-atlassian":{"command":"USER-OWNED-SENTINEL"}}}' > "$TARGET/.kilo/mcp.json"
 cp "$TARGET/.kilo/mcp.json" "$TARGET/mcp.before"
@@ -14,8 +16,6 @@ if "$ROOT/install.sh" "$TARGET" >"$TARGET/reinstall.out" 2>&1; then echo "expect
 grep -q '.kilo/agents/jiraman.md' "$TARGET/reinstall.out"
 find "$TARGET/.kilo" -type f | while read -r path; do extension="${path##*.}"; [[ "$extension" != "p""y" ]]; done
 
-SYMLINK_TARGET="$ROOT/tests/install/output/symlink-project"
-OUTSIDE="$ROOT/tests/install/output/outside-agents"
 mkdir -p "$SYMLINK_TARGET/.kilo" "$OUTSIDE"
 printf 'OUTSIDE-SENTINEL\n' > "$OUTSIDE/jiraman.md"
 cp "$OUTSIDE/jiraman.md" "$SYMLINK_TARGET/sentinel.before"

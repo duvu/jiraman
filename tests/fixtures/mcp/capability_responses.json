@@ -1,0 +1,315 @@
+{
+  "fixture_version": 1,
+  "kind": "mcp-capability-responses",
+  "metadata": {
+    "source": "synthetic-sanitized",
+    "version": "5.0",
+    "sanitized": true,
+    "semantic_capability": "mcp.capability.responses"
+  },
+  "expected": {
+    "response_count": 21,
+    "compatibility": "resolved"
+  },
+  "data": {
+    "responses": [
+      {
+        "semantic": "jira.project.read",
+        "access": "read",
+        "sanitized": true,
+        "expected_compatibility": "resolved",
+        "response": {
+          "source_id": "synthetic-01",
+          "items": [],
+          "next_cursor": null
+        }
+      },
+      {
+        "semantic": "jira.board.read",
+        "access": "read",
+        "sanitized": true,
+        "expected_compatibility": "resolved",
+        "response": {
+          "source_id": "synthetic-02",
+          "items": [],
+          "next_cursor": null
+        }
+      },
+      {
+        "semantic": "jira.sprint.read",
+        "access": "read",
+        "sanitized": true,
+        "expected_compatibility": "resolved",
+        "response": {
+          "source_id": "synthetic-03",
+          "items": [],
+          "next_cursor": null
+        }
+      },
+      {
+        "semantic": "jira.issue.search",
+        "access": "read",
+        "sanitized": true,
+        "expected_compatibility": "resolved",
+        "response": {
+          "source_id": "synthetic-04",
+          "items": [],
+          "next_cursor": null
+        }
+      },
+      {
+        "semantic": "jira.issue.read",
+        "access": "read",
+        "sanitized": true,
+        "expected_compatibility": "resolved",
+        "response": {
+          "source_id": "synthetic-05",
+          "items": [],
+          "next_cursor": null
+        }
+      },
+      {
+        "semantic": "jira.comment.read",
+        "access": "read",
+        "sanitized": true,
+        "expected_compatibility": "resolved",
+        "response": {
+          "source_id": "synthetic-06",
+          "items": [],
+          "next_cursor": null
+        }
+      },
+      {
+        "semantic": "jira.link.read",
+        "access": "read",
+        "sanitized": true,
+        "expected_compatibility": "resolved",
+        "response": {
+          "source_id": "synthetic-07",
+          "items": [],
+          "next_cursor": null
+        }
+      },
+      {
+        "semantic": "jira.transition.read",
+        "access": "read",
+        "sanitized": true,
+        "expected_compatibility": "resolved",
+        "response": {
+          "source_id": "synthetic-08",
+          "items": [],
+          "next_cursor": null
+        }
+      },
+      {
+        "semantic": "jira.issue.create",
+        "access": "write",
+        "sanitized": true,
+        "expected_compatibility": "resolved",
+        "response": {
+          "status": "success",
+          "created_ids": [
+            "AIPLATFORM-908"
+          ]
+        },
+        "approval": {
+          "status": "approved",
+          "action_id": "PMA-20260801-09"
+        },
+        "read_after_write": {
+          "verified": true,
+          "target_version": "synthetic-version-09"
+        }
+      },
+      {
+        "semantic": "jira.issue.update",
+        "access": "write",
+        "sanitized": true,
+        "expected_compatibility": "resolved",
+        "response": {
+          "status": "success",
+          "created_ids": []
+        },
+        "approval": {
+          "status": "approved",
+          "action_id": "PMA-20260801-10"
+        },
+        "read_after_write": {
+          "verified": true,
+          "target_version": "synthetic-version-10"
+        }
+      },
+      {
+        "semantic": "jira.comment.create",
+        "access": "write",
+        "sanitized": true,
+        "expected_compatibility": "resolved",
+        "response": {
+          "status": "success",
+          "created_ids": [
+            "AIPLATFORM-910"
+          ]
+        },
+        "approval": {
+          "status": "approved",
+          "action_id": "PMA-20260801-11"
+        },
+        "read_after_write": {
+          "verified": true,
+          "target_version": "synthetic-version-11"
+        }
+      },
+      {
+        "semantic": "jira.link.create",
+        "access": "write",
+        "sanitized": true,
+        "expected_compatibility": "resolved",
+        "response": {
+          "status": "success",
+          "created_ids": [
+            "AIPLATFORM-911"
+          ]
+        },
+        "approval": {
+          "status": "approved",
+          "action_id": "PMA-20260801-12"
+        },
+        "read_after_write": {
+          "verified": true,
+          "target_version": "synthetic-version-12"
+        }
+      },
+      {
+        "semantic": "jira.transition.execute",
+        "access": "write",
+        "sanitized": true,
+        "expected_compatibility": "resolved",
+        "response": {
+          "status": "success",
+          "created_ids": []
+        },
+        "approval": {
+          "status": "approved",
+          "action_id": "PMA-20260801-13"
+        },
+        "read_after_write": {
+          "verified": true,
+          "target_version": "synthetic-version-13"
+        }
+      },
+      {
+        "semantic": "confluence.page.search",
+        "access": "read",
+        "sanitized": true,
+        "expected_compatibility": "resolved",
+        "response": {
+          "source_id": "synthetic-14",
+          "items": [],
+          "next_cursor": null
+        }
+      },
+      {
+        "semantic": "confluence.page.read",
+        "access": "read",
+        "sanitized": true,
+        "expected_compatibility": "resolved",
+        "response": {
+          "source_id": "synthetic-15",
+          "items": [],
+          "next_cursor": null
+        }
+      },
+      {
+        "semantic": "confluence.page.version.read",
+        "access": "read",
+        "sanitized": true,
+        "expected_compatibility": "resolved",
+        "response": {
+          "source_id": "synthetic-16",
+          "items": [],
+          "next_cursor": null
+        }
+      },
+      {
+        "semantic": "confluence.label.read",
+        "access": "read",
+        "sanitized": true,
+        "expected_compatibility": "resolved",
+        "response": {
+          "source_id": "synthetic-17",
+          "items": [],
+          "next_cursor": null
+        }
+      },
+      {
+        "semantic": "confluence.comment.read",
+        "access": "read",
+        "sanitized": true,
+        "expected_compatibility": "resolved",
+        "response": {
+          "source_id": "synthetic-18",
+          "items": [],
+          "next_cursor": null
+        }
+      },
+      {
+        "semantic": "confluence.page.create",
+        "access": "write",
+        "sanitized": true,
+        "expected_compatibility": "resolved",
+        "response": {
+          "status": "success",
+          "created_ids": [
+            "AIPLATFORM-918"
+          ]
+        },
+        "approval": {
+          "status": "approved",
+          "action_id": "PMA-20260801-19"
+        },
+        "read_after_write": {
+          "verified": true,
+          "target_version": "synthetic-version-19"
+        }
+      },
+      {
+        "semantic": "confluence.page.update",
+        "access": "write",
+        "sanitized": true,
+        "expected_compatibility": "resolved",
+        "response": {
+          "status": "success",
+          "created_ids": []
+        },
+        "approval": {
+          "status": "approved",
+          "action_id": "PMA-20260801-20"
+        },
+        "read_after_write": {
+          "verified": true,
+          "target_version": "synthetic-version-20"
+        }
+      },
+      {
+        "semantic": "confluence.comment.create",
+        "access": "write",
+        "sanitized": true,
+        "expected_compatibility": "resolved",
+        "response": {
+          "status": "success",
+          "created_ids": [
+            "AIPLATFORM-920"
+          ]
+        },
+        "approval": {
+          "status": "approved",
+          "action_id": "PMA-20260801-21"
+        },
+        "read_after_write": {
+          "verified": true,
+          "target_version": "synthetic-version-21"
+        }
+      }
+    ]
+  }
+}

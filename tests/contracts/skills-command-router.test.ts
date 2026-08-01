@@ -1,6 +1,6 @@
 import { describe, expect, test } from "vitest";
 import { asArray, asObject, asString, listSkillFiles, parseFrontmatter, readJson, readText } from "../../src/contracts.js";
-import { parseRoute } from "../../src/routing-rules.js";
+import { commandTableRoutes, parseRoute } from "../../src/routing-rules.js";
 
 describe("skills", () => {
   test("all declared skills are versioned and reference the canonical policy", () => {
@@ -21,12 +21,18 @@ describe("command-router", () => {
     const wrapper = asObject(readJson("tests/fixtures/router/cases.json"), "router fixture");
     const cases = asArray(wrapper.data, "router cases");
     const router = asObject(readJson("template/.kilo/config/command-router.json"), "router");
+    const documented = commandTableRoutes(readText("template/.kilo/commands/jiraman.md"));
+    for (const [mode, skill] of Object.entries(asObject(router.canonical ?? null, "canonical"))) expect(documented.get(mode)).toBe(skill);
     for (const item of cases) {
       const entry = asObject(item, "route case");
       const result = parseRoute(router, asString(entry.input, "input"));
       expect(result.mode).toBe(entry.mode);
       expect(result.focus).toBe(entry.focus);
       expect(result.mayWriteMcp).toBe(entry.write);
+      if (result.mayWriteMcp) expect(result.focus).toMatch(/^(?:PMG|PMA)-[0-9]{8}-[0-9]{2}/);
     }
+    expect(parseRoute(router, "reject PMG-20260801-01").mutatesState).toBe(true);
+    expect(parseRoute(router, "reject arbitrary prose").mutatesState).toBe(false);
+    expect(parseRoute(router, "apply PMA-20260801-01 extra").mayWriteMcp).toBe(false);
   });
 });

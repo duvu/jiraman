@@ -15,127 +15,148 @@
       "semantic": "jira.project.read",
       "fixture": "capability_catalog.json",
       "sanitized": true,
-      "expected_compatibility": "resolved"
+      "expected_compatibility": "resolved",
+      "response_fixture": "capability_responses.json"
     },
     {
       "semantic": "jira.board.read",
       "fixture": "capability_catalog.json",
       "sanitized": true,
-      "expected_compatibility": "resolved"
+      "expected_compatibility": "resolved",
+      "response_fixture": "capability_responses.json"
     },
     {
       "semantic": "jira.sprint.read",
       "fixture": "capability_catalog.json",
       "sanitized": true,
-      "expected_compatibility": "resolved"
+      "expected_compatibility": "resolved",
+      "response_fixture": "capability_responses.json"
     },
     {
       "semantic": "jira.issue.search",
       "fixture": "capability_catalog.json",
       "sanitized": true,
-      "expected_compatibility": "resolved"
+      "expected_compatibility": "resolved",
+      "response_fixture": "capability_responses.json"
     },
     {
       "semantic": "jira.issue.read",
       "fixture": "capability_catalog.json",
       "sanitized": true,
-      "expected_compatibility": "resolved"
+      "expected_compatibility": "resolved",
+      "response_fixture": "capability_responses.json"
     },
     {
       "semantic": "jira.comment.read",
       "fixture": "capability_catalog.json",
       "sanitized": true,
-      "expected_compatibility": "resolved"
+      "expected_compatibility": "resolved",
+      "response_fixture": "capability_responses.json"
     },
     {
       "semantic": "jira.link.read",
       "fixture": "capability_catalog.json",
       "sanitized": true,
-      "expected_compatibility": "resolved"
+      "expected_compatibility": "resolved",
+      "response_fixture": "capability_responses.json"
     },
     {
       "semantic": "jira.transition.read",
       "fixture": "capability_catalog.json",
       "sanitized": true,
-      "expected_compatibility": "resolved"
+      "expected_compatibility": "resolved",
+      "response_fixture": "capability_responses.json"
     },
     {
       "semantic": "jira.issue.create",
       "fixture": "capability_catalog.json",
       "sanitized": true,
-      "expected_compatibility": "resolved"
+      "expected_compatibility": "resolved",
+      "response_fixture": "capability_responses.json"
     },
     {
       "semantic": "jira.issue.update",
       "fixture": "capability_catalog.json",
       "sanitized": true,
-      "expected_compatibility": "resolved"
+      "expected_compatibility": "resolved",
+      "response_fixture": "capability_responses.json"
     },
     {
       "semantic": "jira.comment.create",
       "fixture": "capability_catalog.json",
       "sanitized": true,
-      "expected_compatibility": "resolved"
+      "expected_compatibility": "resolved",
+      "response_fixture": "capability_responses.json"
     },
     {
       "semantic": "jira.link.create",
       "fixture": "capability_catalog.json",
       "sanitized": true,
-      "expected_compatibility": "resolved"
+      "expected_compatibility": "resolved",
+      "response_fixture": "capability_responses.json"
     },
     {
       "semantic": "jira.transition.execute",
       "fixture": "capability_catalog.json",
       "sanitized": true,
-      "expected_compatibility": "resolved"
+      "expected_compatibility": "resolved",
+      "response_fixture": "capability_responses.json"
     },
     {
       "semantic": "confluence.page.search",
       "fixture": "capability_catalog.json",
       "sanitized": true,
-      "expected_compatibility": "resolved"
+      "expected_compatibility": "resolved",
+      "response_fixture": "capability_responses.json"
     },
     {
       "semantic": "confluence.page.read",
       "fixture": "capability_catalog.json",
       "sanitized": true,
-      "expected_compatibility": "resolved"
+      "expected_compatibility": "resolved",
+      "response_fixture": "capability_responses.json"
     },
     {
       "semantic": "confluence.page.version.read",
       "fixture": "capability_catalog.json",
       "sanitized": true,
-      "expected_compatibility": "resolved"
+      "expected_compatibility": "resolved",
+      "response_fixture": "capability_responses.json"
     },
     {
       "semantic": "confluence.label.read",
       "fixture": "capability_catalog.json",
       "sanitized": true,
-      "expected_compatibility": "resolved"
+      "expected_compatibility": "resolved",
+      "response_fixture": "capability_responses.json"
     },
     {
       "semantic": "confluence.comment.read",
       "fixture": "capability_catalog.json",
       "sanitized": true,
-      "expected_compatibility": "resolved"
+      "expected_compatibility": "resolved",
+      "response_fixture": "capability_responses.json"
     },
     {
       "semantic": "confluence.page.create",
       "fixture": "capability_catalog.json",
       "sanitized": true,
-      "expected_compatibility": "resolved"
+      "expected_compatibility": "resolved",
+      "response_fixture": "capability_responses.json"
     },
     {
       "semantic": "confluence.page.update",
       "fixture": "capability_catalog.json",
       "sanitized": true,
-      "expected_compatibility": "resolved"
+      "expected_compatibility": "resolved",
+      "response_fixture": "capability_responses.json"
     },
     {
       "semantic": "confluence.comment.create",
       "fixture": "capability_catalog.json",
       "sanitized": true,
-      "expected_compatibility": "resolved"
+      "expected_compatibility": "resolved",
+      "response_fixture": "capability_responses.json"
     }
   ]
 }

@@ -34,9 +34,11 @@ export function validDate(value: string): boolean {
 }
 
 export function validDateTime(value: string): boolean {
-  const match = /^(\d{4}-\d{2}-\d{2})T(\d{2}):(\d{2}):(\d{2})(?:\.\d+)?Z$/.exec(value);
+  const match = /^(\d{4}-\d{2}-\d{2})T(\d{2}):(\d{2}):(\d{2})(?:\.\d+)?(?:Z|[+-](\d{2}):(\d{2}))$/.exec(value);
   if (match === null || !validDate(match[1] ?? "")) return false;
-  return Number(match[2]) <= 23 && Number(match[3]) <= 59 && Number(match[4]) <= 59;
+  const offsetHour = match[5] === undefined ? 0 : Number(match[5]);
+  const offsetMinute = match[6] === undefined ? 0 : Number(match[6]);
+  return Number(match[2]) <= 23 && Number(match[3]) <= 59 && Number(match[4]) <= 59 && offsetHour <= 23 && offsetMinute <= 59;
 }
 
 export function readText(path: string): string {

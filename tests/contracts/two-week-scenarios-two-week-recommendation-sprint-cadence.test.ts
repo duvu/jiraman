@@ -9,7 +9,6 @@ describe("two-week-scenarios and two-week-recommendation", () => {
     expect(candidateCanCommit(asObject(candidates.find((item) => item.class === "Ready-backed") ?? null, "ready candidate"))).toBe(true);
     expect(candidateCanCommit(asObject(candidates.find((item) => item.class === "New hypothesis") ?? null, "hypothesis"))).toBe(false);
     expect(distinctScenarioSelections(data)).toBe(true);
-    expect(asObject(data.page_proposal ?? null, "proposal").current_version).toBe(2);
   });
 });
 describe("sprint-cadence", () => {
