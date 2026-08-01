@@ -1,0 +1,8 @@
+{
+  "schema_version": 4,
+  "project": "AIPLATFORM",
+  "pending_actions": {
+    "PMA-20260731-01": {"status": "approved", "target": "AIPLATFORM-10"},
+    "PMG-20260731-01": {"status": "proposed", "actions": ["PMA-20260731-01"]}
+  }
+}
