@@ -1,0 +1,17 @@
+{
+  "workflow_id": "WF-20260801-01",
+  "command_mode": "apply",
+  "started_at": "2026-08-01T00:00:00Z",
+  "ended_at": "2026-08-01T00:01:00Z",
+  "capability_health": "healthy",
+  "tool_results": [
+    "success"
+  ],
+  "action_ids": [
+    "PMA-20260801-01"
+  ],
+  "verification_result": "passed",
+  "artifact_refs": [
+    "Confluence page-200"
+  ]
+}

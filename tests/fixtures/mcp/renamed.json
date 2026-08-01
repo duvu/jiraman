@@ -1,0 +1,26 @@
+{
+  "fixture_version": 1,
+  "kind": "mcp-renamed",
+  "metadata": {
+    "source": "synthetic-sanitized",
+    "version": "5.0",
+    "sanitized": true,
+    "semantic_capability": "mcp.compatibility"
+  },
+  "expected": {
+    "result": "compatible-unambiguous"
+  },
+  "data": {
+    "tools": [
+      {
+        "name": "lookup_work_items",
+        "description": "Search Jira issues in one project",
+        "access": "read",
+        "schema": {
+          "jql": "string"
+        }
+      }
+    ],
+    "result": "compatible-unambiguous"
+  }
+}

@@ -1,0 +1,36 @@
+{
+  "fixture_version": 1,
+  "kind": "scope-guards",
+  "metadata": {
+    "source": "synthetic-sanitized",
+    "version": "5.0",
+    "sanitized": true,
+    "semantic_capability": "policy.scope"
+  },
+  "expected": {
+    "project": "AIPLATFORM",
+    "cross_scope": "blocked"
+  },
+  "data": [
+    {
+      "request": "inspect AIPLATFORM-101",
+      "allowed": true,
+      "jql": "project = AIPLATFORM AND key = AIPLATFORM-101"
+    },
+    {
+      "request": "inspect OTHER-1",
+      "allowed": false,
+      "rejected": "OTHER-1"
+    },
+    {
+      "request": "read page outside configured root",
+      "allowed": false,
+      "rejected": "page-outside-root"
+    },
+    {
+      "request": "follow https://private.invalid/item",
+      "allowed": false,
+      "rejected": "cross-scope-link"
+    }
+  ]
+}

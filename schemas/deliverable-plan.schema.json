@@ -1,0 +1,168 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "candidates",
+    "scenarios",
+    "recommendation",
+    "displaced_work",
+    "page_proposal"
+  ],
+  "properties": {
+    "candidates": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "class",
+          "outcome",
+          "primary_epic",
+          "stories",
+          "target_sprint",
+          "week_1_outcome",
+          "week_2_outcome",
+          "acceptance_signal",
+          "rationale",
+          "evidence",
+          "assumptions",
+          "hypotheses",
+          "readiness",
+          "capacity_fit",
+          "dependencies",
+          "wip_impact",
+          "risk",
+          "confidence"
+        ],
+        "properties": {
+          "id": {
+            "pattern": "^DLV-[0-9]{8}-[0-9]{2}$",
+            "type": "string"
+          },
+          "class": {
+            "enum": [
+              "Ready-backed",
+              "Refinement candidate",
+              "New hypothesis",
+              "Excluded"
+            ]
+          },
+          "outcome": {
+            "type": "string",
+            "minLength": 1
+          },
+          "primary_epic": {
+            "type": "string",
+            "minLength": 1
+          },
+          "stories": {
+            "type": "array",
+            "minItems": 1
+          },
+          "target_sprint": {
+            "enum": [
+              "N+1",
+              "N+2"
+            ]
+          },
+          "week_1_outcome": {
+            "type": "string",
+            "minLength": 1
+          },
+          "week_2_outcome": {
+            "type": "string",
+            "minLength": 1
+          },
+          "acceptance_signal": {
+            "type": "string",
+            "minLength": 1
+          },
+          "rationale": {
+            "type": "string",
+            "minLength": 1
+          },
+          "evidence": {
+            "type": "array"
+          },
+          "assumptions": {
+            "type": "array"
+          },
+          "hypotheses": {
+            "type": "array"
+          },
+          "readiness": {
+            "type": "string"
+          },
+          "capacity_fit": {
+            "type": "string"
+          },
+          "dependencies": {
+            "type": "array"
+          },
+          "wip_impact": {
+            "type": "string"
+          },
+          "risk": {
+            "type": "string"
+          },
+          "confidence": {
+            "enum": [
+              "high",
+              "medium",
+              "low",
+              "not verified"
+            ]
+          }
+        }
+      }
+    },
+    "scenarios": {
+      "type": "array",
+      "minItems": 3
+    },
+    "recommendation": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "displaced_work": {
+      "type": "array"
+    },
+    "page_proposal": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "ownership",
+        "current_version",
+        "operation"
+      ],
+      "properties": {
+        "ownership": {
+          "enum": [
+            "jiraman-managed",
+            "mixed",
+            "human-owned"
+          ]
+        },
+        "current_version": {
+          "type": [
+            "string",
+            "integer"
+          ]
+        },
+        "operation": {
+          "enum": [
+            "page.create",
+            "page.update",
+            "page.section-update",
+            "page.comment",
+            "no-action"
+          ]
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,68 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://duvu.github.io/jiraman/schemas/state.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "project",
+    "pending_action_groups",
+    "deliverable_candidates",
+    "run_records",
+    "migration"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": 5
+    },
+    "project": {
+      "const": "AIPLATFORM"
+    },
+    "pending_action_groups": {
+      "type": "object",
+      "additionalProperties": {
+        "$ref": "action-group.schema.json"
+      }
+    },
+    "deliverable_candidates": {
+      "type": "object",
+      "propertyNames": {
+        "pattern": "^DLV-[0-9]{8}-[0-9]{2}$"
+      },
+      "additionalProperties": {
+        "type": "object"
+      }
+    },
+    "run_records": {
+      "type": "array",
+      "maxItems": 100,
+      "items": {
+        "$ref": "run-record.schema.json"
+      }
+    },
+    "migration": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "legacy_state_file",
+        "reapproval_required_ids"
+      ],
+      "properties": {
+        "legacy_state_file": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "reapproval_required_ids": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "pattern": "^PM[AG]-[0-9]{8}-[0-9]{2}$"
+          }
+        }
+      }
+    }
+  }
+}

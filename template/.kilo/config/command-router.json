@@ -1,0 +1,36 @@
+{
+  "schema_version": 5,
+  "default_mode": "daily",
+  "canonical": {
+    "daily": "jiraman-daily",
+    "health": "jiraman-flow-analysis",
+    "runway": "jiraman-flow-analysis",
+    "plan next-2-weeks": "jiraman-sprint-planning",
+    "brainstorm": "jiraman-sprint-planning",
+    "refine": "jiraman-refinement",
+    "meeting": "jiraman-meeting-actions",
+    "risks": "jiraman-risk-management",
+    "decision": "jiraman-decision-management",
+    "status": "jiraman-status-report",
+    "retrospective": "jiraman-sprint-planning",
+    "propose": "jiraman-apply-actions",
+    "apply": "jiraman-apply-actions",
+    "reject": "jiraman-apply-actions"
+  },
+  "aliases": {
+    "sprint-health": "health",
+    "sprint-plan": "plan next-2-weeks",
+    "deliverables": "plan next-2-weeks",
+    "next-2-weeks": "plan next-2-weeks",
+    "next-two-weeks": "plan next-2-weeks",
+    "two-week-deliverables": "plan next-2-weeks",
+    "hierarchy": "refine",
+    "triage": "refine",
+    "review": "status",
+    "sprint-review": "status"
+  },
+  "mutation_modes": ["apply", "reject"],
+  "mcp_write_modes": ["apply"],
+  "unknown_behavior": "show-supported-and-remain-read-only",
+  "precedence": "longest-exact-prefix"
+}

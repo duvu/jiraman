@@ -1,0 +1,101 @@
+{
+  "fixture_version": 1,
+  "kind": "two-week-deliverables",
+  "metadata": {
+    "source": "synthetic-sanitized",
+    "version": "5.0",
+    "sanitized": true,
+    "semantic_capability": "workflow.plan"
+  },
+  "expected": {
+    "writes": 0
+  },
+  "data": {
+    "candidates": [
+      {
+        "id": "DLV-20260801-01",
+        "class": "Ready-backed",
+        "outcome": "Operators restore v5 safely",
+        "primary_epic": "AIPLATFORM-100",
+        "stories": [
+          "AIPLATFORM-101"
+        ],
+        "target_sprint": "N+1",
+        "week_1_outcome": "Backup verified",
+        "week_2_outcome": "Rollback drill accepted",
+        "acceptance_signal": "drill passes",
+        "rationale": "reduce release risk",
+        "evidence": [
+          "ready Story"
+        ],
+        "assumptions": [],
+        "hypotheses": [],
+        "readiness": "ready",
+        "capacity_fit": "verified",
+        "dependencies": [],
+        "wip_impact": "within limit",
+        "risk": "medium",
+        "confidence": "high"
+      },
+      {
+        "id": "DLV-20260801-02",
+        "class": "New hypothesis",
+        "outcome": "Automate every migration",
+        "primary_epic": "AIPLATFORM-100",
+        "stories": [
+          "New candidate"
+        ],
+        "target_sprint": "N+2",
+        "week_1_outcome": "evidence gathered",
+        "week_2_outcome": "hypothesis reviewed",
+        "acceptance_signal": "decision recorded",
+        "rationale": "possible efficiency",
+        "evidence": [],
+        "assumptions": [
+          "repeat demand"
+        ],
+        "hypotheses": [
+          "automation pays back"
+        ],
+        "readiness": "not ready",
+        "capacity_fit": "not feasible",
+        "dependencies": [
+          "decision"
+        ],
+        "wip_impact": "unknown",
+        "risk": "high",
+        "confidence": "low"
+      }
+    ],
+    "scenarios": [
+      {
+        "name": "Flow-first",
+        "selected": [
+          "DLV-20260801-01"
+        ],
+        "trade_off": "delay hypothesis"
+      },
+      {
+        "name": "Risk-reduction",
+        "selected": [
+          "DLV-20260801-01"
+        ],
+        "trade_off": "less new scope"
+      },
+      {
+        "name": "Value-first",
+        "selected": [],
+        "trade_off": "No evidence-based recommendation"
+      }
+    ],
+    "recommendation": "DLV-20260801-01",
+    "displaced_work": [
+      "DLV-20260801-02"
+    ],
+    "page_proposal": {
+      "ownership": "jiraman-managed",
+      "current_version": 2,
+      "operation": "page.update"
+    }
+  }
+}

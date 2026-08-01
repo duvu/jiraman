@@ -1,0 +1,6 @@
+{
+  "workflow_id": "WF-1",
+  "command_mode": "daily",
+  "started_at": "2026-08-01T00:00:00Z",
+  "remote_body": "private content"
+}

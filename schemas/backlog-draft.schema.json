@@ -1,0 +1,102 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "epic",
+    "stories"
+  ],
+  "properties": {
+    "epic": {
+      "type": "object",
+      "required": [
+        "disposition",
+        "outcome"
+      ],
+      "properties": {
+        "disposition": {
+          "enum": [
+            "reuse",
+            "update",
+            "create"
+          ]
+        },
+        "outcome": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "stories": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "draft_ref",
+          "outcome",
+          "in_scope",
+          "out_of_scope",
+          "requirements",
+          "acceptance_criteria",
+          "constraints",
+          "dependencies",
+          "validation",
+          "estimate_basis",
+          "blocking_gaps"
+        ],
+        "properties": {
+          "draft_ref": {
+            "type": "string",
+            "minLength": 1
+          },
+          "outcome": {
+            "type": "string",
+            "minLength": 1
+          },
+          "in_scope": {
+            "type": "array",
+            "minItems": 1
+          },
+          "out_of_scope": {
+            "type": "array"
+          },
+          "requirements": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "pattern": "^REQ-[0-9]+$",
+              "type": "string"
+            }
+          },
+          "acceptance_criteria": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "pattern": "^AC-[0-9]+$",
+              "type": "string"
+            }
+          },
+          "constraints": {
+            "type": "array"
+          },
+          "dependencies": {
+            "type": "array"
+          },
+          "validation": {
+            "type": "array",
+            "minItems": 1
+          },
+          "estimate_basis": {
+            "type": "string",
+            "minLength": 1
+          },
+          "blocking_gaps": {
+            "type": "array"
+          }
+        }
+      }
+    }
+  }
+}

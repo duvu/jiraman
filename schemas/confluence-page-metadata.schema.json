@@ -1,0 +1,112 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "page_type",
+    "metadata_key",
+    "owner",
+    "status",
+    "created",
+    "last_reviewed",
+    "review_due",
+    "jira_project",
+    "related_epics",
+    "related_stories",
+    "deliverable_id",
+    "confidentiality",
+    "managed_by",
+    "ownership"
+  ],
+  "properties": {
+    "page_type": {
+      "enum": [
+        "project-home",
+        "goals-roadmap",
+        "next-two-week-plan",
+        "epic-brief",
+        "story-specification",
+        "architecture-decision",
+        "risk",
+        "sprint-planning",
+        "sprint-review",
+        "retrospective",
+        "weekly-status",
+        "meeting-notes"
+      ]
+    },
+    "metadata_key": {
+      "type": "string",
+      "minLength": 1
+    },
+    "owner": {
+      "type": "string",
+      "minLength": 1
+    },
+    "status": {
+      "enum": [
+        "draft",
+        "active",
+        "superseded",
+        "archived"
+      ]
+    },
+    "created": {
+      "type": "string",
+      "format": "date"
+    },
+    "last_reviewed": {
+      "type": "string",
+      "format": "date"
+    },
+    "review_due": {
+      "type": "string",
+      "format": "date"
+    },
+    "jira_project": {
+      "const": "AIPLATFORM"
+    },
+    "related_epics": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "pattern": "^AIPLATFORM-[0-9]+$"
+      }
+    },
+    "related_stories": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "pattern": "^AIPLATFORM-[0-9]+$"
+      }
+    },
+    "deliverable_id": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "pattern": "^DLV-[0-9]{8}-[0-9]{2}$"
+    },
+    "confidentiality": {
+      "enum": [
+        "internal",
+        "restricted"
+      ]
+    },
+    "managed_by": {
+      "enum": [
+        "jiraman",
+        "human"
+      ]
+    },
+    "ownership": {
+      "enum": [
+        "jiraman-managed",
+        "mixed",
+        "human-owned"
+      ]
+    }
+  }
+}

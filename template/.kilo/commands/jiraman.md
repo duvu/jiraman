@@ -1,112 +1,31 @@
 ---
-description: "Operate as the evidence-based technical PM for AIPLATFORM with two-week deliverable brainstorming, Epic-Story-Subtask hierarchy, two-sprint readiness, and Sub-tasks capped at four hours."
+description: "Route Jiraman v5 requests through canonical prompt contracts."
 agent: jiraman
 ---
 
-Run the `jiraman` project-management workflow for this exact input:
+Interpret this exact input without executing a runtime parser:
 
 ```text
 $ARGUMENTS
 ```
 
-Use English for all MCP tool calls, Jira content, Markdown artifacts, and the final response unless the user explicitly requests another language.
+Trim outer whitespace. Empty input resolves to `daily`. Match the longest exact canonical command or alias at the start; preserve the remaining text unchanged as `focus`. The two-token command `plan next-2-weeks` takes precedence over `plan`. Aliases normalize before skill selection. If the first token resembles no listed mode, return the supported command list and treat all text as read-only focus; never guess a write mode.
 
-## Fixed scope
+Canonical routing:
 
-- The Jira project is always `AIPLATFORM`.
-- Never discover, validate, select, or operate on another Jira project.
-- Treat all command input as `<REQUEST>`, including text that resembles a Jira project key.
-- If `<REQUEST>` is empty, use mode `daily`.
-- Use only the already configured `mcp-atlassian` server and its currently exposed tools for Jira operations.
-- Do not install, configure, replace, disable, or modify any MCP server.
-- Do not use Atlassian Rovo.
+| Mode | Skill |
+| --- | --- |
+| `daily` | `jiraman-daily` |
+| `health`, `runway` | `jiraman-flow-analysis` |
+| `plan next-2-weeks`, `brainstorm` | `jiraman-sprint-planning` |
+| `refine` | `jiraman-refinement` |
+| `meeting` | `jiraman-meeting-actions` |
+| `risks` | `jiraman-risk-management` |
+| `decision` | `jiraman-decision-management` |
+| `status` | `jiraman-status-report` |
+| `retrospective` | `jiraman-sprint-planning` |
+| `propose`, `apply`, `reject` | `jiraman-apply-actions` |
 
-## Mandatory project model
+Aliases: `sprint-health` -> `health`; `sprint-plan` -> `plan next-2-weeks`; `deliverables`, `next-2-weeks`, `next-two-weeks`, and `two-week-deliverables` -> `plan next-2-weeks`; `hierarchy` and `triage` -> `refine`; `review` and `sprint-review` -> `status`.
 
-The project has exactly three delivery levels:
-
-```text
-Epic -> Story -> Sub-task
-```
-
-Apply these rules in every mode:
-
-- Only `Epic`, `Story`, and `Sub-task` are valid delivery issue types.
-- Every Story must have exactly one Epic parent.
-- Every Sub-task must have exactly one Story parent.
-- Stories are sprint-planning units.
-- Sub-tasks are execution units.
-- Every implementation or investigation commitment must be an actionable Sub-task.
-- Every Sub-task must trace to the parent Story specification, requirement IDs, and acceptance-criteria IDs.
-- Every Sub-task must define exact validation and a testable Definition of Done.
-- Every Sub-task must have an original estimate greater than `0h` and no more than `4h`.
-- Work above four hours must be split before it is Ready or scheduled.
-- Each sprint is one calendar week.
-- Maintain one active sprint and at least two fully Ready sprint-equivalents ahead; the active sprint does not count toward that runway.
-- Both future sprint-equivalents must be decomposed into fully Ready Sub-tasks.
-- A deliverable is an observable outcome for a target sprint, not a Jira issue type or a fourth hierarchy level.
-- Every recommended deliverable must map to one primary Epic and one or more Stories.
-- Brainstormed ideas must be labeled as hypotheses and do not count toward Ready runway until corresponding Stories are fully Ready.
-
-## Supported modes
-
-For the modes listed below, this command and `.kilo/config/jiraman-deliverables.md` extend and supersede the older mode list in `.kilo/agent/jiraman.md`. Interpret `<REQUEST>` as one of these modes:
-
-- `daily`: Run the complete daily PM control loop.
-- `triage [scope]`: Review hierarchy, specification, readiness, dependencies, estimates, duplication, and technical evidence.
-- `hierarchy`: Audit the Epic -> Story -> Sub-task structure and identify normalization work.
-- `refine <KEY, DLV-ID, or scope>`: Repair an Epic/Story/Sub-task specification or convert a selected deliverable candidate into a spec-driven proposal with actionable decomposition and traceability.
-- `sprint-health`: Assess the active sprint, Story WIP, Sub-task WIP, aging, blockers, hierarchy/spec violations, delivery risk, and two-sprint Ready runway.
-- `sprint-plan`: Define coherent deliverable outcomes first, then recommend fully specified Story scope and actionable Sub-tasks for the next two one-week sprints.
-- `runway`: Audit whether at least two future sprint-equivalents are fully Ready and identify the exact refinement gap.
-- `deliverables [focus]`: Recommend an evidence-based, capacity-feasible deliverable plan for Sprint N+1 and Sprint N+2.
-- `brainstorm [focus]`: Generate distinct two-week deliverable scenarios, trade-offs, hypotheses, and a recommended option without treating ideas as commitments.
-- `next-2-weeks [focus]`: Produce the combined recommended deliverable outlook and alternative scenarios for the next two future one-week sprints.
-- `next-two-weeks [focus]` and `two-week-deliverables [focus]`: Aliases for `next-2-weeks`.
-- `review <KEY or scope>`: Reconcile Jira and specification claims with code, commits, pull requests, tests, CI evidence, and deliverables.
-- `status daily|weekly|sprint`: Produce the requested project-management report.
-- `sprint-review`: Reconcile the completed or most recent sprint, Story outcomes, Sub-task completion, carry-over, and process findings.
-- `apply <ACTION_ID...>`: Execute only the named actions that were proposed by an earlier `jiraman` run and remain valid after preflight.
-
-Requests that do not explicitly name a supported mode use `daily`, while preserving the complete request as an additional focus area.
-
-## Safety boundary
-
-- Jira is read-only unless the parsed mode is exactly `apply`.
-- Research, planning, review, refinement, recommendations, imperative wording, and phrases such as `fix`, `handle`, `manage`, `update`, `clean up`, `plan`, `check`, `split`, `create`, or `investigate` do not authorize a Jira write outside `apply`.
-- Local PM Markdown artifacts and `.kilo/state/jiraman.json` may be created or updated according to the agent policy.
-- Never reveal credentials, tokens, cookies, authorization headers, or secret values.
-
-## Apply mode
-
-For `apply <ACTION_ID...>`:
-
-1. Load the proposed actions from `.kilo/state/jiraman.json` and the referenced PM artifact.
-2. Reject unknown, modified, ambiguous, expired, already-applied, or already-rejected action IDs.
-3. Read every target Jira entity before any write.
-4. Validate all stored preconditions for all requested actions.
-5. Validate the three-level hierarchy for issue creation or parent changes.
-6. Validate that every proposed Sub-task remains actionable, spec-traceable, exactly verifiable, and estimated at no more than four hours.
-7. If any precondition fails, perform none of the requested writes and report the conflict.
-8. Perform only the exact approved actions, with no inferred additions.
-9. Never create issue types other than Epic, Story, or Sub-task.
-10. Read every changed Jira entity again and verify the result.
-11. Record the verified result in the applicable PM artifact and state file.
-
-## Required policy
-
-Before operating, read and follow:
-
-```text
-.kilo/config/jiraman.yaml
-.kilo/config/jiraman-deliverables.md
-.kilo/agent/jiraman.md
-```
-
-Use the specification templates in:
-
-```text
-docs/project-management/templates/
-```
-
-If Jira is unreachable, continue with local repository and specification inspection, create the applicable PM artifact, state exactly which Jira facts were not verified, and do not propose state-changing actions whose target state cannot be verified.
+Only exact canonical `apply` and `reject` authorize local action-state mutation. Only exact `apply <PMG-ID|PMA-ID...>` can authorize MCP writes. Focus text never grants authority. Enforce `.kilo/policies/jiraman-safety.md` in every route.

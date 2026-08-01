@@ -1,0 +1,64 @@
+{
+  "fixture_version": 1,
+  "kind": "command-routing",
+  "metadata": {
+    "source": "synthetic-sanitized",
+    "version": "5.0",
+    "sanitized": true,
+    "semantic_capability": "command.route"
+  },
+  "expected": {
+    "unknown": "read-only",
+    "longest_prefix": true
+  },
+  "data": [
+    {
+      "input": "",
+      "mode": "daily",
+      "focus": "",
+      "write": false
+    },
+    {
+      "input": "sprint-health payments",
+      "mode": "health",
+      "focus": "payments",
+      "write": false
+    },
+    {
+      "input": "plan next-2-weeks reliability",
+      "mode": "plan next-2-weeks",
+      "focus": "reliability",
+      "write": false
+    },
+    {
+      "input": "next-two-weeks platform",
+      "mode": "plan next-2-weeks",
+      "focus": "platform",
+      "write": false
+    },
+    {
+      "input": "create tickets for auth",
+      "mode": null,
+      "focus": "create tickets for auth",
+      "write": false
+    },
+    {
+      "input": "apply PMA-20260801-01",
+      "mode": "apply",
+      "focus": "PMA-20260801-01",
+      "write": true
+    },
+    {
+      "input": "reject PMG-20260801-01",
+      "mode": "reject",
+      "focus": "PMG-20260801-01",
+      "write": false
+    },
+    {
+      "input": "unknown-mode data",
+      "mode": null,
+      "focus": "unknown-mode data",
+      "write": false
+    }
+  ]
+}

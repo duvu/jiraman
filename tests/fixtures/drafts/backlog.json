@@ -1,0 +1,47 @@
+{
+  "fixture_version": 1,
+  "kind": "backlog-drafts",
+  "metadata": {
+    "source": "synthetic-sanitized",
+    "version": "5.0",
+    "sanitized": true,
+    "semantic_capability": "refinement.draft"
+  },
+  "expected": {
+    "complete": true
+  },
+  "data": {
+    "epic": {
+      "disposition": "reuse",
+      "key": "AIPLATFORM-100",
+      "outcome": "Safe upgrades"
+    },
+    "stories": [
+      {
+        "draft_ref": "story-1",
+        "outcome": "Operators restore a v4 backup",
+        "in_scope": [
+          "managed files"
+        ],
+        "out_of_scope": [
+          "MCP"
+        ],
+        "requirements": [
+          "REQ-1"
+        ],
+        "acceptance_criteria": [
+          "AC-1"
+        ],
+        "constraints": [
+          "one sprint"
+        ],
+        "dependencies": [],
+        "validation": [
+          "backup byte comparison"
+        ],
+        "estimate_basis": "verified team unit",
+        "blocking_gaps": []
+      }
+    ]
+  }
+}

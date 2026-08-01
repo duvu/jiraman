@@ -1,123 +1,54 @@
 #!/usr/bin/env bash
 set -euo pipefail
-ROOT="${1:-$PWD}"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+SOURCE=0
+if [[ "${1:-}" == "--source-tree" ]]; then SOURCE=1; ROOT="$SCRIPT_DIR"; else ROOT="${1:-$PWD}"; fi
 ROOT="$(cd "$ROOT" && pwd)"
-
-files=(
-  ".kilo/commands/jiraman.md"
-  ".kilo/agent/jiraman.md"
-  ".kilo/config/jiraman.yaml"
-  ".kilo/config/jiraman-deliverables.md"
-  ".kilo/state/jiraman.json"
-  "docs/project-management/templates/epic-spec.md"
-  "docs/project-management/templates/story-spec.md"
-  "docs/project-management/templates/subtask-spec.md"
-  "docs/project-management/templates/hierarchy-policy.md"
-  "docs/project-management/templates/two-week-deliverable-plan.md"
-  "docs/project-management/risk-register.md"
-  "docs/project-management/decision-log.md"
-  "docs/project-management/two-week-deliverables/.gitkeep"
-)
-
+MANIFEST="$SCRIPT_DIR/packaging/managed-files.txt"
 failed=0
-for rel in "${files[@]}"; do
-  if [[ -f "$ROOT/$rel" ]]; then
-    echo "OK   $rel"
-  else
-    echo "MISS $rel"
-    failed=1
-  fi
-done
+while IFS= read -r relative; do
+  path="$ROOT/$relative"
+  if [[ "$SOURCE" -eq 1 ]]; then path="$ROOT/template/$relative"; fi
+  if [[ -f "$path" ]]; then echo "OK   $relative"; else echo "MISS $relative"; failed=1; fi
+done < "$MANIFEST"
 
-if grep -qxF '.kilo/state/' "$ROOT/.gitignore" 2>/dev/null; then
-  echo "OK   .kilo/state/ is gitignored"
-else
-  echo "WARN .kilo/state/ is not gitignored"
+agent="$ROOT/.kilo/agents/jiraman.md"
+command="$ROOT/.kilo/commands/jiraman.md"
+config_root="$ROOT/.kilo/config"
+state="$ROOT/.kilo/state/jiraman.json"
+if [[ "$SOURCE" -eq 1 ]]; then
+  agent="$ROOT/template/.kilo/agents/jiraman.md"; command="$ROOT/template/.kilo/commands/jiraman.md"; config_root="$ROOT/template/.kilo/config"; state="$ROOT/template/.kilo/state/jiraman.json"
 fi
-
-if grep -q 'agent: jiraman' "$ROOT/.kilo/commands/jiraman.md" 2>/dev/null; then
-  echo "OK   slash command routes to jiraman"
-else
-  echo "FAIL slash command does not route to jiraman"
-  failed=1
+if grep -q '^agent: jiraman$' "$command" && grep -q 'jiraman-apply-actions' "$agent"; then echo "OK   canonical agent routing"; else echo "FAIL canonical agent routing"; failed=1; fi
+if grep -q 'mcp-atlassian' "$agent" && grep -q 'untrusted evidence' "$agent" && grep -q 'AIPLATFORM' "$agent"; then echo "OK   primary safety invariants"; else echo "FAIL primary safety invariants"; failed=1; fi
+if ! command -v node >/dev/null 2>&1; then echo "FAIL Node is required for verification tooling"; exit 1; fi
+if ! node - "$config_root" "$state" <<'NODE'
+const fs=require("fs"), path=require("path");
+const [configRoot,statePath]=process.argv.slice(2);
+for (const file of ["jiraman.json","command-router.json","mcp-atlassian.json"]) JSON.parse(fs.readFileSync(path.join(configRoot,file),"utf8"));
+JSON.parse(fs.readFileSync(statePath,"utf8"));
+NODE
+then echo "FAIL malformed JSON"; failed=1; else echo "OK   JSON syntax"; fi
+if ! node - "$ROOT" "$SOURCE" <<'NODE'
+const fs=require("fs"), path=require("path");
+const [root,source]=process.argv.slice(2);
+const prefix=source==="1"?path.join(root,"template"):root;
+const index=JSON.parse(fs.readFileSync(path.join(prefix,".kilo/skills/index.json"),"utf8"));
+for(const skill of index.skills){if(!fs.existsSync(path.join(prefix,skill.path))) throw new Error(`missing ${skill.path}`)}
+NODE
+then echo "FAIL broken skill index"; failed=1; else echo "OK   skill references"; fi
+if [[ "$SOURCE" -eq 0 ]]; then
+  for pattern in ".kilo/state/" ".jiraman-backup-*/"; do if ! grep -qxF "$pattern" "$ROOT/.gitignore"; then echo "FAIL missing gitignore: $pattern"; failed=1; fi; done
+  for obsolete in ".kilo/agent/jiraman.md" ".kilo/config/jiraman.yaml" ".kilo/config/jiraman-deliverables.md"; do if [[ -e "$ROOT/$obsolete" ]]; then echo "FAIL obsolete v4 path: $obsolete"; failed=1; fi; done
 fi
-
-if grep -q 'Epic -> Story -> Sub-task' "$ROOT/.kilo/agent/jiraman.md" 2>/dev/null; then
-  echo "OK   strict three-level hierarchy policy is present"
-else
-  echo "FAIL hierarchy policy is missing from the agent"
-  failed=1
+scan_root="$ROOT/.kilo"
+if [[ "$SOURCE" -eq 1 ]]; then scan_root="$ROOT/template/.kilo"; fi
+while IFS= read -r path; do
+  extension="${path##*.}"
+  if [[ "$extension" == "p""y" || "$extension" == "p""yc" ]]; then echo "FAIL application runtime file: $path"; failed=1; fi
+done < <(find "$scan_root" -type f -print)
+if [[ "$SOURCE" -eq 1 ]]; then
+  for executable in install.sh verify.sh scripts/ci.sh scripts/package.sh scripts/verify_package.sh tests/install/run-clean-install.sh tests/install/run-v4-upgrade.sh; do if [[ ! -x "$ROOT/$executable" ]]; then echo "FAIL not executable: $executable"; failed=1; fi; done
 fi
-
-if grep -q 'maximum_original_estimate_hours: 4' "$ROOT/.kilo/config/jiraman.yaml" 2>/dev/null; then
-  echo "OK   four-hour Sub-task maximum is configured"
-else
-  echo "FAIL four-hour Sub-task maximum is not configured"
-  failed=1
-fi
-
-if grep -q 'count_only_ready_stories: true' "$ROOT/.kilo/config/jiraman.yaml" 2>/dev/null; then
-  echo "OK   ready runway counts Stories only"
-else
-  echo "FAIL Story-only ready-runway policy is missing"
-  failed=1
-fi
-
-if grep -q '`deliverables \[focus\]`' "$ROOT/.kilo/commands/jiraman.md" 2>/dev/null && \
-   grep -q '`brainstorm \[focus\]`' "$ROOT/.kilo/commands/jiraman.md" 2>/dev/null && \
-   grep -q 'extend and supersede' "$ROOT/.kilo/commands/jiraman.md" 2>/dev/null && \
-   grep -q 'DLV-YYYYMMDD-NN' "$ROOT/.kilo/config/jiraman-deliverables.md" 2>/dev/null; then
-  echo "OK   two-week deliverable modes and policy extension are present"
-else
-  echo "FAIL two-week deliverable mode routing or policy is missing"
-  failed=1
-fi
-
-if grep -q 'not a Jira issue type' "$ROOT/.kilo/config/jiraman-deliverables.md" 2>/dev/null && \
-   grep -q 'does not create a fourth Jira hierarchy level' "$ROOT/.kilo/config/jiraman-deliverables.md" 2>/dev/null && \
-   grep -q 'does not count toward Ready runway' "$ROOT/.kilo/config/jiraman-deliverables.md" 2>/dev/null; then
-  echo "OK   deliverable hierarchy and runway safety guards are present"
-else
-  echo "FAIL deliverable hierarchy or runway safety guard is missing"
-  failed=1
-fi
-
-if command -v python3 >/dev/null 2>&1; then
-  if python3 - "$ROOT" <<'PY'
-import json
-import pathlib
-import sys
-
-root = pathlib.Path(sys.argv[1])
-with (root / '.kilo/state/jiraman.json').open(encoding='utf-8') as fh:
-    state = json.load(fh)
-assert state['schema_version'] >= 3
-assert state['project'] == 'AIPLATFORM'
-print('OK   backward-compatible state JSON validation passed')
-
-try:
-    import yaml
-except ModuleNotFoundError:
-    print('WARN PyYAML is not installed; skipped semantic YAML validation')
-else:
-    with (root / '.kilo/config/jiraman.yaml').open(encoding='utf-8') as fh:
-        config = yaml.safe_load(fh)
-    assert config['issue_hierarchy']['allow_other_issue_types'] is False
-    assert config['issue_hierarchy']['execution_level'] == 'subtask'
-    assert config['spec_driven_delivery']['subtask_spec']['maximum_original_estimate_hours'] == 4
-    assert config['spec_driven_delivery']['subtask_spec']['maximum_actual_focused_time_hours'] == 4
-    assert config['sprint_management']['ready_horizon_sprints'] == 2
-    assert config['sprint_management']['ready_runway']['count_only_ready_stories'] is True
-    print('OK   core YAML policy validation passed')
-PY
-  then
-    :
-  else
-    echo "FAIL JSON/YAML policy validation failed"
-    failed=1
-  fi
-else
-  echo "WARN python3 not found; skipped JSON/YAML validation"
-fi
-
+if [[ "$failed" -eq 0 ]]; then echo "Jiraman verification: PASS"; fi
 exit "$failed"

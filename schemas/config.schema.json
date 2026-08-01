@@ -1,0 +1,177 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://duvu.github.io/jiraman/schemas/config.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "project",
+    "confluence",
+    "delivery",
+    "actions",
+    "state"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": 5
+    },
+    "project": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "key",
+        "language",
+        "timezone",
+        "sprint_length_days"
+      ],
+      "properties": {
+        "key": {
+          "const": "AIPLATFORM"
+        },
+        "language": {
+          "type": "string",
+          "minLength": 1
+        },
+        "timezone": {
+          "type": "string",
+          "minLength": 1
+        },
+        "sprint_length_days": {
+          "type": "integer",
+          "minimum": 1
+        }
+      }
+    },
+    "confluence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "allowed_space_keys",
+        "page_roots"
+      ],
+      "properties": {
+        "allowed_space_keys": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "pattern": "^[A-Z][A-Z0-9_-]+$"
+          }
+        },
+        "page_roots": {
+          "type": "object",
+          "additionalProperties": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        }
+      }
+    },
+    "delivery": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "hierarchy",
+        "maximum_subtask_hours",
+        "active_story_limit",
+        "per_assignee_active_story_limit",
+        "per_assignee_in_progress_subtask_limit",
+        "review_queue_limit",
+        "validation_queue_limit",
+        "ready_horizon_sprints",
+        "allow_issue_count_capacity"
+      ],
+      "properties": {
+        "hierarchy": {
+          "const": [
+            "Epic",
+            "Story",
+            "Sub-task"
+          ]
+        },
+        "maximum_subtask_hours": {
+          "const": 4
+        },
+        "active_story_limit": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "per_assignee_active_story_limit": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "per_assignee_in_progress_subtask_limit": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "review_queue_limit": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "validation_queue_limit": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "ready_horizon_sprints": {
+          "const": 2
+        },
+        "allow_issue_count_capacity": {
+          "const": false
+        }
+      }
+    },
+    "actions": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "group_prefix",
+        "action_prefix",
+        "ttl_hours",
+        "all_or_nothing_preflight",
+        "read_before_write",
+        "read_after_write"
+      ],
+      "properties": {
+        "group_prefix": {
+          "const": "PMG"
+        },
+        "action_prefix": {
+          "const": "PMA"
+        },
+        "ttl_hours": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "all_or_nothing_preflight": {
+          "const": true
+        },
+        "read_before_write": {
+          "const": true
+        },
+        "read_after_write": {
+          "const": true
+        }
+      }
+    },
+    "state": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "path",
+        "run_retention_days"
+      ],
+      "properties": {
+        "path": {
+          "const": ".kilo/state/jiraman.json"
+        },
+        "run_retention_days": {
+          "type": "integer",
+          "minimum": 1
+        }
+      }
+    }
+  }
+}

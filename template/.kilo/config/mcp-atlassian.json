@@ -1,0 +1,248 @@
+{
+  "schema_version": 5,
+  "server_ownership": "external-user-owned",
+  "selection": "one-unambiguous-schema-compatible-exposed-tool",
+  "capabilities": [
+    {
+      "semantic": "jira.project.read",
+      "access": "read",
+      "availability": "required",
+      "required_by": [
+        "jiraman-daily",
+        "jiraman-flow-analysis"
+      ]
+    },
+    {
+      "semantic": "jira.board.read",
+      "access": "read",
+      "availability": "optional",
+      "required_by": [
+        "jiraman-daily",
+        "jiraman-sprint-planning"
+      ]
+    },
+    {
+      "semantic": "jira.sprint.read",
+      "access": "read",
+      "availability": "optional",
+      "required_by": [
+        "jiraman-daily",
+        "jiraman-flow-analysis",
+        "jiraman-sprint-planning"
+      ]
+    },
+    {
+      "semantic": "jira.issue.search",
+      "access": "read",
+      "availability": "required",
+      "required_by": [
+        "jiraman-refinement",
+        "jiraman-meeting-actions"
+      ]
+    },
+    {
+      "semantic": "jira.issue.read",
+      "access": "read",
+      "availability": "required",
+      "required_by": [
+        "jiraman-daily",
+        "jiraman-flow-analysis",
+        "jiraman-refinement",
+        "jiraman-apply-actions"
+      ]
+    },
+    {
+      "semantic": "jira.comment.read",
+      "access": "read",
+      "availability": "optional",
+      "required_by": [
+        "jiraman-refinement",
+        "jiraman-meeting-actions"
+      ]
+    },
+    {
+      "semantic": "jira.link.read",
+      "access": "read",
+      "availability": "optional",
+      "required_by": [
+        "jiraman-refinement",
+        "jiraman-apply-actions"
+      ]
+    },
+    {
+      "semantic": "jira.transition.read",
+      "access": "read",
+      "availability": "optional",
+      "required_by": [
+        "jiraman-flow-analysis",
+        "jiraman-apply-actions"
+      ]
+    },
+    {
+      "semantic": "jira.issue.create",
+      "access": "write",
+      "availability": "operation-required",
+      "required_by": [
+        "jiraman-apply-actions"
+      ],
+      "permission": "ask"
+    },
+    {
+      "semantic": "jira.issue.update",
+      "access": "write",
+      "availability": "operation-required",
+      "required_by": [
+        "jiraman-apply-actions"
+      ],
+      "permission": "ask"
+    },
+    {
+      "semantic": "jira.comment.create",
+      "access": "write",
+      "availability": "operation-required",
+      "required_by": [
+        "jiraman-apply-actions"
+      ],
+      "permission": "ask"
+    },
+    {
+      "semantic": "jira.link.create",
+      "access": "write",
+      "availability": "operation-required",
+      "required_by": [
+        "jiraman-apply-actions"
+      ],
+      "permission": "ask"
+    },
+    {
+      "semantic": "jira.transition.execute",
+      "access": "write",
+      "availability": "operation-required",
+      "required_by": [
+        "jiraman-apply-actions"
+      ],
+      "permission": "ask"
+    },
+    {
+      "semantic": "confluence.page.search",
+      "access": "read",
+      "availability": "required",
+      "required_by": [
+        "jiraman-confluence-publish",
+        "jiraman-refinement",
+        "jiraman-status-report"
+      ]
+    },
+    {
+      "semantic": "confluence.page.read",
+      "access": "read",
+      "availability": "required",
+      "required_by": [
+        "jiraman-confluence-publish",
+        "jiraman-refinement",
+        "jiraman-status-report",
+        "jiraman-apply-actions"
+      ]
+    },
+    {
+      "semantic": "confluence.page.version.read",
+      "access": "read",
+      "availability": "required",
+      "required_by": [
+        "jiraman-confluence-publish",
+        "jiraman-apply-actions"
+      ]
+    },
+    {
+      "semantic": "confluence.label.read",
+      "access": "read",
+      "availability": "optional",
+      "required_by": [
+        "jiraman-confluence-publish"
+      ]
+    },
+    {
+      "semantic": "confluence.comment.read",
+      "access": "read",
+      "availability": "optional",
+      "required_by": [
+        "jiraman-confluence-publish",
+        "jiraman-meeting-actions"
+      ]
+    },
+    {
+      "semantic": "confluence.page.create",
+      "access": "write",
+      "availability": "operation-required",
+      "required_by": [
+        "jiraman-apply-actions"
+      ],
+      "permission": "ask"
+    },
+    {
+      "semantic": "confluence.page.update",
+      "access": "write",
+      "availability": "operation-required",
+      "required_by": [
+        "jiraman-apply-actions"
+      ],
+      "permission": "ask"
+    },
+    {
+      "semantic": "confluence.comment.create",
+      "access": "write",
+      "availability": "operation-required",
+      "required_by": [
+        "jiraman-apply-actions"
+      ],
+      "permission": "ask"
+    }
+  ],
+  "profiles": {
+    "read-only-analysis": {
+      "allow": [
+        "read"
+      ],
+      "deny": [
+        "write",
+        "destructive"
+      ]
+    },
+    "report-proposal": {
+      "allow": [
+        "read"
+      ],
+      "deny": [
+        "write",
+        "destructive"
+      ]
+    },
+    "approved-write": {
+      "allow": [
+        "read",
+        "write"
+      ],
+      "write_permission": "ask",
+      "deny": [
+        "destructive"
+      ]
+    }
+  },
+  "denied": [
+    {
+      "semantic": "jira.issue.delete",
+      "access": "destructive",
+      "availability": "forbidden"
+    },
+    {
+      "semantic": "confluence.page.delete",
+      "access": "destructive",
+      "availability": "forbidden"
+    },
+    {
+      "semantic": "mcp.configuration.write",
+      "access": "destructive",
+      "availability": "forbidden"
+    }
+  ]
+}

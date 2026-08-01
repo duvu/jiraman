@@ -1,0 +1,53 @@
+{
+  "fixture_version": 1,
+  "kind": "confluence-page-proposals",
+  "metadata": {
+    "source": "synthetic-sanitized",
+    "version": "5.0",
+    "sanitized": true,
+    "semantic_capability": "confluence.page.propose"
+  },
+  "expected": {
+    "ambiguous": "blocked",
+    "unchanged": "no-action",
+    "human": "comment-or-patch"
+  },
+  "data": [
+    {
+      "case": "managed",
+      "ownership": "jiraman-managed",
+      "version": 4,
+      "operation": "page.update",
+      "full_replace": true
+    },
+    {
+      "case": "mixed",
+      "ownership": "mixed",
+      "version": 2,
+      "operation": "page.section-update",
+      "section": "summary",
+      "full_replace": false
+    },
+    {
+      "case": "human",
+      "ownership": "human-owned",
+      "version": 7,
+      "operation": "page.comment",
+      "full_replace": false
+    },
+    {
+      "case": "unchanged",
+      "ownership": "jiraman-managed",
+      "version": 5,
+      "operation": "no-action"
+    },
+    {
+      "case": "ambiguous-title",
+      "matches": [
+        "page-1",
+        "page-2"
+      ],
+      "operation": "blocked"
+    }
+  ]
+}

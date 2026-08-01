@@ -1,0 +1,69 @@
+{
+  "fixture_version": 1,
+  "kind": "action-lifecycle",
+  "metadata": {
+    "source": "synthetic-sanitized",
+    "version": "5.0",
+    "sanitized": true,
+    "semantic_capability": "actions.preflight"
+  },
+  "expected": {
+    "writes_before_complete_preflight": 0,
+    "replay_writes": 0
+  },
+  "data": [
+    {
+      "case": "valid",
+      "from": "approved",
+      "preflight": "pass",
+      "to": "applied",
+      "verification": "passed"
+    },
+    {
+      "case": "expired",
+      "from": "approved",
+      "preflight": "blocked",
+      "to": "stale",
+      "writes": 0
+    },
+    {
+      "case": "modified",
+      "from": "approved",
+      "hash_match": false,
+      "preflight": "blocked",
+      "writes": 0
+    },
+    {
+      "case": "rejected",
+      "from": "rejected",
+      "preflight": "blocked",
+      "writes": 0
+    },
+    {
+      "case": "partial",
+      "risk": "high",
+      "approved_ids": [],
+      "preflight": "blocked",
+      "writes": 0
+    },
+    {
+      "case": "replay",
+      "from": "applied",
+      "preflight": "blocked",
+      "writes": 0
+    },
+    {
+      "case": "write-failure",
+      "preflight": "pass",
+      "first_write": "failed",
+      "dependent_writes": 0,
+      "to": "failed"
+    },
+    {
+      "case": "verification",
+      "write_result": "success",
+      "read_after_write": "mismatch",
+      "to": "verification-failed"
+    }
+  ]
+}
