@@ -40,5 +40,6 @@ export function parseRoute(router: JsonObject, rawInput: string): RouteResult {
   invariant(typeof skill === "string", `mode has no skill: ${mode}`);
   const focus = input.slice(prefix.length).trim();
   const exactActionSelection = isExactActionSelection(focus);
-  return { mode, skill, focus, mutatesState: (mode === "apply" || mode === "reject") && exactActionSelection, mayWriteMcp: mode === "apply" && exactActionSelection };
+  const mutatesState = (mode === "propose" && focus === "") || ((mode === "apply" || mode === "reject") && exactActionSelection);
+  return { mode, skill, focus, mutatesState, mayWriteMcp: mode === "apply" && exactActionSelection };
 }

@@ -36,6 +36,8 @@ describe("command-router", () => {
     for (const alias of Object.keys(aliases)) expect(fixtureInputs.some((input) => input === alias || input.startsWith(alias + " ")), alias).toBe(true);
     expect(parseRoute(router, "reject PMG-20260801-01").mutatesState).toBe(true);
     expect(parseRoute(router, "reject arbitrary prose").mutatesState).toBe(false);
+    expect(parseRoute(router, "propose").mutatesState).toBe(true);
+    expect(parseRoute(router, "propose arbitrary prose").mutatesState).toBe(false);
     expect(parseRoute(router, "apply PMA-20260801-01 extra").mayWriteMcp).toBe(false);
   });
 });

@@ -5,7 +5,7 @@
   "type": "module",
   "engines": {"node": ">=20"},
   "scripts": {
-    "build": "tsc -p tsconfig.json",
+    "build": "tsc -p tsconfig.json && mkdir -p dist/scripts && cp scripts/sensitive-content.mjs dist/scripts/sensitive-content.mjs",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "test": "vitest run",
     "validate": "npm run build --silent && node dist/src/validate.js all",

@@ -91,6 +91,18 @@
       "write": false
     },
     {
+      "input": "propose",
+      "mode": "propose",
+      "focus": "",
+      "write": false
+    },
+    {
+      "input": "propose arbitrary prose",
+      "mode": "propose",
+      "focus": "arbitrary prose",
+      "write": false
+    },
+    {
       "input": "apply PMA-20260801-01",
       "mode": "apply",
       "focus": "PMA-20260801-01",

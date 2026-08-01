@@ -28,7 +28,7 @@ Load only these package-owned skills: `jiraman-daily`, `jiraman-sprint-health`, 
 
 # Intent and Write Safety
 
-Parse input according to `.kilo/commands/jiraman.md`. Empty input is `daily`. Unknown or ambiguous text remains read-only focus. Only exact `apply` and `reject` select `jiraman-apply-actions`; only exact `apply <PMG/PMA...>` may request MCP writes. Phrases such as `create tickets`, `update Jira`, or `fix the sprint` are never authorization.
+Parse input according to `.kilo/commands/jiraman.md`. Empty input is `daily`. Unknown or ambiguous text remains read-only focus. Exact `propose`, `apply <PMG/PMA...>`, and `reject <PMG/PMA...>` select `jiraman-apply-actions` and may mutate only private action state; only exact `apply <PMG/PMA...>` may request MCP writes. Phrases such as `create tickets`, `update Jira`, or `fix the sprint` are never authorization.
 
 # Failure Semantics
 

@@ -44,11 +44,15 @@ describe("action-contracts", () => {
     requireValid("audit-record.schema.json", "tests/fixtures/actions/audit-record.valid.json");
     expect(validDateTime("2026-08-02T07:00:00+07:00")).toBe(true);
     const high = asObject(readJson("tests/fixtures/actions/high-risk-approved.json"), "high");
+    const proposed = asObject(readJson("tests/fixtures/actions/valid.json"), "proposed");
     const action = asObject(asArray(high.actions, "actions")[0] ?? null, "action");
     expect(action.approval_required).toBe("per-action");
     expect(asArray(asObject(high.approval ?? null, "approval").approved_action_ids, "ids")).toContain(action.id);
     expect(high.payload_hash).toBe(canonicalPayloadHash(asArray(high.actions, "actions")));
     expect(asObject(high.approval ?? null, "approval").payload_hash).toBe(high.payload_hash);
+    expect(proposed.status).toBe("proposed");
+    expect(asArray(asObject(proposed.approval ?? null, "approval").approved_action_ids, "proposed ids")).toEqual([]);
+    expect(proposed.payload_hash).toBe(canonicalPayloadHash(asArray(proposed.actions, "proposed actions")));
   });
 });
 describe("action-preflight approved-actions security", () => {
@@ -66,6 +70,7 @@ describe("action-preflight approved-actions security", () => {
       });
     }
     const operational = asObject(fixture.expected ?? null, "lifecycle operational expectations");
+    expect(canTransition("proposed", "approved")).toBe(asBoolean(operational.proposal_transition_allowed, "proposal transition"));
     expect(canTransition("applied", "applying")).toBe(asBoolean(operational.replay_transition_allowed, "replay transition"));
     expect(dependentWritesAllowed(true, "failure")).toBe(asBoolean(operational.dependent_write_after_failure, "dependent write"));
     expect(verificationOutcome("success", false)).toBe(asString(operational.mismatch_outcome, "mismatch outcome"));
@@ -76,11 +81,21 @@ describe("action-preflight approved-actions security", () => {
   test("sensitive canaries are rejected from every package surface and sanitized before output", () => {
     const marker = ["TEST", "ONLY"].join("_");
     const secret = marker + "_" + "x".repeat(24);
+    const opaque = "x".repeat(36);
+    const privateKeyBody = "A".repeat(64);
     const canaries: ReadonlyArray<readonly [string, string]> = [
       ["fixture.json", ["Author", "ization: Bearer ", secret, "-fixture"].join("")],
       ["action-state.json", ["client_", "secret=", secret, "-action"].join("")],
       ["report.md", ["Cook", "ie: sid=", secret, "-report"].join("")],
       ["package-output.log", ["pass", "word=", secret, "-package"].join("")],
+      ["github-token.log", ["g", "hp_", opaque].join("")],
+      ["github-pat.log", ["github", "_pat_", opaque].join("")],
+      ["npm-token.log", ["np", "m_", opaque].join("")],
+      ["slack-token.log", ["xo", "xb-", opaque].join("")],
+      ["jwt.log", ["ey", "J", opaque, ".", opaque, ".", opaque].join("")],
+      ["google-key.log", ["AI", "za", opaque].join("")],
+      ["credential-url.log", ["https://", "user:", opaque, "@example.com"].join("")],
+      ["private-key.log", ["-----BEGIN ", "PRIVATE KEY-----\n", privateKeyBody, "\n-----END ", "PRIVATE KEY-----"].join("")],
     ];
     for (const [surface, canary] of canaries) expect(findSensitiveValues(canary), surface).not.toEqual([]);
     expect(findSensitiveValues("authorization=redacted; cookie=redacted")).toEqual([]);
@@ -100,8 +115,9 @@ describe("action-preflight approved-actions security", () => {
       const sanitize = spawnSync("./scripts/sanitize_ci_log.sh", [raw, sanitized], { encoding: "utf8" });
       expect(sanitize.status).toBe(0);
       const output = readFileSync(sanitized, "utf8");
-      expect(output).not.toContain(secret);
-      expect(output.match(/\[REDACTED SENSITIVE LINE\]/g)).toHaveLength(canaries.length);
+      for (const [, canary] of canaries) expect(output).not.toContain(canary);
+      expect(output).not.toContain(privateKeyBody);
+      expect(output.match(/\[REDACTED SENSITIVE LINE\]/g)?.length ?? 0).toBeGreaterThanOrEqual(canaries.length);
       expect(output).toContain("safe diagnostic");
     } finally {
       rmSync(directory, { recursive: true, force: true });

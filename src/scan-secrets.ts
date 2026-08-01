@@ -1,21 +1,13 @@
 import { fileURLToPath } from "node:url";
 import { resolve } from "node:path";
 
+import { findSensitiveNames } from "../scripts/sensitive-content.mjs";
 import { invariant, readText, walkFiles } from "./contracts.js";
 
 const roots = ["template", "tests/fixtures", "examples", "docs"] as const;
 const rootFiles = ["README.md", "UPGRADE.md", "CHANGELOG.md"] as const;
-const patterns = [
-  { name: "private-key", expression: /-----BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY-----/ },
-  { name: "aws-access-key", expression: /\bAKIA[0-9A-Z]{16}\b/ },
-  { name: "authorization-header", expression: /Authorization:\s*(?:Basic|Bearer)\s+[A-Za-z0-9._~+/=-]{8,}/i },
-  { name: "cookie-header", expression: /(?:Cookie|Set-Cookie):\s*[^\r\n]{8,}/i },
-  { name: "credential-assignment", expression: /\b(?:password|access_token|refresh_token|client_secret)\s*[=:]\s*["']?[^\s"']{8,}/i },
-  { name: "private-atlassian-url", expression: /https:\/\/[A-Za-z0-9.-]+\.atlassian\.net/i },
-] as const;
-
 export function findSensitiveValues(text: string): string[] {
-  return patterns.filter((pattern) => pattern.expression.test(text)).map((pattern) => pattern.name);
+  return findSensitiveNames(text);
 }
 
 export function scanSensitiveRoots(): string[] {

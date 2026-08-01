@@ -8,6 +8,7 @@
 - Added governed Confluence, refinement, daily/flow, two-week planning, and approved-action contracts.
 - Added PMG/PMA schemas, minimal private state, static security fixtures, Ajv/Vitest validation, safe migration, reproducible packages, release/rollback guidance, and privacy-safe run records.
 - Hardened approval hashing, full-package secret scanning, pre-output CI sanitization, private state permissions, and transactional no-follow installation.
+- Completed the local proposal-to-approval lifecycle and made release checklist coverage machine-verifiable.
 
 ## v4
 

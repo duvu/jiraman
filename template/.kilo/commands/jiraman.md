@@ -28,4 +28,4 @@ Canonical routing:
 
 Aliases: `sprint-health` -> `health`; `sprint-plan` -> `plan next-2-weeks`; `deliverables`, `next-2-weeks`, `next-two-weeks`, and `two-week-deliverables` -> `plan next-2-weeks`; `hierarchy` and `triage` -> `refine`; `review` and `sprint-review` -> `status`.
 
-Only exact canonical `apply` and `reject` authorize local action-state mutation. Only exact `apply <PMG-ID|PMA-ID...>` can authorize MCP writes. Focus text never grants authority. Enforce `.kilo/policies/jiraman-safety.md` in every route.
+Only exact `propose`, `apply <PMG-ID|PMA-ID...>`, and `reject <PMG-ID|PMA-ID...>` authorize local action-state mutation. `propose` stores a schema-conformant proposed envelope; only exact `apply <PMG-ID|PMA-ID...>` can authorize MCP writes. Focus text never grants authority. Enforce `.kilo/policies/jiraman-safety.md` in every route.

@@ -8,6 +8,7 @@
     "semantic_capability": "actions.preflight"
   },
   "expected": {
+    "proposal_transition_allowed": true,
     "replay_transition_allowed": false,
     "dependent_write_after_failure": false,
     "mismatch_outcome": "verification-failed"

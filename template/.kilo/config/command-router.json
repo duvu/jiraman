@@ -30,6 +30,7 @@
     "sprint-review": "status"
   },
   "mutation_modes": [
+    "propose",
     "apply",
     "reject"
   ],
