@@ -4,8 +4,8 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 
 import { describe, expect, test } from "vitest";
-import { canonicalPayloadHash, canTransition, dependentWritesAllowed, evaluatePreflight, semanticallyEqual, verificationOutcome, type PreflightInput } from "../../src/action-rules.js";
-import { asArray, asObject, asString, readJson, requireInvalid, requireValid, validDateTime, type JsonObject, type JsonValue } from "../../src/contracts.js";
+import { approvalSelectionAllowed, canonicalPayloadHash, canTransition, dependencyOrder, dependentWritesAllowed, evaluatePreflight, semanticallyEqual, targetPreflightBlockers, verificationOutcome, type PreflightInput, type TargetPreflightInput } from "../../src/action-rules.js";
+import { asArray, asObject, asString, readJson, requireValid, validDateTime, validateJson, type JsonObject, type JsonValue } from "../../src/contracts.js";
 import { findSensitiveValues } from "../../src/scan-secrets.js";
 
 function asBoolean(value: JsonValue | undefined, label: string): boolean {
@@ -36,11 +36,33 @@ function preflightInput(value: JsonObject): PreflightInput {
   };
 }
 
+function targetPreflightInput(value: JsonObject): TargetPreflightInput {
+  const kind = value.kind;
+  if (kind !== "existing" && kind !== "create") throw new Error("invalid target kind");
+  return {
+    kind,
+    targetReadable: asBoolean(value.targetReadable, "targetReadable"),
+    containerReadable: asBoolean(value.containerReadable, "containerReadable"),
+    duplicateAbsent: asBoolean(value.duplicateAbsent, "duplicateAbsent"),
+    draftReferenceUnique: asBoolean(value.draftReferenceUnique, "draftReferenceUnique"),
+    dependenciesResolvable: asBoolean(value.dependenciesResolvable, "dependenciesResolvable"),
+  };
+}
+
 describe("action-contracts", () => {
   test("valid envelopes pass and high risk has per-action approval", () => {
     requireValid("action-group.schema.json", "tests/fixtures/actions/valid.json");
-    requireInvalid("action-group.schema.json", "examples/action-group.invalid.json");
-    requireInvalid("action-group.schema.json", "examples/action-group.invalid-date.json");
+    const invalid = validateJson("action-group.schema.json", readJson("examples/action-group.invalid.json"));
+    expect(invalid.valid).toBe(false);
+    expect(invalid.errors).toEqual(expect.arrayContaining([
+      expect.objectContaining({ instancePath: "/project", keyword: "const", schemaPath: "#/properties/project/const" }),
+      expect.objectContaining({ instancePath: "/actions/0/approval_required", keyword: "const", schemaPath: "#/definitions/action/allOf/0/then/properties/approval_required/const" }),
+    ]));
+    const invalidDate = validateJson("action-group.schema.json", readJson("examples/action-group.invalid-date.json"));
+    expect(invalidDate.valid).toBe(false);
+    expect(invalidDate.errors).toEqual(expect.arrayContaining([
+      expect.objectContaining({ instancePath: "/created_at", keyword: "format", schemaPath: "#/properties/created_at/format" }),
+    ]));
     requireValid("audit-record.schema.json", "tests/fixtures/actions/audit-record.valid.json");
     expect(validDateTime("2026-08-02T07:00:00+07:00")).toBe(true);
     const high = asObject(readJson("tests/fixtures/actions/high-risk-approved.json"), "high");
@@ -53,6 +75,31 @@ describe("action-contracts", () => {
     expect(proposed.status).toBe("proposed");
     expect(asArray(asObject(proposed.approval ?? null, "approval").approved_action_ids, "proposed ids")).toEqual([]);
     expect(proposed.payload_hash).toBe(canonicalPayloadHash(asArray(proposed.actions, "proposed actions")));
+  });
+
+  test("create preflight and complete PMA selection are executable contracts", () => {
+    const fixture = asObject(readJson("tests/fixtures/actions/create-preflight.json"), "create preflight");
+    const data = asObject(fixture.data ?? null, "create data");
+    for (const value of asArray(data.target_cases, "target cases")) {
+      const item = asObject(value, "target case");
+      expect(targetPreflightBlockers(targetPreflightInput(asObject(item.input ?? null, "target input"))), asString(item.case, "case")).toEqual(
+        asArray(item.expected_violations, "target violations").map((violation) => asString(violation, "violation")),
+      );
+    }
+    const dependencyActions = asArray(data.dependency_actions, "dependency actions").map((value) => {
+      const action = asObject(value, "dependency action");
+      return { id: asString(action.id, "dependency ID"), dependencies: asArray(action.dependencies, "dependencies").map((dependency) => asString(dependency, "dependency")) };
+    });
+    const expected = asObject(fixture.expected ?? null, "create expected");
+    expect(dependencyOrder(dependencyActions)).toEqual(asArray(expected.dependency_order, "dependency order").map((id) => asString(id, "dependency ID")));
+    const approval = asObject(data.approval_selection ?? null, "approval selection");
+    const groupIds = asArray(approval.group_action_ids, "group IDs").map((id) => asString(id, "group ID"));
+    const complete = asArray(approval.complete_pma_ids, "complete IDs").map((id) => asString(id, "complete ID"));
+    const partial = asArray(approval.partial_pma_ids, "partial IDs").map((id) => asString(id, "partial ID"));
+    expect(approvalSelectionAllowed(groupIds, complete, false, true)).toBe(asBoolean(expected.complete_pma_allowed, "complete PMA"));
+    expect(approvalSelectionAllowed(groupIds, partial, false, true)).toBe(asBoolean(expected.partial_pma_allowed, "partial PMA"));
+    expect(approvalSelectionAllowed(groupIds, [], true, true)).toBe(asBoolean(expected.high_risk_group_allowed, "high-risk group"));
+    expect(approvalSelectionAllowed(groupIds, [], true, false)).toBe(asBoolean(expected.low_risk_group_allowed, "low-risk group"));
   });
 });
 describe("action-preflight approved-actions security", () => {
@@ -96,6 +143,7 @@ describe("action-preflight approved-actions security", () => {
       ["google-key.log", ["AI", "za", opaque].join("")],
       ["credential-url.log", ["https://", "user:", opaque, "@example.com"].join("")],
       ["private-key.log", ["-----BEGIN ", "PRIVATE KEY-----\n", privateKeyBody, "\n-----END ", "PRIVATE KEY-----"].join("")],
+      ["provider-token.log", ["GITHUB", "_TOKEN=", opaque].join("")],
     ];
     for (const [surface, canary] of canaries) expect(findSensitiveValues(canary), surface).not.toEqual([]);
     expect(findSensitiveValues("authorization=redacted; cookie=redacted")).toEqual([]);

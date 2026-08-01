@@ -90,6 +90,17 @@ const validGroup = (value) => {
   const executable = ["approved", "applying", "applied", "failed", "verification-failed"].includes(value.status);
   if (executable && (!completeApproval || !sameSet(approval.approved_action_ids, ids))) return false;
   if (value.status === "proposed" && !emptyApproval) return false;
+  const actionStatuses = value.actions.map((action) => action.status);
+  const lifecycleValid =
+    (value.status === "proposed" && actionStatuses.every((status) => status === "proposed")) ||
+    (value.status === "approved" && actionStatuses.every((status) => status === "approved")) ||
+    (value.status === "rejected" && actionStatuses.every((status) => status === "rejected")) ||
+    (value.status === "stale" && actionStatuses.every((status) => status === "stale")) ||
+    (value.status === "applying" && actionStatuses.includes("applying") && actionStatuses.every((status) => ["approved", "applying", "applied", "failed", "verification-failed"].includes(status))) ||
+    (value.status === "applied" && actionStatuses.every((status) => status === "applied")) ||
+    (value.status === "failed" && actionStatuses.includes("failed") && actionStatuses.every((status) => ["approved", "applied", "failed"].includes(status))) ||
+    (value.status === "verification-failed" && actionStatuses.includes("verification-failed") && actionStatuses.every((status) => ["approved", "applied", "verification-failed"].includes(status)));
+  if (!lifecycleValid) return false;
   return true;
 };
 const validRun = (value) => exact(value, ["workflow_id", "command_mode", "started_at", "ended_at", "capability_health", "tool_results", "action_ids", "verification_result", "artifact_refs"]) &&

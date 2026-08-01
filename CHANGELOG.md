@@ -9,6 +9,7 @@
 - Added PMG/PMA schemas, minimal private state, static security fixtures, Ajv/Vitest validation, safe migration, reproducible packages, release/rollback guidance, and privacy-safe run records.
 - Hardened approval hashing, full-package secret scanning, pre-output CI sanitization, private state permissions, and transactional no-follow installation.
 - Completed the local proposal-to-approval lifecycle and made release checklist coverage machine-verifiable.
+- Defined executable create/draft-reference preflight, complete PMA selection, strict group/action lifecycle state, and hostile-umask installation.
 
 ## v4
 

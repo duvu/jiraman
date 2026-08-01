@@ -6,8 +6,8 @@ SYMLINK_TARGET="$ROOT/tests/install/output/symlink-project"
 OUTSIDE="$ROOT/tests/install/output/outside-agents"
 RACE_TARGET="$ROOT/tests/install/output/race-project"
 RACE_OUTSIDE="$ROOT/tests/install/output/race-outside"
-PERMISSION_TARGET="$ROOT/tests/install/output/permission-project"
-rm -rf "$TARGET" "$SYMLINK_TARGET" "$OUTSIDE" "$RACE_TARGET" "$RACE_OUTSIDE" "$PERMISSION_TARGET"
+PERMISSION_ROOT="$ROOT/tests/install/output/permission-project"
+rm -rf "$TARGET" "$SYMLINK_TARGET" "$OUTSIDE" "$RACE_TARGET" "$RACE_OUTSIDE" "$PERMISSION_ROOT"-*
 mkdir -p "$TARGET/.kilo"
 printf '%s\n' '{"servers":{"mcp-atlassian":{"command":"USER-OWNED-SENTINEL"}}}' > "$TARGET/.kilo/mcp.json"
 cp "$TARGET/.kilo/mcp.json" "$TARGET/mcp.before"
@@ -61,10 +61,12 @@ wait "$installer"
 cmp "$RACE_TARGET/sentinel.before" "$RACE_OUTSIDE/jiraman.md"
 "$ROOT/verify.sh" "$RACE_TARGET" >/dev/null
 
-mkdir -p "$PERMISSION_TARGET"
-(umask 000; "$ROOT/install.sh" "$PERMISSION_TARGET" >/dev/null)
-[[ "$(stat -c '%a' "$PERMISSION_TARGET/.kilo/state")" == "700" ]]
-[[ "$(stat -c '%a' "$PERMISSION_TARGET/.kilo/state/jiraman.json")" == "600" ]]
-kilo_mode="$(stat -c '%a' "$PERMISSION_TARGET/.kilo")"
-(( (8#$kilo_mode & 022) == 0 ))
+for mask in 000 0600 0700; do
+  permission_target="$PERMISSION_ROOT-$mask"
+  (umask "$mask"; "$ROOT/install.sh" "$permission_target" >/dev/null)
+  [[ "$(stat -c '%a' "$permission_target/.kilo/state")" == "700" ]]
+  [[ "$(stat -c '%a' "$permission_target/.kilo/state/jiraman.json")" == "600" ]]
+  kilo_mode="$(stat -c '%a' "$permission_target/.kilo")"
+  (( (8#$kilo_mode & 022) == 0 ))
+done
 echo "clean install: PASS"

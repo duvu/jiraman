@@ -54,6 +54,54 @@ export function verificationOutcome(writeResult: "success" | "failure", readAfte
   return readAfterWriteMatches ? "applied" : "verification-failed";
 }
 
+export interface TargetPreflightInput {
+  readonly kind: "existing" | "create";
+  readonly targetReadable: boolean;
+  readonly containerReadable: boolean;
+  readonly duplicateAbsent: boolean;
+  readonly draftReferenceUnique: boolean;
+  readonly dependenciesResolvable: boolean;
+}
+
+export function targetPreflightBlockers(input: TargetPreflightInput): string[] {
+  const blockers: string[] = [];
+  if (input.kind === "existing" && !input.targetReadable) blockers.push("missing-target-read");
+  if (input.kind === "create") {
+    if (!input.containerReadable) blockers.push("missing-container-read");
+    if (!input.duplicateAbsent) blockers.push("duplicate-target");
+    if (!input.draftReferenceUnique) blockers.push("ambiguous-draft-reference");
+  }
+  if (!input.dependenciesResolvable) blockers.push("unresolved-dependency");
+  return blockers;
+}
+
+export interface DependencyAction {
+  readonly id: string;
+  readonly dependencies: readonly string[];
+}
+
+export function dependencyOrder(actions: readonly DependencyAction[]): string[] | null {
+  const byId = new Map(actions.map((action) => [action.id, action]));
+  if (byId.size !== actions.length || actions.some((action) => action.dependencies.some((dependency) => !byId.has(dependency)))) return null;
+  const remaining = new Set(byId.keys());
+  const ordered: string[] = [];
+  while (remaining.size > 0) {
+    const ready = [...remaining].filter((id) => byId.get(id)?.dependencies.every((dependency) => !remaining.has(dependency)) === true).sort();
+    if (ready.length === 0) return null;
+    for (const id of ready) {
+      ordered.push(id);
+      remaining.delete(id);
+    }
+  }
+  return ordered;
+}
+
+export function approvalSelectionAllowed(groupActionIds: readonly string[], selectedActionIds: readonly string[], groupSelected: boolean, containsHighRisk: boolean): boolean {
+  if (new Set(groupActionIds).size !== groupActionIds.length || new Set(selectedActionIds).size !== selectedActionIds.length) return false;
+  if (groupSelected) return !containsHighRisk && selectedActionIds.length === 0;
+  return groupActionIds.length === selectedActionIds.length && groupActionIds.every((id) => selectedActionIds.includes(id));
+}
+
 function canonicalPayloadValue(value: JsonValue): JsonValue {
   if (Array.isArray(value)) return value.map(canonicalPayloadValue);
   if (value !== null && typeof value === "object") {

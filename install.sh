@@ -33,6 +33,7 @@ done
 if [[ "$FORCE" -eq 1 && "$CHECK" -eq 1 ]]; then echo "--force and --check are mutually exclusive" >&2; exit 2; fi
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 if [[ "$CHECK" -eq 1 ]]; then exec "$SCRIPT_DIR/verify.sh" "$ROOT"; fi
+umask 077
 mkdir -p "$ROOT"
 ROOT="$(cd "$ROOT" && pwd)"
 TEMPLATE="$SCRIPT_DIR/template"

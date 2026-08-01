@@ -66,6 +66,7 @@ node - "$ROOT" "$INTEGRITY" <<'NODE'
 const fs = require("fs"), path = require("path");
 const [root, directory] = process.argv.slice(2);
 const group = JSON.parse(fs.readFileSync(path.join(root, "tests/fixtures/actions/high-risk-approved.json"), "utf8"));
+const proposedGroup = JSON.parse(fs.readFileSync(path.join(root, "tests/fixtures/actions/valid.json"), "utf8"));
 const state = {schema_version: 5, project: "AIPLATFORM", pending_action_groups: {[group.id]: group}, deliverable_candidates: {}, run_records: [], migration: {legacy_state_file: null, reapproval_required_ids: []}};
 fs.writeFileSync(path.join(directory, "valid.json"), JSON.stringify(state));
 state.pending_action_groups = {"PMG-20260801-99": group};
@@ -79,9 +80,12 @@ fs.writeFileSync(path.join(directory, "wrong-approval-hash.json"), JSON.stringif
 group.approval.payload_hash = group.payload_hash;
 group.payload_hash = "1".repeat(64);
 fs.writeFileSync(path.join(directory, "wrong-payload-hash.json"), JSON.stringify(state));
+proposedGroup.actions[0].status = "applied";
+state.pending_action_groups = {[proposedGroup.id]: proposedGroup};
+fs.writeFileSync(path.join(directory, "wrong-lifecycle.json"), JSON.stringify(state));
 NODE
 "$ROOT/verify.sh" --validate-state-file "$INTEGRITY/valid.json"
-for state in wrong-map-key wrong-approved-id wrong-approval-hash wrong-payload-hash; do
+for state in wrong-map-key wrong-approved-id wrong-approval-hash wrong-payload-hash wrong-lifecycle; do
   set +e
   "$ROOT/verify.sh" --validate-state-file "$INTEGRITY/$state.json"
   status=$?

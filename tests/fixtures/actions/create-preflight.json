@@ -1,0 +1,51 @@
+{
+  "fixture_version": 1,
+  "kind": "create-preflight",
+  "metadata": {
+    "source": "synthetic-sanitized",
+    "version": "5.0",
+    "sanitized": true,
+    "semantic_capability": "actions.preflight"
+  },
+  "expected": {
+    "dependency_order": ["PMA-20260801-10", "PMA-20260801-11", "PMA-20260801-12"],
+    "complete_pma_allowed": true,
+    "partial_pma_allowed": false,
+    "high_risk_group_allowed": false,
+    "low_risk_group_allowed": true
+  },
+  "data": {
+    "target_cases": [
+      {
+        "case": "existing-target",
+        "input": {"kind": "existing", "targetReadable": true, "containerReadable": false, "duplicateAbsent": true, "draftReferenceUnique": true, "dependenciesResolvable": true},
+        "expected_violations": []
+      },
+      {
+        "case": "standalone-create",
+        "input": {"kind": "create", "targetReadable": false, "containerReadable": true, "duplicateAbsent": true, "draftReferenceUnique": true, "dependenciesResolvable": true},
+        "expected_violations": []
+      },
+      {
+        "case": "create-duplicate",
+        "input": {"kind": "create", "targetReadable": false, "containerReadable": true, "duplicateAbsent": false, "draftReferenceUnique": true, "dependenciesResolvable": true},
+        "expected_violations": ["duplicate-target"]
+      },
+      {
+        "case": "create-unresolved-draft",
+        "input": {"kind": "create", "targetReadable": false, "containerReadable": true, "duplicateAbsent": true, "draftReferenceUnique": false, "dependenciesResolvable": false},
+        "expected_violations": ["ambiguous-draft-reference", "unresolved-dependency"]
+      }
+    ],
+    "dependency_actions": [
+      {"id": "PMA-20260801-12", "dependencies": ["PMA-20260801-11"]},
+      {"id": "PMA-20260801-11", "dependencies": ["PMA-20260801-10"]},
+      {"id": "PMA-20260801-10", "dependencies": []}
+    ],
+    "approval_selection": {
+      "group_action_ids": ["PMA-20260801-10", "PMA-20260801-11"],
+      "complete_pma_ids": ["PMA-20260801-10", "PMA-20260801-11"],
+      "partial_pma_ids": ["PMA-20260801-10"]
+    }
+  }
+}

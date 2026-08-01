@@ -7,6 +7,7 @@ export const sensitivePatterns = [
   { name: "authorization-header", expression: /Authorization:\s*(?:Basic|Bearer)\s+\S{8,}/i },
   { name: "cookie-header", expression: /(?:Cookie|Set-Cookie):\s*[^\r\n]{8,}/i },
   { name: "credential-assignment", expression: /\b(?:password|passwd|access[_-]?token|refresh[_-]?token|client[_-]?secret|api[_-]?key|secret[_-]?key|auth[_-]?token)\s*[=:]\s*["']?[^\s"']{8,}/i },
+  { name: "provider-credential", expression: /\b(?:[A-Z0-9]+[_-])+(?:TOKEN|SECRET|PASSWORD|PASSWD|API[_-]?KEY)\s*[=:]\s*["']?[A-Za-z0-9._~+/=-]{8,}/i },
   { name: "github-token", expression: new RegExp("\\bgh(?:p|o|u|s|r)_[A-Za-z0-9]{20,}\\b", "i") },
   { name: "github-fine-grained-token", expression: new RegExp("\\bgithub_pat_[A-Za-z0-9_]{20,}\\b", "i") },
   { name: "npm-token", expression: new RegExp("\\bnpm_[A-Za-z0-9]{20,}\\b", "i") },
