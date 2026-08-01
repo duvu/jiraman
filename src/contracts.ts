@@ -136,7 +136,7 @@ export interface ValidationResult {
 }
 
 function actionStatusesMatchGroup(groupStatus: string, actionStatuses: readonly string[]): boolean {
-  if (groupStatus === "proposed") return actionStatuses.every((status) => status === "proposed");
+  if (groupStatus === "proposed") return actionStatuses.includes("proposed") && actionStatuses.every((status) => status === "proposed" || status === "rejected");
   if (groupStatus === "approved") return actionStatuses.every((status) => status === "approved");
   if (groupStatus === "rejected") return actionStatuses.every((status) => status === "rejected");
   if (groupStatus === "stale") return actionStatuses.every((status) => status === "stale");

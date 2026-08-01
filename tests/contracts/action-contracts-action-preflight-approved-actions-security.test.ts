@@ -122,6 +122,33 @@ describe("action-contracts", () => {
   });
 });
 describe("action-preflight approved-actions security", () => {
+  test("rejecting one PMA preserves a valid proposed group without write authority", () => {
+    const fixture = asObject(readJson("tests/fixtures/actions/partially-rejected.json"), "partially rejected");
+    const actions = asArray(fixture.actions, "partially rejected actions");
+    const group: JsonObject = { ...fixture, payload_hash: canonicalPayloadHash(actions) };
+    const validation = validateJson("action-group.schema.json", group);
+    expect(validation).toEqual({ valid: true, errors: [] });
+
+    const directory = mkdtempSync(join(tmpdir(), "jiraman-partial-reject-"));
+    try {
+      const statePath = join(directory, "state.json");
+      const groupId = asString(group.id, "partially rejected group ID");
+      const state: JsonObject = {
+        schema_version: 5,
+        project: "AIPLATFORM",
+        pending_action_groups: { [groupId]: group },
+        deliverable_candidates: {},
+        run_records: [],
+        migration: { legacy_state_file: null, reapproval_required_ids: [] },
+      };
+      writeFileSync(statePath, JSON.stringify(state));
+      const installedValidation = spawnSync("./verify.sh", ["--validate-state-file", statePath], { encoding: "utf8" });
+      expect(installedValidation.status, installedValidation.stderr).toBe(0);
+    } finally {
+      rmSync(directory, { recursive: true, force: true });
+    }
+  });
+
   test("all prohibited lifecycle cases block before write", () => {
     const fixture = asObject(readJson("tests/fixtures/actions/lifecycle.json"), "lifecycle");
     const data = asObject(fixture.data ?? null, "lifecycle data");
@@ -151,6 +178,11 @@ describe("action-preflight approved-actions security", () => {
     const secret = marker + "_" + "x".repeat(24);
     const opaque = "x".repeat(36);
     const privateKeyBody = "A".repeat(64);
+    const yamlCanaries: Array<readonly [string, string]> = [];
+    for (const [index, indicator] of ["|2", "|-2", "|+2", ">2", ">-2"].entries()) {
+      yamlCanaries.push(["yaml-provider-" + index + ".yml", ["AWS_SECRET", "_ACCESS_KEY: ", indicator, "\n  ", opaque, "\n  continuation"].join("")]);
+      yamlCanaries.push(["yaml-generic-" + index + ".yml", ["api_", "key: ", indicator, "\n  ", opaque, "\n  continuation"].join("")]);
+    }
     const canaries: ReadonlyArray<readonly [string, string]> = [
       ["fixture.json", ["Author", "ization: Bearer ", secret, "-fixture"].join("")],
       ["action-state.json", ["client_", "secret=", secret, "-action"].join("")],
@@ -170,6 +202,8 @@ describe("action-preflight approved-actions security", () => {
       ["unquoted-multiline-provider.log", ["GITHUB", "_TOKEN=\n", opaque].join("")],
       ["yaml-block-provider.yml", ["AWS_SECRET", "_ACCESS_KEY: |\n  ", opaque, "\n  continuation"].join("")],
       ["escaped-quote-provider.log", ["GITHUB", "_TOKEN=", "\\", "\"", "\n", opaque, "\n", "\\", "\""].join("")],
+      ["generic-quoted-multiline.log", ["pass", "word=\"\n", opaque, "\n\""].join("")],
+      ...yamlCanaries,
     ];
     for (const [surface, canary] of canaries) expect(findSensitiveValues(canary), surface).not.toEqual([]);
     expect(findSensitiveValues("authorization=redacted; cookie=redacted")).toEqual([]);
