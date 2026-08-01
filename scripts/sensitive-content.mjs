@@ -28,6 +28,16 @@ export function findSensitiveNames(text) {
   return sensitivePatterns.filter((pattern) => pattern.expression.test(text)).map((pattern) => pattern.name);
 }
 
+function hasUnescapedQuote(line, quote) {
+  for (let index = 0; index < line.length; index += 1) {
+    if (line[index] !== quote) continue;
+    let backslashes = 0;
+    for (let cursor = index - 1; cursor >= 0 && line[cursor] === "\\"; cursor -= 1) backslashes += 1;
+    if (backslashes % 2 === 0) return true;
+  }
+  return false;
+}
+
 export function sanitizeSensitiveText(text) {
   let privateKeyBlock = false;
   let pendingCredential = null;
@@ -46,13 +56,14 @@ export function sanitizeSensitiveText(text) {
         const indentation = line.match(/^[ \t]*/)?.[0].length ?? 0;
         if (line.trim().length === 0 || indentation > pendingCredentialIndent) return "[REDACTED SENSITIVE LINE]";
         pendingCredential = null;
-      } else if (pendingCredential === "") {
-        if (line.trim().length > 0) pendingCredential = null;
-        return "[REDACTED SENSITIVE LINE]";
-      } else if (line.includes(pendingCredential)) {
-        pendingCredential = null;
+      } else if (pendingCredential === "unquoted") {
+        if (line.trim().length === 0) pendingCredential = null;
         return "[REDACTED SENSITIVE LINE]";
       } else {
+        const escapedDelimiter = pendingCredential.startsWith("escaped-");
+        const quote = pendingCredential.endsWith("double") ? "\"" : "'";
+        const closes = escapedDelimiter ? line.trim() === "\\" + quote : hasUnescapedQuote(line, quote);
+        if (closes) pendingCredential = null;
         return "[REDACTED SENSITIVE LINE]";
       }
     }
@@ -66,8 +77,11 @@ export function sanitizeSensitiveText(text) {
         pendingCredential = "yaml";
         pendingCredentialIndent = line.match(/^[ \t]*/)?.[0].length ?? 0;
       }
-      if (quote !== null && !value.includes(quote)) pendingCredential = quote;
-      if (quote === null && value.trim().length === 0) pendingCredential = "";
+      if (quote !== null) {
+        const closesInline = escapedQuote ? value.trimEnd().endsWith("\\" + quote) : hasUnescapedQuote(value, quote);
+        if (!closesInline) pendingCredential = (escapedQuote ? "escaped-" : "") + (quote === "\"" ? "double" : "single");
+      }
+      if (quote === null && value.trim().length === 0) pendingCredential = "unquoted";
       return "[REDACTED SENSITIVE LINE]";
     }
     return findSensitiveNames(line).length > 0 ? "[REDACTED SENSITIVE LINE]" : line;

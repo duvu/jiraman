@@ -209,6 +209,8 @@ describe("action-preflight approved-actions security", () => {
       ["generic-quoted-multiline.log", ["pass", "word=\"\n", opaque, "\n\""].join("")],
       ["quoted-provider-key.yml", ["\"AWS_SECRET", "_ACCESS_KEY\": |2\n  ", opaque].join("")],
       ["single-quoted-generic-key.yml", ["'api_", "key': >-2\n  ", opaque].join("")],
+      ["quoted-inner-escape.log", ["GITHUB", "_TOKEN=\"\n", opaque, "\\", "\"still-value\n", opaque, "_later\n\""].join("")],
+      ["unquoted-multiple-lines.log", ["GITHUB", "_TOKEN=\n", opaque, "\n", opaque, "_later"].join("")],
       ...yamlCanaries,
     ];
     for (const [surface, canary] of canaries) expect(findSensitiveValues(canary), surface).not.toEqual([]);
@@ -225,7 +227,7 @@ describe("action-preflight approved-actions security", () => {
 
       const raw = join(directory, "raw.log");
       const sanitized = join(directory, "sanitized.log");
-      writeFileSync(raw, canaries.map(([, canary]) => canary).join("\n") + "\nsafe diagnostic\n");
+      writeFileSync(raw, canaries.map(([, canary]) => canary).join("\n\n") + "\n\nsafe diagnostic\n");
       const sanitize = spawnSync("./scripts/sanitize_ci_log.sh", [raw, sanitized], { encoding: "utf8" });
       expect(sanitize.status).toBe(0);
       const output = readFileSync(sanitized, "utf8");

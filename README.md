@@ -58,4 +58,6 @@ npm ci
 npm run ci
 ```
 
+For release artifacts, `./scripts/package.sh --output <directory>` accepts paths relative to the current directory or absolute paths.
+
 The release gate runs TypeScript type checking, Vitest, Ajv schema and static contract validation, security/secret scans, clean install, v4 migration, reproducible packaging, and package verification. See [architecture](docs/architecture/jiraman-v5.md), [configuration](docs/configuration-reference.md), [security](docs/security-model.md), and [manual smoke tests](docs/manual-smoke-tests.md).
