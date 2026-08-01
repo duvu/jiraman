@@ -1,0 +1,52 @@
+{
+  "fixture_version": 1,
+  "kind": "knowledge-audit",
+  "metadata": {
+    "source": "synthetic-sanitized",
+    "version": "5.0",
+    "sanitized": true,
+    "semantic_capability": "confluence.page.read"
+  },
+  "expected": {
+    "writes": 0
+  },
+  "data": [
+    {
+      "entity": "AIPLATFORM-101",
+      "rule": "required-spec-link",
+      "severity": "high",
+      "confidence": "high",
+      "evidence": "Story has no canonical specification link",
+      "suggested_action": "link governed specification"
+    },
+    {
+      "entity": "page-missing",
+      "rule": "broken-reference",
+      "severity": "medium",
+      "confidence": "high",
+      "evidence": "referenced page ID was not found",
+      "suggested_action": "repair reference"
+    },
+    {
+      "entity": "page-archived",
+      "lifecycle": "archived",
+      "rule": "excluded-from-active-review",
+      "severity": "none",
+      "confidence": "high",
+      "evidence": "metadata status archived",
+      "suggested_action": "none"
+    },
+    {
+      "entity": "page-active",
+      "rule": "material-change-after-review",
+      "severity": "high",
+      "confidence": "high",
+      "last_reviewed": "2026-07-30T00:00:00Z",
+      "jira_changed_at": "2026-08-01T00:00:00Z",
+      "history_verified": true,
+      "expected_status": "review required",
+      "evidence": "verified Jira change follows page review",
+      "suggested_action": "review governed page"
+    }
+  ]
+}

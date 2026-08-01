@@ -1,0 +1,52 @@
+{
+  "fixture_version": 1,
+  "kind": "spec-complete",
+  "metadata": {
+    "source": "synthetic-sanitized",
+    "version": "5.0",
+    "sanitized": true,
+    "semantic_capability": "specification.read"
+  },
+  "expected": {
+    "blocking_gaps": 0
+  },
+  "data": {
+    "source": "Confluence page-200",
+    "outcome": "Safe v5 migration",
+    "context": "Upgrade managed files",
+    "in_scope": [
+      "backup",
+      "install"
+    ],
+    "out_of_scope": [
+      "MCP configuration"
+    ],
+    "requirements": [
+      {
+        "id": "REQ-1",
+        "text": "Back up managed files",
+        "source_section": "Requirements"
+      }
+    ],
+    "acceptance_criteria": [
+      {
+        "id": "AC-1",
+        "text": "A byte comparison confirms the backup",
+        "source_section": "Acceptance"
+      }
+    ],
+    "constraints": [
+      "No MCP changes"
+    ],
+    "nonfunctional_requirements": [
+      "Non-interactive"
+    ],
+    "dependencies": [],
+    "validation": [
+      "./tests/install/run-v4-upgrade.sh"
+    ],
+    "rollout": "force install",
+    "recovery": "restore backup",
+    "unresolved_decisions": []
+  }
+}

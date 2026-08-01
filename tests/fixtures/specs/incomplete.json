@@ -1,0 +1,36 @@
+{
+  "fixture_version": 1,
+  "kind": "spec-incomplete",
+  "metadata": {
+    "source": "synthetic-sanitized",
+    "version": "5.0",
+    "sanitized": true,
+    "semantic_capability": "specification.read"
+  },
+  "expected": {
+    "blocking_gaps": [
+      "duplicate REQ-1",
+      "missing AC ID",
+      "unresolved decision"
+    ]
+  },
+  "data": {
+    "requirements": [
+      {
+        "id": "REQ-1"
+      },
+      {
+        "id": "REQ-1"
+      }
+    ],
+    "acceptance_criteria": [
+      {
+        "id": null,
+        "text": "works correctly"
+      }
+    ],
+    "unresolved_decisions": [
+      "migration owner"
+    ]
+  }
+}

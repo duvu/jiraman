@@ -1,0 +1,67 @@
+{
+  "fixture_version": 1,
+  "kind": "refinement-proposal-blocked",
+  "metadata": {
+    "source": "synthetic-sanitized",
+    "version": "5.0",
+    "sanitized": true,
+    "semantic_capability": "refinement.propose"
+  },
+  "expected": {
+    "blocked": true
+  },
+  "data": {
+    "cases": [
+      {
+        "hierarchy_valid": false,
+        "uncovered_ids": [],
+        "oversized_subtasks": false,
+        "ambiguous_duplicates": false,
+        "unresolved_decisions": false,
+        "hypothesis_ready": true
+      },
+      {
+        "hierarchy_valid": true,
+        "uncovered_ids": [
+          "AC-2"
+        ],
+        "oversized_subtasks": false,
+        "ambiguous_duplicates": false,
+        "unresolved_decisions": false,
+        "hypothesis_ready": true
+      },
+      {
+        "hierarchy_valid": true,
+        "uncovered_ids": [],
+        "oversized_subtasks": true,
+        "ambiguous_duplicates": false,
+        "unresolved_decisions": false,
+        "hypothesis_ready": true
+      },
+      {
+        "hierarchy_valid": true,
+        "uncovered_ids": [],
+        "oversized_subtasks": false,
+        "ambiguous_duplicates": true,
+        "unresolved_decisions": false,
+        "hypothesis_ready": true
+      },
+      {
+        "hierarchy_valid": true,
+        "uncovered_ids": [],
+        "oversized_subtasks": false,
+        "ambiguous_duplicates": false,
+        "unresolved_decisions": true,
+        "hypothesis_ready": true
+      },
+      {
+        "hierarchy_valid": true,
+        "uncovered_ids": [],
+        "oversized_subtasks": false,
+        "ambiguous_duplicates": false,
+        "unresolved_decisions": false,
+        "hypothesis_ready": false
+      }
+    ]
+  }
+}

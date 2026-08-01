@@ -1,0 +1,57 @@
+{
+  "fixture_version": 1,
+  "kind": "health-runway",
+  "metadata": {
+    "source": "synthetic-sanitized",
+    "version": "5.0",
+    "sanitized": true,
+    "semantic_capability": "workflow.flow"
+  },
+  "expected": {
+    "writes": 0
+  },
+  "data": [
+    {
+      "case": "goal-blocked",
+      "done_ratio": 0.9,
+      "goal_blocked": true,
+      "health": "Red",
+      "rules": [
+        "sprint goal blocked"
+      ]
+    },
+    {
+      "case": "no-active",
+      "active_sprint": null,
+      "dates": "not verified",
+      "health": "Not verified"
+    },
+    {
+      "case": "runway",
+      "unit": "story-points",
+      "n1": 1.4,
+      "n2": 0,
+      "reserve": 0.8,
+      "total": 2.2,
+      "hard_floor_gap": 1,
+      "operating_target_gap": 1,
+      "potential_unready": 1.2,
+      "outcome_coherence": "risk",
+      "readiness_gaps": [
+        {
+          "story": "AIPLATFORM-202",
+          "subtask": "AIPLATFORM-203",
+          "gap": "missing exact validation",
+          "recovery_action": "add validation command and evidence",
+          "expected_readiness_effect": "AC-4 becomes covered and Story can be re-evaluated"
+        }
+      ]
+    },
+    {
+      "case": "unknown-capacity",
+      "unit": "not verified",
+      "n1": "not verified",
+      "n2": "not verified"
+    }
+  ]
+}

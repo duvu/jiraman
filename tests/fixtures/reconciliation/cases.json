@@ -1,0 +1,55 @@
+{
+  "fixture_version": 1,
+  "kind": "reconciliation",
+  "metadata": {
+    "source": "synthetic-sanitized",
+    "version": "5.0",
+    "sanitized": true,
+    "semantic_capability": "jira.issue.search"
+  },
+  "expected": {
+    "writes": 0
+  },
+  "data": [
+    {
+      "case": "exact",
+      "ids": [
+        "REQ-1",
+        "AC-1"
+      ],
+      "spec": "page-200",
+      "classification": "exact existing work",
+      "disposition": "reuse",
+      "confidence": "high",
+      "evidence_date": "2026-08-01"
+    },
+    {
+      "case": "partial",
+      "covered": [
+        "REQ-1"
+      ],
+      "uncovered": [
+        "REQ-2"
+      ],
+      "classification": "partial overlap",
+      "disposition": "split",
+      "confidence": "high",
+      "evidence_date": "2026-08-01"
+    },
+    {
+      "case": "similar-title",
+      "classification": "probable duplicate",
+      "disposition": "review",
+      "confidence": "low",
+      "evidence_date": "2026-08-01"
+    },
+    {
+      "case": "completed",
+      "classification": "superseded work",
+      "status": "Done",
+      "disposition": "link",
+      "confidence": "high",
+      "evidence_date": "2026-07-01"
+    }
+  ]
+}

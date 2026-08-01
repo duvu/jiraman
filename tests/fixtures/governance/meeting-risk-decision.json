@@ -1,0 +1,63 @@
+{
+  "fixture_version": 1,
+  "kind": "meeting-risk-decision",
+  "metadata": {
+    "source": "synthetic-sanitized",
+    "version": "5.0",
+    "sanitized": true,
+    "semantic_capability": "governance.read"
+  },
+  "expected": {
+    "writes": 0,
+    "ambiguous": "report"
+  },
+  "data": {
+    "meeting": {
+      "source_page": "page-meeting",
+      "section": "Actions",
+      "items": [
+        {
+          "kind": "action",
+          "outcome": "Validate migration",
+          "owner": null,
+          "due": null,
+          "parent": "AIPLATFORM-101",
+          "disposition": "review-owner"
+        },
+        {
+          "kind": "discussion",
+          "text": "Possible later change",
+          "disposition": "not-a-decision"
+        }
+      ]
+    },
+    "risk": {
+      "source_page": "page-risk",
+      "owner": "Platform lead",
+      "likelihood": "medium",
+      "impact": "high",
+      "mitigation": "Run rollback drill",
+      "trigger": "migration failure",
+      "status": "open",
+      "review_date": "2026-08-08"
+    },
+    "decision": {
+      "source_page": "page-decision",
+      "context": "Migration boundary",
+      "options": [
+        "A",
+        "B"
+      ],
+      "decision": null,
+      "rationale": null,
+      "owner": "Architecture group",
+      "date": null,
+      "consequences": [],
+      "status": "proposed"
+    },
+    "duplicate_search": {
+      "result": "existing",
+      "disposition": "update-link"
+    }
+  }
+}

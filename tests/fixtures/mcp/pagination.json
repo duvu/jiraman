@@ -1,0 +1,29 @@
+{
+  "fixture_version": 1,
+  "kind": "mcp-pagination",
+  "metadata": {
+    "source": "synthetic-sanitized",
+    "version": "5.0",
+    "sanitized": true,
+    "semantic_capability": "mcp.compatibility"
+  },
+  "expected": {
+    "result": "compatible-paginated"
+  },
+  "data": {
+    "tools": [
+      {
+        "name": "jira_search",
+        "description": "Search Jira issues with pagination",
+        "access": "read",
+        "schema": {
+          "jql": "string",
+          "cursor": "string"
+        },
+        "semantic_capability": "jira.issue.search"
+      }
+    ],
+    "pages": 2,
+    "result": "compatible-paginated"
+  }
+}

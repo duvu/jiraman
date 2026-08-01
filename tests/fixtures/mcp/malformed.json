@@ -1,0 +1,25 @@
+{
+  "fixture_version": 1,
+  "kind": "mcp-malformed",
+  "metadata": {
+    "source": "synthetic-sanitized",
+    "version": "5.0",
+    "sanitized": true,
+    "semantic_capability": "mcp.compatibility"
+  },
+  "expected": {
+    "result": "blocked-malformed-schema"
+  },
+  "data": {
+    "tools": [
+      {
+        "name": "jira_search",
+        "description": "Search Jira issues",
+        "access": "read",
+        "schema": null,
+        "semantic_capability": "jira.issue.search"
+      }
+    ],
+    "result": "blocked-malformed-schema"
+  }
+}

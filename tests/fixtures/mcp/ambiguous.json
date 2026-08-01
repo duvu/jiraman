@@ -1,0 +1,36 @@
+{
+  "fixture_version": 1,
+  "kind": "mcp-ambiguous",
+  "metadata": {
+    "source": "synthetic-sanitized",
+    "version": "5.0",
+    "sanitized": true,
+    "semantic_capability": "mcp.compatibility"
+  },
+  "expected": {
+    "result": "blocked-ambiguous"
+  },
+  "data": {
+    "tools": [
+      {
+        "name": "lookup_a",
+        "description": "Search Jira issues",
+        "access": "read",
+        "schema": {
+          "jql": "string"
+        },
+        "semantic_capability": "jira.issue.search"
+      },
+      {
+        "name": "lookup_b",
+        "description": "Search Jira issues",
+        "access": "read",
+        "schema": {
+          "jql": "string"
+        },
+        "semantic_capability": "jira.issue.search"
+      }
+    ],
+    "result": "blocked-ambiguous"
+  }
+}

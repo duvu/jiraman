@@ -1,0 +1,47 @@
+{
+  "schema_version": 5,
+  "id": "PMG-20260801-02",
+  "project": "AIPLATFORM",
+  "summary": "Add an evidence link",
+  "created_at": "2026-08-01T00:00:00Z",
+  "expires_at": "2026-08-02T00:00:00Z",
+  "status": "approved",
+  "payload_hash": "896e14ea5273d13d7d6d3a3eb2c009646e2e40884ca4024a95e354127ca48f27",
+  "approval": {
+    "group_approved_by": "release-lead",
+    "approved_action_ids": [
+      "PMA-20260801-02"
+    ],
+    "approved_at": "2026-08-01T01:00:00Z",
+    "payload_hash": "896e14ea5273d13d7d6d3a3eb2c009646e2e40884ca4024a95e354127ca48f27"
+  },
+  "actions": [
+    {
+      "id": "PMA-20260801-02",
+      "system": "confluence",
+      "operation": "page.update",
+      "target_ref": "page-200",
+      "target_version": 4,
+      "before_state": {
+        "version": 4,
+        "managed_by": "jiraman"
+      },
+      "desired_state": {
+        "content": "managed update"
+      },
+      "evidence": [
+        "repository CI result"
+      ],
+      "reason": "Record validation evidence",
+      "preconditions": [
+        "issue remains in AIPLATFORM"
+      ],
+      "dependencies": [],
+      "risk": "high",
+      "approval_required": "per-action",
+      "expires_at": "2026-08-02T00:00:00Z",
+      "rollback_guidance": "Remove the comment manually if incorrect",
+      "status": "proposed"
+    }
+  ]
+}

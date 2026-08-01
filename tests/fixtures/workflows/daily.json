@@ -1,0 +1,49 @@
+{
+  "fixture_version": 1,
+  "kind": "daily-control",
+  "metadata": {
+    "source": "synthetic-sanitized",
+    "version": "5.0",
+    "sanitized": true,
+    "semantic_capability": "workflow.daily"
+  },
+  "expected": {
+    "writes": 0
+  },
+  "data": {
+    "active_sprint": "Sprint 7",
+    "previous": [
+      {
+        "id": "P1",
+        "status": "partial",
+        "evidence": "validation pending"
+      }
+    ],
+    "queues": {
+      "review": 3,
+      "validation": 1
+    },
+    "wip_breach": true,
+    "recommendation_order": [
+      "clear review queue",
+      "finish active work"
+    ],
+    "commitments": [
+      {
+        "story": "AIPLATFORM-101",
+        "subtask": "AIPLATFORM-102",
+        "outcome": "Migration verified",
+        "validation": "upgrade test",
+        "owner": "not verified",
+        "estimate": 3
+      }
+    ],
+    "outlook": {
+      "n1": "not verified",
+      "n2": "not verified"
+    },
+    "facts": [],
+    "assumptions": [],
+    "confidence": "medium"
+  }
+}

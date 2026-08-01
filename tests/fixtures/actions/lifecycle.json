@@ -1,0 +1,47 @@
+{
+  "fixture_version": 1,
+  "kind": "action-lifecycle",
+  "metadata": {
+    "source": "synthetic-sanitized",
+    "version": "5.0",
+    "sanitized": true,
+    "semantic_capability": "actions.preflight"
+  },
+  "expected": {
+    "proposal_transition_allowed": true,
+    "replay_transition_allowed": false,
+    "dependent_write_after_failure": false,
+    "mismatch_outcome": "verification-failed"
+  },
+  "data": {
+    "base": {
+      "status": "approved",
+      "expired": false,
+      "payloadHashMatches": true,
+      "scopeAllowed": true,
+      "approvalComplete": true,
+      "targetFresh": true,
+      "hierarchyValid": true,
+      "subtaskHours": 3,
+      "ownershipAllowed": true,
+      "fieldsExact": true,
+      "dependenciesResolved": true
+    },
+    "cases": [
+      {"case": "valid", "override": {}, "expected": {"allowed": true, "violations": []}},
+      {"case": "expired", "override": {"expired": true}, "expected": {"allowed": false, "violations": ["expired"]}},
+      {"case": "modified", "override": {"payloadHashMatches": false}, "expected": {"allowed": false, "violations": ["modified"]}},
+      {"case": "rejected", "override": {"status": "rejected"}, "expected": {"allowed": false, "violations": ["status-rejected"]}},
+      {"case": "stale", "override": {"status": "stale"}, "expected": {"allowed": false, "violations": ["status-stale"]}},
+      {"case": "replay", "override": {"status": "applied"}, "expected": {"allowed": false, "violations": ["status-applied"]}},
+      {"case": "scope", "override": {"scopeAllowed": false}, "expected": {"allowed": false, "violations": ["scope"]}},
+      {"case": "partial", "override": {"approvalComplete": false}, "expected": {"allowed": false, "violations": ["partial-approval"]}},
+      {"case": "stale-target", "override": {"targetFresh": false}, "expected": {"allowed": false, "violations": ["stale-target"]}},
+      {"case": "hierarchy", "override": {"hierarchyValid": false}, "expected": {"allowed": false, "violations": ["invalid-hierarchy"]}},
+      {"case": "oversized", "override": {"subtaskHours": 5}, "expected": {"allowed": false, "violations": ["invalid-subtask-estimate"]}},
+      {"case": "ownership", "override": {"ownershipAllowed": false}, "expected": {"allowed": false, "violations": ["ownership"]}},
+      {"case": "fields", "override": {"fieldsExact": false}, "expected": {"allowed": false, "violations": ["field-expansion"]}},
+      {"case": "dependency", "override": {"dependenciesResolved": false}, "expected": {"allowed": false, "violations": ["dependency"]}}
+    ]
+  }
+}

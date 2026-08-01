@@ -1,0 +1,66 @@
+{
+  "schema_version": 5,
+  "id": "PMG-20260801-04",
+  "project": "AIPLATFORM",
+  "summary": "Retain the unreviewed action after rejecting one proposal",
+  "created_at": "2026-08-01T00:00:00Z",
+  "expires_at": "2026-08-02T00:00:00Z",
+  "status": "rejected",
+  "payload_hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "approval": {
+    "group_approved_by": null,
+    "approved_action_ids": [],
+    "approved_at": null,
+    "payload_hash": null
+  },
+  "actions": [
+    {
+      "id": "PMA-20260801-04",
+      "system": "jira",
+      "operation": "issue.comment",
+      "target_ref": "AIPLATFORM-123",
+      "target_version": null,
+      "before_state": {},
+      "desired_state": {
+        "comment": "Rejected draft"
+      },
+      "evidence": [
+        "review feedback"
+      ],
+      "reason": "Preserve the rejected proposal audit trail",
+      "preconditions": [
+        "issue remains in AIPLATFORM"
+      ],
+      "dependencies": [],
+      "risk": "low",
+      "approval_required": "group",
+      "expires_at": "2026-08-02T00:00:00Z",
+      "rollback_guidance": "No remote change was made",
+      "status": "rejected"
+    },
+    {
+      "id": "PMA-20260801-05",
+      "system": "jira",
+      "operation": "issue.comment",
+      "target_ref": "AIPLATFORM-124",
+      "target_version": null,
+      "before_state": {},
+      "desired_state": {
+        "comment": "Pending draft"
+      },
+      "evidence": [
+        "review feedback"
+      ],
+      "reason": "Keep the unnamed proposal pending",
+      "preconditions": [
+        "issue remains in AIPLATFORM"
+      ],
+      "dependencies": [],
+      "risk": "low",
+      "approval_required": "group",
+      "expires_at": "2026-08-02T00:00:00Z",
+      "rollback_guidance": "No remote change was made",
+      "status": "proposed"
+    }
+  ]
+}

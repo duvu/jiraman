@@ -1,0 +1,44 @@
+{
+  "schema_version": 5,
+  "project": {
+    "key": "AIPLATFORM",
+    "language": "English",
+    "timezone": "Asia/Ho_Chi_Minh",
+    "sprint_length_days": 7
+  },
+  "confluence": {
+    "allowed_space_keys": [
+      "AIPLATFORM"
+    ],
+    "page_roots": {
+      "project_home": null
+    }
+  },
+  "delivery": {
+    "hierarchy": [
+      "Epic",
+      "Story",
+      "Sub-task"
+    ],
+    "maximum_subtask_hours": 4,
+    "active_story_limit": 4,
+    "per_assignee_active_story_limit": 1,
+    "per_assignee_in_progress_subtask_limit": 1,
+    "review_queue_limit": 3,
+    "validation_queue_limit": 2,
+    "ready_horizon_sprints": 2,
+    "allow_issue_count_capacity": false
+  },
+  "actions": {
+    "group_prefix": "PMG",
+    "action_prefix": "PMA",
+    "ttl_hours": 24,
+    "all_or_nothing_preflight": true,
+    "read_before_write": true,
+    "read_after_write": true
+  },
+  "state": {
+    "path": ".kilo/state/jiraman.json",
+    "run_retention_days": 30
+  }
+}

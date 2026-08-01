@@ -1,0 +1,42 @@
+{
+  "schema_version": 5,
+  "id": "PMG-20260801-01",
+  "project": "AIPLATFORM",
+  "summary": "Add an evidence link",
+  "created_at": "2026-08-01T00:00:00Z",
+  "expires_at": "2026-08-02T00:00:00Z",
+  "status": "proposed",
+  "payload_hash": "97864c70a41135c182933e11831d6bda509590fcb1bf32cb1facd2d2895148af",
+  "approval": {
+    "group_approved_by": null,
+    "approved_action_ids": [],
+    "approved_at": null,
+    "payload_hash": null
+  },
+  "actions": [
+    {
+      "id": "PMA-20260801-01",
+      "system": "jira",
+      "operation": "issue.comment",
+      "target_ref": "AIPLATFORM-101",
+      "target_version": "2026-08-01T00:00:00Z",
+      "before_state": {},
+      "desired_state": {
+        "body": "Evidence: CI passed"
+      },
+      "evidence": [
+        "repository CI result"
+      ],
+      "reason": "Record validation evidence",
+      "preconditions": [
+        "issue remains in AIPLATFORM"
+      ],
+      "dependencies": [],
+      "risk": "low",
+      "approval_required": "group",
+      "expires_at": "2026-08-02T00:00:00Z",
+      "rollback_guidance": "Remove the comment manually if incorrect",
+      "status": "proposed"
+    }
+  ]
+}

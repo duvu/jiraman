@@ -1,0 +1,55 @@
+{
+  "fixture_version": 1,
+  "kind": "subtask-oversized",
+  "metadata": {
+    "source": "synthetic-sanitized",
+    "version": "5.0",
+    "sanitized": true,
+    "semantic_capability": "refinement.decompose"
+  },
+  "expected": {
+    "valid": false,
+    "violation": "oversized"
+  },
+  "data": {
+    "story_ref": "story-1",
+    "subtasks": [
+      {
+        "draft_ref": "subtask-1",
+        "title": "Verify v4 backup restoration",
+        "outcome": "A byte comparison proves restoration",
+        "in_scope": [
+          "fixture backup"
+        ],
+        "out_of_scope": [
+          "live project"
+        ],
+        "steps": [
+          "install fixture",
+          "compare files"
+        ],
+        "affected_files": [
+          "install.sh"
+        ],
+        "dependencies": [],
+        "validation": "./tests/install/run-v4-upgrade.sh",
+        "definition_of_done": "test exits zero",
+        "estimate_hours": 5,
+        "requirements": [
+          "REQ-1"
+        ],
+        "acceptance_criteria": [
+          "AC-1"
+        ]
+      }
+    ],
+    "traceability": {
+      "REQ-1": [
+        "subtask-1"
+      ],
+      "AC-1": [
+        "subtask-1"
+      ]
+    }
+  }
+}

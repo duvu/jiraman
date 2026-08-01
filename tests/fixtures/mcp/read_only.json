@@ -1,0 +1,36 @@
+{
+  "fixture_version": 1,
+  "kind": "mcp-read_only",
+  "metadata": {
+    "source": "synthetic-sanitized",
+    "version": "5.0",
+    "sanitized": true,
+    "semantic_capability": "mcp.compatibility"
+  },
+  "expected": {
+    "result": "degraded-write-blocked"
+  },
+  "data": {
+    "tools": [
+      {
+        "name": "jira_search",
+        "description": "Search Jira issues",
+        "access": "read",
+        "schema": {
+          "jql": "string"
+        },
+        "semantic_capability": "jira.issue.search"
+      },
+      {
+        "name": "confluence_get",
+        "description": "Read Confluence page",
+        "access": "read",
+        "schema": {
+          "page_id": "string"
+        },
+        "semantic_capability": "confluence.page.read"
+      }
+    ],
+    "result": "degraded-write-blocked"
+  }
+}

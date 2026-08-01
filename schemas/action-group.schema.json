@@ -1,0 +1,387 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://duvu.github.io/jiraman/schemas/action-group.schema.json",
+  "definitions": {
+    "action": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "system",
+        "operation",
+        "target_ref",
+        "target_version",
+        "before_state",
+        "desired_state",
+        "evidence",
+        "reason",
+        "preconditions",
+        "dependencies",
+        "risk",
+        "approval_required",
+        "expires_at",
+        "rollback_guidance",
+        "status"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^PMA-[0-9]{8}-[0-9]{2}$"
+        },
+        "system": {
+          "enum": [
+            "jira",
+            "confluence"
+          ]
+        },
+        "operation": {
+          "enum": [
+            "issue.create",
+            "issue.update",
+            "issue.comment",
+            "issue.link",
+            "issue.transition",
+            "page.create",
+            "page.update",
+            "page.section-update",
+            "page.comment"
+          ]
+        },
+        "target_ref": {
+          "type": "string",
+          "minLength": 1
+        },
+        "target_version": {
+          "type": [
+            "string",
+            "integer",
+            "null"
+          ]
+        },
+        "before_state": {
+          "type": "object"
+        },
+        "desired_state": {
+          "type": "object",
+          "minProperties": 1
+        },
+        "evidence": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "reason": {
+          "type": "string",
+          "minLength": 1
+        },
+        "preconditions": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "dependencies": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "pattern": "^PMA-[0-9]{8}-[0-9]{2}$"
+          }
+        },
+        "risk": {
+          "enum": [
+            "low",
+            "medium",
+            "high"
+          ]
+        },
+        "approval_required": {
+          "enum": [
+            "group",
+            "per-action"
+          ]
+        },
+        "expires_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "rollback_guidance": {
+          "type": "string",
+          "minLength": 1
+        },
+        "status": {
+          "enum": [
+            "proposed",
+            "approved",
+            "rejected",
+            "stale",
+            "applying",
+            "applied",
+            "failed",
+            "verification-failed"
+          ]
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "risk": {
+                "const": "high"
+              }
+            },
+            "required": [
+              "risk"
+            ]
+          },
+          "then": {
+            "properties": {
+              "approval_required": {
+                "const": "per-action"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "operation": {
+                "enum": [
+                  "issue.update",
+                  "page.update",
+                  "page.section-update"
+                ]
+              }
+            },
+            "required": [
+              "operation"
+            ]
+          },
+          "then": {
+            "anyOf": [
+              {
+                "properties": {
+                  "target_version": {
+                    "type": [
+                      "string",
+                      "integer"
+                    ]
+                  }
+                }
+              },
+              {
+                "properties": {
+                  "before_state": {
+                    "type": "object",
+                    "minProperties": 1
+                  }
+                }
+              }
+            ]
+          }
+        }
+      ]
+    }
+  },
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "id",
+    "project",
+    "summary",
+    "created_at",
+    "expires_at",
+    "status",
+    "payload_hash",
+    "approval",
+    "actions"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": 5
+    },
+    "id": {
+      "type": "string",
+      "pattern": "^PMG-[0-9]{8}-[0-9]{2}$"
+    },
+    "project": {
+      "const": "AIPLATFORM"
+    },
+    "summary": {
+      "type": "string",
+      "minLength": 1
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "expires_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "status": {
+      "enum": [
+        "proposed",
+        "approved",
+        "rejected",
+        "stale",
+        "applying",
+        "applied",
+        "failed",
+        "verification-failed"
+      ]
+    },
+    "payload_hash": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$",
+      "description": "SHA-256 of the canonical immutable action payload defined by the apply-actions skill."
+    },
+    "approval": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "group_approved_by",
+        "approved_action_ids",
+        "approved_at",
+        "payload_hash"
+      ],
+      "properties": {
+        "group_approved_by": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "minLength": 1
+        },
+        "approved_action_ids": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "pattern": "^PMA-[0-9]{8}-[0-9]{2}$"
+          }
+        },
+        "approved_at": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "date-time"
+        },
+        "payload_hash": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "pattern": "^[a-f0-9]{64}$",
+          "description": "Must equal the group's freshly recomputed payload_hash when approval is present."
+        }
+      }
+    },
+    "actions": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/definitions/action"
+      }
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "status": {
+            "enum": [
+              "approved",
+              "applying",
+              "applied",
+              "failed",
+              "verification-failed"
+            ]
+          }
+        },
+        "required": [
+          "status"
+        ]
+      },
+      "then": {
+        "properties": {
+          "approval": {
+            "type": "object",
+            "properties": {
+              "group_approved_by": {
+                "type": "string",
+                "minLength": 1
+              },
+              "approved_at": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "payload_hash": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "oneOf": [
+        {
+          "properties": {
+            "approval": {
+              "type": "object",
+              "properties": {
+                "group_approved_by": {
+                  "type": "null"
+                },
+                "approved_action_ids": {
+                  "type": "array",
+                  "maxItems": 0
+                },
+                "approved_at": {
+                  "type": "null"
+                },
+                "payload_hash": {
+                  "type": "null"
+                }
+              }
+            }
+          }
+        },
+        {
+          "properties": {
+            "approval": {
+              "type": "object",
+              "properties": {
+                "group_approved_by": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "approved_action_ids": {
+                  "type": "array",
+                  "minItems": 1
+                },
+                "approved_at": {
+                  "type": "string",
+                  "format": "date-time"
+                },
+                "payload_hash": {
+                  "type": "string",
+                  "pattern": "^[a-f0-9]{64}$"
+                }
+              }
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

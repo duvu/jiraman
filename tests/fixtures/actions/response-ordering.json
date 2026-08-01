@@ -1,0 +1,51 @@
+{
+  "fixture_version": 1,
+  "kind": "response-ordering",
+  "metadata": {
+    "source": "synthetic-sanitized",
+    "version": "5.0",
+    "sanitized": true,
+    "semantic_capability": "actions.preflight"
+  },
+  "expected": {
+    "equal": true
+  },
+  "data": {
+    "left": {
+      "fields": {
+        "status": "Ready",
+        "labels": [
+          "b",
+          "a"
+        ],
+        "links": [
+          {
+            "id": "2"
+          },
+          {
+            "id": "1"
+          }
+        ]
+      },
+      "parent": "AIPLATFORM-100"
+    },
+    "right": {
+      "parent": "AIPLATFORM-100",
+      "fields": {
+        "links": [
+          {
+            "id": "1"
+          },
+          {
+            "id": "2"
+          }
+        ],
+        "labels": [
+          "a",
+          "b"
+        ],
+        "status": "Ready"
+      }
+    }
+  }
+}

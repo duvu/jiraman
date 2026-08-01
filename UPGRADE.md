@@ -1,26 +1,13 @@
-# Upgrade to Jiraman v4
+# Upgrade to Jiraman v5
 
-Version 4 adds evidence-based recommendations and brainstorming for the deliverables of the next two future one-week sprints while preserving the mandatory `Epic -> Story -> Sub-task` hierarchy.
-
-## Upgrade
-
-Update the local checkout, then reinstall the managed files:
+Jiraman v5 moves the primary agent from `.kilo/agent/jiraman.md` to `.kilo/agents/jiraman.md`, replaces v4 YAML/policy extensions with one JSON configuration and named skills, and keeps runtime behavior prompt-first.
 
 ```bash
-cd /path/to/jiraman
 git pull --ff-only
-./install.sh /absolute/path/to/project --force
+./install.sh /absolute/project/path --force
+./verify.sh /absolute/project/path
 ```
 
-The installer creates a timestamped backup before replacing managed files. Review and preserve pending action IDs from `.kilo/state/jiraman.json` before upgrading. The deliverable capability is installed as a backward-compatible policy extension and does not require a state-schema reset.
+The installer backs up every managed v4 file before replacement. A v4 state file is preserved byte-for-byte as `.kilo/state/jiraman.v4.json`; its `PMA-*`/`PMG-*` identifiers are placed in `migration.reapproval_required_ids`. They cannot execute as v5 approvals and must be reviewed and reproposed. Project-owned report/history files are never overwritten.
 
-After installation, start a new Kilo chat and run:
-
-```text
-/jiraman hierarchy
-/jiraman runway
-/jiraman deliverables
-/jiraman brainstorm platform reliability
-```
-
-A deliverable is not a Jira issue type and does not add a fourth hierarchy level. It is an observable outcome mapped to one primary Epic and one or more Stories. Brainstormed hypotheses do not count toward the two-sprint Ready runway until their Stories and Sub-tasks satisfy the existing spec-driven Definition of Ready. Candidates receive stable `DLV-*` IDs and can be converted into a complete spec-driven proposal through `/jiraman refine <DLV-ID>`.
+Rollback is documented in [docs/rollback.md](docs/rollback.md). The installer does not create or change MCP configuration and does not install Node dependencies in the target project.

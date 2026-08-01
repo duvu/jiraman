@@ -1,0 +1,274 @@
+{
+  "schema_version": 5,
+  "server_ownership": "external-user-owned",
+  "selection": "one-unambiguous-schema-compatible-exposed-tool",
+  "capabilities": [
+    {
+      "semantic": "jira.project.read",
+      "access": "read",
+      "availability": "required",
+      "required_by": [
+        "jiraman-daily",
+        "jiraman-sprint-health"
+      ],
+      "degraded_behavior": "Block the dependent evidence step and name remediation."
+    },
+    {
+      "semantic": "jira.board.read",
+      "access": "read",
+      "availability": "optional",
+      "required_by": [
+        "jiraman-daily",
+        "jiraman-next-two-weeks",
+        "jiraman-sprint-cadence"
+      ],
+      "degraded_behavior": "Continue with jira.board.read marked not verified."
+    },
+    {
+      "semantic": "jira.sprint.read",
+      "access": "read",
+      "availability": "optional",
+      "required_by": [
+        "jiraman-daily",
+        "jiraman-sprint-health",
+        "jiraman-next-two-weeks",
+        "jiraman-sprint-cadence"
+      ],
+      "degraded_behavior": "Continue with jira.sprint.read marked not verified."
+    },
+    {
+      "semantic": "jira.issue.search",
+      "access": "read",
+      "availability": "required",
+      "required_by": [
+        "jiraman-refinement",
+        "jiraman-meeting-actions"
+      ],
+      "degraded_behavior": "Block the dependent evidence step and name remediation."
+    },
+    {
+      "semantic": "jira.issue.read",
+      "access": "read",
+      "availability": "required",
+      "required_by": [
+        "jiraman-daily",
+        "jiraman-sprint-health",
+        "jiraman-refinement",
+        "jiraman-apply-actions",
+        "jiraman-sprint-cadence"
+      ],
+      "degraded_behavior": "Block the dependent evidence step and name remediation."
+    },
+    {
+      "semantic": "jira.comment.read",
+      "access": "read",
+      "availability": "optional",
+      "required_by": [
+        "jiraman-refinement",
+        "jiraman-meeting-actions"
+      ],
+      "degraded_behavior": "Continue with jira.comment.read marked not verified."
+    },
+    {
+      "semantic": "jira.link.read",
+      "access": "read",
+      "availability": "optional",
+      "required_by": [
+        "jiraman-refinement",
+        "jiraman-apply-actions"
+      ],
+      "degraded_behavior": "Continue with jira.link.read marked not verified."
+    },
+    {
+      "semantic": "jira.transition.read",
+      "access": "read",
+      "availability": "optional",
+      "required_by": [
+        "jiraman-sprint-health",
+        "jiraman-apply-actions"
+      ],
+      "degraded_behavior": "Continue with jira.transition.read marked not verified."
+    },
+    {
+      "semantic": "jira.issue.create",
+      "access": "write",
+      "availability": "operation-required",
+      "required_by": [
+        "jiraman-apply-actions"
+      ],
+      "permission": "ask",
+      "degraded_behavior": "Block apply when this named operation is requested."
+    },
+    {
+      "semantic": "jira.issue.update",
+      "access": "write",
+      "availability": "operation-required",
+      "required_by": [
+        "jiraman-apply-actions"
+      ],
+      "permission": "ask",
+      "degraded_behavior": "Block apply when this named operation is requested."
+    },
+    {
+      "semantic": "jira.comment.create",
+      "access": "write",
+      "availability": "operation-required",
+      "required_by": [
+        "jiraman-apply-actions"
+      ],
+      "permission": "ask",
+      "degraded_behavior": "Block apply when this named operation is requested."
+    },
+    {
+      "semantic": "jira.link.create",
+      "access": "write",
+      "availability": "operation-required",
+      "required_by": [
+        "jiraman-apply-actions"
+      ],
+      "permission": "ask",
+      "degraded_behavior": "Block apply when this named operation is requested."
+    },
+    {
+      "semantic": "jira.transition.execute",
+      "access": "write",
+      "availability": "operation-required",
+      "required_by": [
+        "jiraman-apply-actions"
+      ],
+      "permission": "ask",
+      "degraded_behavior": "Block apply when this named operation is requested."
+    },
+    {
+      "semantic": "confluence.page.search",
+      "access": "read",
+      "availability": "required",
+      "required_by": [
+        "jiraman-confluence-publish",
+        "jiraman-refinement",
+        "jiraman-confluence-reporting",
+        "jiraman-sprint-cadence"
+      ],
+      "degraded_behavior": "Block the dependent evidence step and name remediation."
+    },
+    {
+      "semantic": "confluence.page.read",
+      "access": "read",
+      "availability": "required",
+      "required_by": [
+        "jiraman-confluence-publish",
+        "jiraman-refinement",
+        "jiraman-confluence-reporting",
+        "jiraman-apply-actions",
+        "jiraman-sprint-cadence"
+      ],
+      "degraded_behavior": "Block the dependent evidence step and name remediation."
+    },
+    {
+      "semantic": "confluence.page.version.read",
+      "access": "read",
+      "availability": "required",
+      "required_by": [
+        "jiraman-confluence-publish",
+        "jiraman-apply-actions"
+      ],
+      "degraded_behavior": "Block the dependent evidence step and name remediation."
+    },
+    {
+      "semantic": "confluence.label.read",
+      "access": "read",
+      "availability": "optional",
+      "required_by": [
+        "jiraman-confluence-publish"
+      ],
+      "degraded_behavior": "Continue with confluence.label.read marked not verified."
+    },
+    {
+      "semantic": "confluence.comment.read",
+      "access": "read",
+      "availability": "optional",
+      "required_by": [
+        "jiraman-confluence-publish",
+        "jiraman-meeting-actions"
+      ],
+      "degraded_behavior": "Continue with confluence.comment.read marked not verified."
+    },
+    {
+      "semantic": "confluence.page.create",
+      "access": "write",
+      "availability": "operation-required",
+      "required_by": [
+        "jiraman-apply-actions"
+      ],
+      "permission": "ask",
+      "degraded_behavior": "Block apply when this named operation is requested."
+    },
+    {
+      "semantic": "confluence.page.update",
+      "access": "write",
+      "availability": "operation-required",
+      "required_by": [
+        "jiraman-apply-actions"
+      ],
+      "permission": "ask",
+      "degraded_behavior": "Block apply when this named operation is requested."
+    },
+    {
+      "semantic": "confluence.comment.create",
+      "access": "write",
+      "availability": "operation-required",
+      "required_by": [
+        "jiraman-apply-actions"
+      ],
+      "permission": "ask",
+      "degraded_behavior": "Block apply when this named operation is requested."
+    }
+  ],
+  "profiles": {
+    "read-only-analysis": {
+      "allow": [
+        "read"
+      ],
+      "deny": [
+        "write",
+        "destructive"
+      ]
+    },
+    "report-proposal": {
+      "allow": [
+        "read"
+      ],
+      "deny": [
+        "write",
+        "destructive"
+      ]
+    },
+    "approved-write": {
+      "allow": [
+        "read",
+        "write"
+      ],
+      "write_permission": "ask",
+      "deny": [
+        "destructive"
+      ]
+    }
+  },
+  "denied": [
+    {
+      "semantic": "jira.issue.delete",
+      "access": "destructive",
+      "availability": "forbidden"
+    },
+    {
+      "semantic": "confluence.page.delete",
+      "access": "destructive",
+      "availability": "forbidden"
+    },
+    {
+      "semantic": "mcp.configuration.write",
+      "access": "destructive",
+      "availability": "forbidden"
+    }
+  ]
+}

@@ -1,10 +1,12 @@
-# Local packaging output
+node_modules/
+dist/
+coverage/
+release/
+.test-output/
+tests/install/output/
 *.zip
 *.tar.gz
-
-# Installer backups created inside this repository during development
 .jiraman-backup-*/
-
-# Editor and operating-system files
+.kilo/state/
 .DS_Store
 *.swp

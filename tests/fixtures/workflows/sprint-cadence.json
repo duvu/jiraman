@@ -1,0 +1,40 @@
+{
+  "fixture_version": 1,
+  "kind": "sprint-cadence",
+  "metadata": {
+    "source": "synthetic-sanitized",
+    "version": "5.0",
+    "sanitized": true,
+    "semantic_capability": "workflow.sprint"
+  },
+  "expected": {
+    "writes": 0
+  },
+  "data": {
+    "planning": {
+      "goal": "Operators can restore upgrades",
+      "selected_stories": [
+        "AIPLATFORM-101"
+      ],
+      "capacity_verified": true,
+      "coherent": true
+    },
+    "review": {
+      "jira_status": "Done",
+      "accepted_outcome": false,
+      "validation_evidence": "missing",
+      "carry_over_reason": "acceptance not demonstrated"
+    },
+    "retrospective": {
+      "experiments": [
+        {
+          "experiment": "Require restore evidence",
+          "owner_role": "release lead",
+          "expected_signal": "all upgrades attach comparison",
+          "review_date": "2026-08-08",
+          "stop_condition": "adds delay without evidence gain"
+        }
+      ]
+    }
+  }
+}

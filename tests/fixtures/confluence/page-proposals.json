@@ -1,0 +1,77 @@
+{
+  "fixture_version": 1,
+  "kind": "confluence-page-proposals",
+  "metadata": {
+    "source": "synthetic-sanitized",
+    "version": "5.0",
+    "sanitized": true,
+    "semantic_capability": "confluence.page.propose"
+  },
+  "expected": {
+    "ambiguous": "blocked",
+    "unchanged": "no-action",
+    "human": "comment-or-patch"
+  },
+  "data": [
+    {
+      "case": "managed",
+      "ownership": "jiraman-managed",
+      "current_version": 4,
+      "operation": "page.update",
+      "full_replace": true,
+      "current_content": "current-managed",
+      "desired_content": "desired-managed",
+      "reason": "Refresh governed evidence",
+      "preconditions": [
+        "page remains in configured space/root",
+        "version remains current"
+      ],
+      "rollback_source": "version-4"
+    },
+    {
+      "case": "mixed",
+      "ownership": "mixed",
+      "current_version": 2,
+      "operation": "page.section-update",
+      "section": "summary",
+      "full_replace": false,
+      "current_content": "current-mixed",
+      "desired_content": "desired-mixed",
+      "reason": "Refresh governed evidence",
+      "preconditions": [
+        "page remains in configured space/root",
+        "version remains current"
+      ],
+      "rollback_source": "version-2"
+    },
+    {
+      "case": "human",
+      "ownership": "human-owned",
+      "current_version": 7,
+      "operation": "page.comment",
+      "full_replace": false,
+      "current_content": "current-human",
+      "desired_content": "desired-human",
+      "reason": "Refresh governed evidence",
+      "preconditions": [
+        "page remains in configured space/root",
+        "version remains current"
+      ],
+      "rollback_source": "version-7"
+    },
+    {
+      "case": "unchanged",
+      "ownership": "jiraman-managed",
+      "current_version": 5,
+      "operation": "no-action"
+    },
+    {
+      "case": "ambiguous-title",
+      "matches": [
+        "page-1",
+        "page-2"
+      ],
+      "operation": "blocked"
+    }
+  ]
+}

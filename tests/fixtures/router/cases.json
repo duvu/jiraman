@@ -1,0 +1,142 @@
+{
+  "fixture_version": 1,
+  "kind": "command-routing",
+  "metadata": {
+    "source": "synthetic-sanitized",
+    "version": "5.0",
+    "sanitized": true,
+    "semantic_capability": "command.route"
+  },
+  "expected": {
+    "unknown": "read-only",
+    "longest_prefix": true
+  },
+  "data": [
+    {
+      "input": "",
+      "mode": "daily",
+      "focus": "",
+      "write": false
+    },
+    {
+      "input": "sprint-health payments",
+      "mode": "health",
+      "focus": "payments",
+      "write": false
+    },
+    {
+      "input": "plan next-2-weeks reliability",
+      "mode": "plan next-2-weeks",
+      "focus": "reliability",
+      "write": false
+    },
+    {
+      "input": "next-two-weeks platform",
+      "mode": "plan next-2-weeks",
+      "focus": "platform",
+      "write": false
+    },
+    {
+      "input": "sprint-plan platform",
+      "mode": "plan next-2-weeks",
+      "focus": "platform",
+      "write": false
+    },
+    {
+      "input": "deliverables platform",
+      "mode": "plan next-2-weeks",
+      "focus": "platform",
+      "write": false
+    },
+    {
+      "input": "next-2-weeks platform",
+      "mode": "plan next-2-weeks",
+      "focus": "platform",
+      "write": false
+    },
+    {
+      "input": "two-week-deliverables platform",
+      "mode": "plan next-2-weeks",
+      "focus": "platform",
+      "write": false
+    },
+    {
+      "input": "hierarchy AIPLATFORM-101",
+      "mode": "refine",
+      "focus": "AIPLATFORM-101",
+      "write": false
+    },
+    {
+      "input": "triage AIPLATFORM-101",
+      "mode": "refine",
+      "focus": "AIPLATFORM-101",
+      "write": false
+    },
+    {
+      "input": "review AIPLATFORM-101",
+      "mode": "status",
+      "focus": "AIPLATFORM-101",
+      "write": false
+    },
+    {
+      "input": "sprint-review AIPLATFORM-101",
+      "mode": "status",
+      "focus": "AIPLATFORM-101",
+      "write": false
+    },
+    {
+      "input": "create tickets for auth",
+      "mode": null,
+      "focus": "create tickets for auth",
+      "write": false
+    },
+    {
+      "input": "propose",
+      "mode": "propose",
+      "focus": "",
+      "write": false
+    },
+    {
+      "input": "propose arbitrary prose",
+      "mode": "propose",
+      "focus": "arbitrary prose",
+      "write": false
+    },
+    {
+      "input": "apply PMA-20260801-01",
+      "mode": "apply",
+      "focus": "PMA-20260801-01",
+      "write": true
+    },
+    {
+      "input": "apply",
+      "mode": "apply",
+      "focus": "",
+      "write": false
+    },
+    {
+      "input": "apply arbitrary prose",
+      "mode": "apply",
+      "focus": "arbitrary prose",
+      "write": false
+    },
+    {
+      "input": "apply PMA-invalid",
+      "mode": "apply",
+      "focus": "PMA-invalid",
+      "write": false
+    },
+    {
+      "input": "reject PMG-20260801-01",
+      "mode": "reject",
+      "focus": "PMG-20260801-01",
+      "write": false
+    },
+    {
+      "input": "unknown-mode data",
+      "mode": null,
+      "focus": "unknown-mode data",
+      "write": false
+    }
+  ]
+}
