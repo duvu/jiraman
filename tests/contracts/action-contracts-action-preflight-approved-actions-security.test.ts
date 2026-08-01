@@ -245,6 +245,15 @@ describe("action-preflight approved-actions security", () => {
       expect(output).not.toContain(privateKeyBody);
       expect(output).not.toContain(opaque);
       expect(output.match(/\[REDACTED SENSITIVE LINE\]/g)?.length ?? 0).toBeGreaterThanOrEqual(canaries.length);
+      const combined = sanitizeSensitiveText([
+        "prefixAuthor",
+        "ization: Bearer\n",
+        opaque,
+        "\nFAIL invariant=SCOPE_PROJECT action blocked",
+      ].join(""));
+      expect(combined).toContain("FAIL invariant=SCOPE_PROJECT");
+      expect(combined).not.toContain("action blocked");
+      expect(combined).not.toContain(opaque);
       expect(sanitizeSensitiveText("safe diagnostic\nordinary output")).toBe("safe diagnostic\nordinary output");
     } finally {
       rmSync(directory, { recursive: true, force: true });
