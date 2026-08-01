@@ -1,6 +1,7 @@
 const privateKeyBegin = /-----BEGIN (?:[A-Z0-9 ]+ )?PRIVATE KEY(?: BLOCK)?-----/i;
 const privateKeyEnd = /-----END (?:[A-Z0-9 ]+ )?PRIVATE KEY(?: BLOCK)?-----/i;
 const credentialAssignmentLine = /["']?\b(?:(?:password|passwd|access[_-]?token|refresh[_-]?token|client[_-]?secret|api[_-]?key|secret[_-]?key|auth[_-]?token)|(?:[A-Z0-9]+[_-])+(?:TOKEN|SECRET|PASSWORD|PASSWD|(?:ACCESS|SECRET|PRIVATE|API)[_-]?KEY))\b["']?\s*[=:]\s*(.*)$/i;
+const sensitiveHeaderContinuationLine = /\b(?:Authorization|Cookie|Set-Cookie):\s*(?:(?:Basic|Bearer)\s*)?$/i;
 
 export const sensitivePatterns = [
   { name: "private-key", expression: privateKeyBegin },
@@ -59,6 +60,10 @@ export function sanitizeSensitiveText(text) {
       } else {
         return "[REDACTED SENSITIVE LINE]";
       }
+    }
+    if (sensitiveHeaderContinuationLine.test(line)) {
+      pendingCredential = "remainder";
+      return "[REDACTED SENSITIVE LINE]";
     }
     const assignment = credentialAssignmentLine.exec(line);
     if (assignment !== null) {

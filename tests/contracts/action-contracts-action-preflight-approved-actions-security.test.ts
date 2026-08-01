@@ -214,6 +214,10 @@ describe("action-preflight approved-actions security", () => {
       ["unquoted-multiple-lines.log", ["GITHUB", "_TOKEN=\n", opaque, "\n", opaque, "_later"].join("")],
       ["quoted-even-backslash.log", ["GITHUB", "_TOKEN=\"\n", opaque, "\\\\", "\"\n", opaque, "_tail\n\""].join("")],
       ["unquoted-blank-continuation.log", ["GITHUB", "_TOKEN=\n", opaque, "\n\n", opaque, "_later"].join("")],
+      ["authorization-bearer-lf.log", ["Author", "ization: Bearer\n", opaque].join("")],
+      ["authorization-basic-crlf.log", ["Author", "ization: Basic\r\n", opaque].join("")],
+      ["cookie-lf.log", ["Cook", "ie:\n", opaque].join("")],
+      ["set-cookie-crlf.log", ["Set-", "Cook", "ie:\r\n", opaque].join("")],
       ...yamlCanaries,
     ];
     for (const [surface, canary] of canaries) expect(findSensitiveValues(canary), surface).not.toEqual([]);
