@@ -19,7 +19,8 @@
         "schema": {
           "jql": "string",
           "cursor": "string"
-        }
+        },
+        "semantic_capability": "jira.issue.search"
       }
     ],
     "pages": 2,

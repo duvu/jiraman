@@ -2,6 +2,8 @@
 name: jiraman-apply-actions
 description: "Propose, reject, or directly apply only named approved PMG/PMA actions with full preflight and verification."
 version: 5
+side_effects: approved-write
+policy: .kilo/policies/jiraman-safety.md
 ---
 
 # jiraman-apply-actions

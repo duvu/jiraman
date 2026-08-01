@@ -1,10 +1,12 @@
 ---
-name: jiraman-sprint-planning
+name: jiraman-next-two-weeks
 description: "Build two-week scenarios, recommendations, sprint plans, reviews, and retrospectives without writes."
 version: 5
+side_effects: none
+policy: .kilo/policies/jiraman-safety.md
 ---
 
-# jiraman-sprint-planning
+# jiraman-next-two-weeks
 
 ## Purpose
 
@@ -12,7 +14,7 @@ Build two-week scenarios, recommendations, sprint plans, reviews, and retrospect
 
 ## Triggers
 
-Exact `plan next-2-weeks`, `brainstorm`, or `retrospective`, including planning/deliverable aliases.
+Exact `plan next-2-weeks` or `brainstorm`, including deliverable aliases.
 
 ## Required Evidence
 
@@ -20,7 +22,7 @@ Verified Epic alignment/value/urgency/dependencies/risks; Ready Stories and Sub-
 
 ## Output Contract
 
-Stable DLV candidates and distinct scenarios; evidence-based recommendation or `No evidence-based recommendation`; Week 1/Week 2 outcomes and acceptance signals; displaced work; sprint goal/scope proposal; review evidence; at most three retrospective experiments; governed Confluence page proposal.
+Stable DLV candidates and distinct scenarios; evidence-based recommendation or `No evidence-based recommendation`; Week 1/Week 2 outcomes and acceptance signals; displaced work; and a governed Confluence page proposal.
 
 ## Semantic Capabilities
 

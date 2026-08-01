@@ -19,16 +19,24 @@ state="$ROOT/.kilo/state/jiraman.json"
 if [[ "$SOURCE" -eq 1 ]]; then
   agent="$ROOT/template/.kilo/agents/jiraman.md"; command="$ROOT/template/.kilo/commands/jiraman.md"; config_root="$ROOT/template/.kilo/config"; state="$ROOT/template/.kilo/state/jiraman.json"
 fi
-if grep -q '^agent: jiraman$' "$command" && grep -q 'jiraman-apply-actions' "$agent"; then echo "OK   canonical agent routing"; else echo "FAIL canonical agent routing"; failed=1; fi
-if grep -q 'mcp-atlassian' "$agent" && grep -q 'untrusted evidence' "$agent" && grep -q 'AIPLATFORM' "$agent"; then echo "OK   primary safety invariants"; else echo "FAIL primary safety invariants"; failed=1; fi
+if grep -q '^agent: jiraman$' "$command" && grep -q '^write_mode: exact-apply-only$' "$agent"; then echo "OK   canonical agent routing"; else echo "FAIL canonical agent routing"; failed=1; fi
+if grep -q '^project: AIPLATFORM$' "$agent" && grep -q '^mcp_server: mcp-atlassian$' "$agent" && grep -q '^untrusted_content: evidence-only$' "$agent"; then echo "OK   primary safety metadata"; else echo "FAIL primary safety metadata"; failed=1; fi
 if ! command -v node >/dev/null 2>&1; then echo "FAIL Node is required for verification tooling"; exit 1; fi
 if ! node - "$config_root" "$state" <<'NODE'
 const fs=require("fs"), path=require("path");
 const [configRoot,statePath]=process.argv.slice(2);
-for (const file of ["jiraman.json","command-router.json","mcp-atlassian.json"]) JSON.parse(fs.readFileSync(path.join(configRoot,file),"utf8"));
-JSON.parse(fs.readFileSync(statePath,"utf8"));
+const object=(value)=>value!==null&&typeof value==="object"&&!Array.isArray(value);
+const config=JSON.parse(fs.readFileSync(path.join(configRoot,"jiraman.json"),"utf8"));
+const router=JSON.parse(fs.readFileSync(path.join(configRoot,"command-router.json"),"utf8"));
+const mcp=JSON.parse(fs.readFileSync(path.join(configRoot,"mcp-atlassian.json"),"utf8"));
+const state=JSON.parse(fs.readFileSync(statePath,"utf8"));
+if(config.schema_version!==5||config.project?.key!=="AIPLATFORM"||!object(config.confluence)||!object(config.delivery)||!object(config.actions)||!object(config.state)) throw new Error("invalid config contract");
+if(router.schema_version!==5||router.default_mode!=="daily"||!object(router.canonical)||!object(router.aliases)||router.canonical.apply!=="jiraman-apply-actions") throw new Error("invalid router contract");
+if(mcp.schema_version!==5||mcp.server_ownership!=="external-user-owned"||!Array.isArray(mcp.capabilities)||!object(mcp.profiles)||!Array.isArray(mcp.denied)) throw new Error("invalid MCP contract");
+const stateKeys=object(state)?Object.keys(state).sort().join(","):"";
+if(stateKeys!=="deliverable_candidates,migration,pending_action_groups,project,run_records,schema_version"||state.schema_version!==5||state.project!=="AIPLATFORM"||!object(state.pending_action_groups)||!object(state.deliverable_candidates)||!Array.isArray(state.run_records)||!object(state.migration)||!Array.isArray(state.migration.reapproval_required_ids)) throw new Error("invalid state contract");
 NODE
-then echo "FAIL malformed JSON"; failed=1; else echo "OK   JSON syntax"; fi
+then echo "FAIL JSON contract validation"; failed=1; else echo "OK   JSON contracts"; fi
 if ! node - "$ROOT" "$SOURCE" <<'NODE'
 const fs=require("fs"), path=require("path");
 const [root,source]=process.argv.slice(2);

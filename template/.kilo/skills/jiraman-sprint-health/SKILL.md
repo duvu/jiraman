@@ -1,10 +1,12 @@
 ---
-name: jiraman-flow-analysis
+name: jiraman-sprint-health
 description: "Diagnose sprint health, flow bottlenecks, and Ready runway from direct MCP evidence."
 version: 5
+side_effects: none
+policy: .kilo/policies/jiraman-safety.md
 ---
 
-# jiraman-flow-analysis
+# jiraman-sprint-health
 
 ## Purpose
 

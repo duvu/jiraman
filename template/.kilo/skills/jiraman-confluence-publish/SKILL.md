@@ -2,6 +2,8 @@
 name: jiraman-confluence-publish
 description: "Resolve governed pages and create safe version-bound Confluence proposals without writes."
 version: 5
+side_effects: none
+policy: .kilo/policies/jiraman-safety.md
 ---
 
 # jiraman-confluence-publish

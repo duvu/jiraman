@@ -2,6 +2,8 @@
 name: jiraman-meeting-actions
 description: "Extract governed meeting outcomes and reconciled action proposals without writes."
 version: 5
+side_effects: none
+policy: .kilo/policies/jiraman-safety.md
 ---
 
 # jiraman-meeting-actions

@@ -2,50 +2,41 @@
 
 ## Project Structure & Module Organization
 
-Jiraman is a distributable Kilo Code agent, not a compiled application. Treat `template/` as the source of installed content:
+Jiraman is a distributable, prompt-first KiloCode agent rather than an application. Treat `template/` as the source of installed runtime content:
 
-- `template/.kilo/agent/jiraman.md` defines agent behavior.
-- `template/.kilo/commands/jiraman.md` routes slash commands.
-- `template/.kilo/config/` contains YAML and Markdown policy.
-- `template/docs/project-management/` contains operational logs and reusable specifications.
-- `install.sh` copies managed files into a target project; `verify.sh` checks the installed contract.
-- `README.md`, `UPGRADE.md`, and `CHANGELOG.md` describe usage, migration, and releases.
+- `template/.kilo/agents/jiraman.md` is the minimal primary orchestrator.
+- `template/.kilo/skills/*/SKILL.md` contains named workflow contracts.
+- `template/.kilo/commands/`, `config/`, and `policies/` define routing and shared policy.
+- `schemas/`, `examples/`, and `tests/fixtures/` are development-time contracts.
+- `src/` contains TypeScript validators only; it is not installed as a runtime client.
+- `install.sh`, `verify.sh`, and `scripts/` manage installation and release artifacts.
 
-Keep related agent, command, policy, template, and documentation changes synchronized.
+Keep agent, skill, router, policy, schema, fixture, installer, and documentation changes synchronized.
 
 ## Build, Test, and Development Commands
 
-There is no build step or dependency installation. Run from the repository root:
-
 ```bash
-./verify.sh template
+npm ci
+npm run typecheck
+npm test
+npm run validate
+npm run ci
 ```
 
-This validates required files, command routing, hierarchy safeguards, JSON state, and YAML policy when PyYAML is available.
-
-Exercise a clean installation without touching a real project:
-
-```bash
-target=$(mktemp -d)
-./install.sh "$target"
-./verify.sh "$target"
-rm -rf "$target"
-```
-
-Use `./install.sh /absolute/project/path --force` only intentionally; it replaces managed files after creating a timestamped backup.
+`npm run ci` is the release-equivalent gate: shell syntax, TypeScript/Vitest/Ajv checks, security scans, clean installation, v4 migration, and reproducible package verification. Use `./verify.sh --source-tree` for the source contract and `./verify.sh /absolute/project/path` for an installation.
 
 ## Coding Style & Naming Conventions
 
-Shell scripts target Bash, begin with `set -euo pipefail`, quote path variables, and use two-space indentation. Keep Markdown concise, with fenced examples and descriptive headings. Preserve two-space YAML indentation and existing key naming. Use lowercase, hyphenated document names such as `two-week-deliverable-plan.md`; Jira identifiers remain uppercase (`AIPLATFORM-123`, `DLV-YYYYMMDD-NN`).
+Use strict TypeScript without untyped escape hatches. Keep validators deterministic and development-only. Shell scripts use Bash, `set -euo pipefail`, quoted paths, and two-space indentation. Markdown should be concise and reference the canonical shared policy instead of duplicating it. Skill directories use lowercase hyphenated names; Jira identifiers stay uppercase (`AIPLATFORM-123`, `PMG-YYYYMMDD-NN`).
 
 ## Testing Guidelines
 
-`verify.sh` is the repository's test harness. Add focused assertions there when changing an enforced policy or installed-file contract. A change is ready only when direct template verification and a clean temporary installation both exit successfully. Do not test `--force` against a working project.
+Use Vitest and Ajv. Prefer executable structural and adversarial checks over assertions against prose or prewritten outcome flags. Add fixtures for every boundary changed, including invalid cases. A release change is ready only when `npm run ci` succeeds.
 
 ## Commit & Pull Request Guidelines
 
-Recent history uses short, imperative subjects such as `Add next-two-week deliverable brainstorming`. Follow that style, keep each commit focused, and update the changelog for user-visible behavior. Pull requests should explain the policy or workflow change, identify affected installed files, note upgrade implications, and list verification commands and results. Link the relevant issue; include screenshots only when rendered Kilo behavior materially changes.
+Use short imperative subjects. Keep commits focused and update `CHANGELOG.md` for user-visible behavior. Pull requests must explain affected installed paths, migration implications, linked issues, and exact validation results. Include screenshots only when rendered Kilo behavior changes materially.
 
 ## Security & Configuration
 
-Never commit credentials, MCP configuration, or live operational state. The installer deliberately leaves MCP setup untouched, and installed `.kilo/state/` content must remain gitignored.
+Never commit credentials, live MCP configuration, or operational state. Jiraman must use the existing external `mcp-atlassian` server directly and must not install a custom Jira/Confluence client. Installed `.kilo/state/` and backups remain gitignored.

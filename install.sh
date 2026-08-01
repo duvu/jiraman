@@ -43,6 +43,62 @@ legacy=(
   ".kilo/config/jiraman.yaml"
   ".kilo/config/jiraman-deliverables.md"
 )
+
+reject_symlink_path() {
+  local relative="$1"
+  local current="$ROOT"
+  local component
+  IFS='/' read -r -a components <<< "$relative"
+  for component in "${components[@]}"; do
+    current="$current/$component"
+    if [[ -L "$current" ]]; then
+      echo "Refusing unsafe symbolic link in managed path: $current" >&2
+      exit 1
+    fi
+  done
+}
+
+for relative in "${managed[@]}" "${legacy[@]}"; do
+  reject_symlink_path "$relative"
+done
+
+preserve_v5_state=0
+migrate_v4_state=0
+if [[ -f "$ROOT/.kilo/state/jiraman.json" ]]; then
+  if ! command -v node >/dev/null 2>&1; then
+    echo "Existing state requires Node verification tooling before installation." >&2
+    exit 1
+  fi
+  set +e
+  node - "$ROOT/.kilo/state/jiraman.json" <<'NODE'
+const fs = require("fs");
+let state;
+try {
+  state = JSON.parse(fs.readFileSync(process.argv[2], "utf8"));
+} catch {
+  process.exit(4);
+}
+const object = (value) => value !== null && typeof value === "object" && !Array.isArray(value);
+const keys = object(state) ? Object.keys(state).sort() : [];
+const expected = ["deliverable_candidates", "migration", "pending_action_groups", "project", "run_records", "schema_version"];
+const migration = object(state?.migration) ? state.migration : null;
+const valid = state?.schema_version === 5 && state?.project === "AIPLATFORM" &&
+  JSON.stringify(keys) === JSON.stringify(expected) && object(state.pending_action_groups) &&
+  object(state.deliverable_candidates) && Array.isArray(state.run_records) && migration !== null &&
+  Object.keys(migration).sort().join(",") === "legacy_state_file,reapproval_required_ids" &&
+  (migration.legacy_state_file === null || typeof migration.legacy_state_file === "string") &&
+  Array.isArray(migration.reapproval_required_ids);
+process.exit(valid ? 0 : 3);
+NODE
+  state_status=$?
+  set -e
+  case "$state_status" in
+    0) preserve_v5_state=1 ;;
+    3) migrate_v4_state=1 ;;
+    *) echo "Existing state is not valid JSON; installation stopped before backup or mutation." >&2; exit 1 ;;
+  esac
+fi
+
 existing=()
 declare -A seen=()
 for relative in "${managed[@]}" "${legacy[@]}"; do
@@ -68,20 +124,6 @@ if [[ "${#existing[@]}" -gt 0 ]]; then
     cp -a "$ROOT/$relative" "$backup/$relative"
   done
   echo "Existing managed files backed up to: $backup"
-fi
-
-preserve_v5_state=0
-migrate_v4_state=0
-if [[ -f "$ROOT/.kilo/state/jiraman.json" ]]; then
-  if grep -Eq '"schema_version"[[:space:]]*:[[:space:]]*5' "$ROOT/.kilo/state/jiraman.json"; then
-    preserve_v5_state=1
-  else
-    migrate_v4_state=1
-    if ! command -v node >/dev/null 2>&1; then
-      echo "A v4 state file requires Node tooling for lossless ID migration; restore from $backup and follow UPGRADE.md." >&2
-      exit 1
-    fi
-  fi
 fi
 
 for relative in "${managed[@]}"; do

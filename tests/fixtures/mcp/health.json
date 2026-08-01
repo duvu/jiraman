@@ -1,0 +1,37 @@
+{
+  "fixture_version": 1,
+  "kind": "mcp-health",
+  "metadata": {
+    "source": "synthetic-sanitized",
+    "version": "5.0",
+    "sanitized": true,
+    "semantic_capability": "mcp.health"
+  },
+  "expected": {
+    "entries": [
+      "required_capability",
+      "resolved_exposed_tool",
+      "permission_expectation",
+      "missing",
+      "remediation"
+    ]
+  },
+  "data": {
+    "requested": [
+      "jira.sprint.read",
+      "jira.issue.search",
+      "jira.issue.update"
+    ],
+    "tools": [
+      {
+        "name": "search_work",
+        "description": "Search Jira issues",
+        "semantic_capability": "jira.issue.search",
+        "access": "read",
+        "schema": {
+          "jql": "string"
+        }
+      }
+    ]
+  }
+}

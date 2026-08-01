@@ -1,5 +1,6 @@
 import { existsSync } from "node:fs";
 
+import { missingCapabilityCoverage } from "./capability-rules.js";
 import {
   asArray,
   asObject,
@@ -15,6 +16,7 @@ import {
   validateJson,
   walkFiles,
 } from "./contracts.js";
+import { missingChecklistGates } from "./release-rules.js";
 
 const REQUIRED_SKILL_SECTIONS = ["Purpose", "Triggers", "Required Evidence", "Output Contract", "Semantic Capabilities", "Workflow", "Side Effects", "Degraded Mode", "Shared Policy"] as const;
 const FIXTURE_DOMAINS: Readonly<Record<string, readonly string[]>> = {
@@ -23,7 +25,6 @@ const FIXTURE_DOMAINS: Readonly<Record<string, readonly string[]>> = {
   "mcp-fixtures": ["tests/fixtures/mcp"],
   "security-fixtures": ["tests/fixtures/security", "tests/fixtures/scope"],
   "confluence-fixtures": ["tests/fixtures/confluence"],
-  "audit-fixtures": ["tests/fixtures/confluence"],
   "report-contracts": ["tests/fixtures/confluence"],
   "governance-fixtures": ["tests/fixtures/governance"],
   "spec-fixtures": ["tests/fixtures/specs"],
@@ -41,8 +42,10 @@ function validateSchemas(): void {
   requireInvalid("state.schema.json", "examples/state.invalid.json");
   requireValid("confluence-page-metadata.schema.json", "examples/confluence-page-metadata.valid.json");
   requireInvalid("confluence-page-metadata.schema.json", "examples/confluence-page-metadata.invalid.json");
+  requireInvalid("confluence-page-metadata.schema.json", "examples/confluence-page-metadata.invalid-date.json");
   requireValid("action-group.schema.json", "examples/action-group.valid.json");
   requireInvalid("action-group.schema.json", "examples/action-group.invalid.json");
+  requireInvalid("action-group.schema.json", "examples/action-group.invalid-date.json");
   requireValid("state.schema.json", "template/.kilo/state/jiraman.json");
   requireValid("config.schema.json", "template/.kilo/config/jiraman.json");
 }
@@ -50,7 +53,8 @@ function validateSchemas(): void {
 function validateSkills(): void {
   const names = new Set<string>();
   const files = listSkillFiles();
-  invariant(files.length === 10, `expected 10 skills, found ${files.length}`);
+  const expected = new Set(["jiraman-apply-actions", "jiraman-confluence-publish", "jiraman-confluence-reporting", "jiraman-daily", "jiraman-decision-management", "jiraman-meeting-actions", "jiraman-next-two-weeks", "jiraman-refinement", "jiraman-risk-management", "jiraman-sprint-cadence", "jiraman-sprint-health"]);
+  invariant(files.length === expected.size, `expected ${expected.size} skills, found ${files.length}`);
   for (const path of files) {
     const text = readText(path);
     const frontmatter = parseFrontmatter(text);
@@ -59,14 +63,12 @@ function validateSkills(): void {
     invariant(!names.has(name), `duplicate skill name: ${name}`);
     names.add(name);
     invariant(frontmatter.get("version") === "5", `${path} must be version 5`);
+    invariant(expected.has(name), `unexpected skill contract: ${name}`);
     for (const section of REQUIRED_SKILL_SECTIONS) {
       invariant(text.includes(`## ${section}`), `${path} missing ${section}`);
     }
     invariant(text.includes(".kilo/policies/jiraman-safety.md"), `${path} missing shared policy reference`);
-    if (name !== "jiraman-apply-actions") {
-      const sideEffects = text.split("## Side Effects")[1]?.split("## Degraded Mode")[0] ?? "";
-      invariant(sideEffects.includes("writes are prohibited"), `${path} must prohibit writes`);
-    }
+    invariant(frontmatter.get("side_effects") === (name === "jiraman-apply-actions" ? "approved-write" : "none"), `${path} has invalid side-effect metadata`);
   }
   const index = asObject(readJson("template/.kilo/skills/index.json"), "skills index");
   for (const item of asArray(index.skills, "skills index skills")) {
@@ -88,7 +90,7 @@ function validateCommands(): void {
     invariant(typeof target === "string" && canonical[target] !== undefined, `unresolved alias target: ${String(target)}`);
   }
   invariant(canonical.apply === "jiraman-apply-actions" && canonical.reject === "jiraman-apply-actions", "write modes must route to apply skill");
-  invariant(readText("template/.kilo/commands/jiraman.md").includes("longest exact"), "Markdown router must define precedence");
+  invariant(router.precedence === "longest-exact-prefix", "router must define deterministic precedence");
   requireValid("fixture.schema.json", "tests/fixtures/router/cases.json");
 }
 
@@ -98,6 +100,11 @@ function validateMcp(): void {
   const capabilities = asArray(contract.capabilities, "capabilities");
   const semantics = capabilities.map((item) => asString(asObject(item, "capability").semantic, "semantic"));
   invariant(new Set(semantics).size === semantics.length, "duplicate semantic capability");
+  for (const item of capabilities) {
+    const capability = asObject(item, "capability");
+    invariant(["required", "optional", "operation-required"].includes(asString(capability.availability, "availability")), "invalid capability availability");
+    invariant(asString(capability.degraded_behavior, "degraded behavior").length > 0, "missing degraded behavior");
+  }
   invariant(
     asArray(contract.denied, "denied").every((item) => {
       const denied = asObject(item, "denied capability");
@@ -105,13 +112,14 @@ function validateMcp(): void {
     }),
     "denied operations must be forbidden destructive capabilities",
   );
+  const coverage = asObject(readJson("tests/fixtures/mcp/capability_coverage.json"), "coverage");
+  invariant(missingCapabilityCoverage(contract, coverage.data ?? null).length === 0, "semantic capability fixture coverage is incomplete");
 }
 
 function validateConfig(): void {
   requireValid("config.schema.json", "template/.kilo/config/jiraman.json");
-  const policy = readText("template/.kilo/policies/jiraman-safety.md");
-  invariant(policy.includes("project `AIPLATFORM`") && policy.includes("project = AIPLATFORM"), "fixed project/JQL scope missing");
-  invariant(policy.includes("decision required"), "source-conflict behavior missing");
+  const policy = parseFrontmatter(readText("template/.kilo/policies/jiraman-safety.md"));
+  invariant(policy.get("policy_version") === "5" && policy.get("project") === "AIPLATFORM" && policy.get("write_mode") === "exact-apply-only", "invalid structured policy metadata");
 }
 
 function validateConfluenceMetadata(): void {
@@ -147,11 +155,22 @@ function validateFixtures(domain: string): void {
     "backlog-drafts": [["backlog-draft.schema.json", "tests/fixtures/drafts/backlog.json"]],
     "subtask-drafts": [["subtask-draft.schema.json", "tests/fixtures/drafts/subtasks.json"]],
     "deliverable-fixtures": [["deliverable-plan.schema.json", "tests/fixtures/deliverables/cases.json"]],
+    "governance-fixtures": [["governance.schema.json", "tests/fixtures/governance/meeting-risk-decision.json"]],
   };
   for (const [schema, path] of nested[domain] ?? []) {
     const wrapper = asObject(readJson(path), path);
     const result = validateJson(schema, wrapper.data ?? null);
     invariant(result.valid, `${path} failed ${schema}: ${JSON.stringify(result.errors)}`);
+  }
+  if (domain === "spec-fixtures") {
+    const incomplete = asObject(readJson("tests/fixtures/specs/incomplete.json"), "incomplete spec");
+    invariant(!validateJson("specification.schema.json", incomplete.data ?? null).valid, "incomplete specification unexpectedly passed");
+  }
+  if (domain === "subtask-drafts") {
+    for (const path of ["tests/fixtures/drafts/subtasks.oversized.json", "tests/fixtures/drafts/subtasks.untraced.json", "tests/fixtures/drafts/subtasks.unverifiable.json"]) {
+      const wrapper = asObject(readJson(path), path);
+      invariant(!validateJson("subtask-draft.schema.json", wrapper.data ?? null).valid, `${path} unexpectedly passed`);
+    }
   }
 }
 
@@ -161,6 +180,7 @@ function validateActions(): void {
   requireValid("action-group.schema.json", "tests/fixtures/actions/valid.json");
   requireValid("action-group.schema.json", "tests/fixtures/actions/high-risk-approved.json");
   requireValid("fixture.schema.json", "tests/fixtures/actions/lifecycle.json");
+  requireValid("audit-record.schema.json", "tests/fixtures/actions/audit-record.valid.json");
 }
 
 function validateDocs(): void {
@@ -171,7 +191,7 @@ function validateDocs(): void {
   for (const mode of ["daily", "health", "runway", "plan next-2-weeks", "brainstorm", "refine", "meeting", "risks", "decision", "status", "retrospective", "propose", "apply", "reject"]) {
     invariant(readme.includes(mode), `README missing command: ${mode}`);
   }
-  invariant(readText("docs/release-checklist.md").includes("Manual KiloCode"), "release checklist missing smoke gate");
+  invariant(missingChecklistGates().length === 0, `release checklist missing gates: ${missingChecklistGates().join(", ")}`);
 }
 
 function validateNoRuntimeLanguage(): void {
@@ -191,6 +211,7 @@ const run = (name: string): void => {
     case "confluence-metadata": validateConfluenceMetadata(); break;
     case "confluence-templates": validateConfluenceTemplates(); break;
     case "actions": validateActions(); break;
+    case "audit-fixtures": requireValid("audit-record.schema.json", "tests/fixtures/actions/audit-record.valid.json"); break;
     case "docs": validateDocs(); break;
     default: validateFixtures(name);
   }

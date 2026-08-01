@@ -1,10 +1,12 @@
 ---
-name: jiraman-status-report
+name: jiraman-confluence-reporting
 description: "Prepare daily, weekly, sprint, retrospective, and two-week Confluence report proposals."
 version: 5
+side_effects: none
+policy: .kilo/policies/jiraman-safety.md
 ---
 
-# jiraman-status-report
+# jiraman-confluence-reporting
 
 ## Purpose
 

@@ -2,6 +2,8 @@
 name: jiraman-refinement
 description: "Read specifications, reconcile existing work, and draft traceable Epic/Story/Sub-task action proposals."
 version: 5
+side_effects: none
+policy: .kilo/policies/jiraman-safety.md
 ---
 
 # jiraman-refinement

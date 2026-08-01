@@ -9,8 +9,9 @@
       "availability": "required",
       "required_by": [
         "jiraman-daily",
-        "jiraman-flow-analysis"
-      ]
+        "jiraman-sprint-health"
+      ],
+      "degraded_behavior": "Block the dependent evidence step and name remediation."
     },
     {
       "semantic": "jira.board.read",
@@ -18,8 +19,10 @@
       "availability": "optional",
       "required_by": [
         "jiraman-daily",
-        "jiraman-sprint-planning"
-      ]
+        "jiraman-next-two-weeks",
+        "jiraman-sprint-cadence"
+      ],
+      "degraded_behavior": "Continue with jira.board.read marked not verified."
     },
     {
       "semantic": "jira.sprint.read",
@@ -27,9 +30,11 @@
       "availability": "optional",
       "required_by": [
         "jiraman-daily",
-        "jiraman-flow-analysis",
-        "jiraman-sprint-planning"
-      ]
+        "jiraman-sprint-health",
+        "jiraman-next-two-weeks",
+        "jiraman-sprint-cadence"
+      ],
+      "degraded_behavior": "Continue with jira.sprint.read marked not verified."
     },
     {
       "semantic": "jira.issue.search",
@@ -38,7 +43,8 @@
       "required_by": [
         "jiraman-refinement",
         "jiraman-meeting-actions"
-      ]
+      ],
+      "degraded_behavior": "Block the dependent evidence step and name remediation."
     },
     {
       "semantic": "jira.issue.read",
@@ -46,10 +52,12 @@
       "availability": "required",
       "required_by": [
         "jiraman-daily",
-        "jiraman-flow-analysis",
+        "jiraman-sprint-health",
         "jiraman-refinement",
-        "jiraman-apply-actions"
-      ]
+        "jiraman-apply-actions",
+        "jiraman-sprint-cadence"
+      ],
+      "degraded_behavior": "Block the dependent evidence step and name remediation."
     },
     {
       "semantic": "jira.comment.read",
@@ -58,7 +66,8 @@
       "required_by": [
         "jiraman-refinement",
         "jiraman-meeting-actions"
-      ]
+      ],
+      "degraded_behavior": "Continue with jira.comment.read marked not verified."
     },
     {
       "semantic": "jira.link.read",
@@ -67,16 +76,18 @@
       "required_by": [
         "jiraman-refinement",
         "jiraman-apply-actions"
-      ]
+      ],
+      "degraded_behavior": "Continue with jira.link.read marked not verified."
     },
     {
       "semantic": "jira.transition.read",
       "access": "read",
       "availability": "optional",
       "required_by": [
-        "jiraman-flow-analysis",
+        "jiraman-sprint-health",
         "jiraman-apply-actions"
-      ]
+      ],
+      "degraded_behavior": "Continue with jira.transition.read marked not verified."
     },
     {
       "semantic": "jira.issue.create",
@@ -85,7 +96,8 @@
       "required_by": [
         "jiraman-apply-actions"
       ],
-      "permission": "ask"
+      "permission": "ask",
+      "degraded_behavior": "Block apply when this named operation is requested."
     },
     {
       "semantic": "jira.issue.update",
@@ -94,7 +106,8 @@
       "required_by": [
         "jiraman-apply-actions"
       ],
-      "permission": "ask"
+      "permission": "ask",
+      "degraded_behavior": "Block apply when this named operation is requested."
     },
     {
       "semantic": "jira.comment.create",
@@ -103,7 +116,8 @@
       "required_by": [
         "jiraman-apply-actions"
       ],
-      "permission": "ask"
+      "permission": "ask",
+      "degraded_behavior": "Block apply when this named operation is requested."
     },
     {
       "semantic": "jira.link.create",
@@ -112,7 +126,8 @@
       "required_by": [
         "jiraman-apply-actions"
       ],
-      "permission": "ask"
+      "permission": "ask",
+      "degraded_behavior": "Block apply when this named operation is requested."
     },
     {
       "semantic": "jira.transition.execute",
@@ -121,7 +136,8 @@
       "required_by": [
         "jiraman-apply-actions"
       ],
-      "permission": "ask"
+      "permission": "ask",
+      "degraded_behavior": "Block apply when this named operation is requested."
     },
     {
       "semantic": "confluence.page.search",
@@ -130,8 +146,10 @@
       "required_by": [
         "jiraman-confluence-publish",
         "jiraman-refinement",
-        "jiraman-status-report"
-      ]
+        "jiraman-confluence-reporting",
+        "jiraman-sprint-cadence"
+      ],
+      "degraded_behavior": "Block the dependent evidence step and name remediation."
     },
     {
       "semantic": "confluence.page.read",
@@ -140,9 +158,11 @@
       "required_by": [
         "jiraman-confluence-publish",
         "jiraman-refinement",
-        "jiraman-status-report",
-        "jiraman-apply-actions"
-      ]
+        "jiraman-confluence-reporting",
+        "jiraman-apply-actions",
+        "jiraman-sprint-cadence"
+      ],
+      "degraded_behavior": "Block the dependent evidence step and name remediation."
     },
     {
       "semantic": "confluence.page.version.read",
@@ -151,7 +171,8 @@
       "required_by": [
         "jiraman-confluence-publish",
         "jiraman-apply-actions"
-      ]
+      ],
+      "degraded_behavior": "Block the dependent evidence step and name remediation."
     },
     {
       "semantic": "confluence.label.read",
@@ -159,7 +180,8 @@
       "availability": "optional",
       "required_by": [
         "jiraman-confluence-publish"
-      ]
+      ],
+      "degraded_behavior": "Continue with confluence.label.read marked not verified."
     },
     {
       "semantic": "confluence.comment.read",
@@ -168,7 +190,8 @@
       "required_by": [
         "jiraman-confluence-publish",
         "jiraman-meeting-actions"
-      ]
+      ],
+      "degraded_behavior": "Continue with confluence.comment.read marked not verified."
     },
     {
       "semantic": "confluence.page.create",
@@ -177,7 +200,8 @@
       "required_by": [
         "jiraman-apply-actions"
       ],
-      "permission": "ask"
+      "permission": "ask",
+      "degraded_behavior": "Block apply when this named operation is requested."
     },
     {
       "semantic": "confluence.page.update",
@@ -186,7 +210,8 @@
       "required_by": [
         "jiraman-apply-actions"
       ],
-      "permission": "ask"
+      "permission": "ask",
+      "degraded_behavior": "Block apply when this named operation is requested."
     },
     {
       "semantic": "confluence.comment.create",
@@ -195,7 +220,8 @@
       "required_by": [
         "jiraman-apply-actions"
       ],
-      "permission": "ask"
+      "permission": "ask",
+      "degraded_behavior": "Block apply when this named operation is requested."
     }
   ],
   "profiles": {

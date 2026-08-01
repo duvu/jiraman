@@ -10,10 +10,33 @@ export type JsonObject = { [key: string]: JsonValue };
 
 export const ROOT = resolve(process.cwd());
 
+export class ContractError extends Error {
+  public constructor(message: string) {
+    super(message);
+    this.name = "ContractError";
+  }
+}
+
 export function invariant(condition: unknown, message: string): asserts condition {
   if (!condition) {
-    throw new Error(message);
+    throw new ContractError(message);
   }
+}
+
+export function validDate(value: string): boolean {
+  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value);
+  if (match === null) return false;
+  const year = Number(match[1]);
+  const month = Number(match[2]);
+  const day = Number(match[3]);
+  if (month < 1 || month > 12 || day < 1) return false;
+  return day <= new Date(Date.UTC(year, month, 0)).getUTCDate();
+}
+
+export function validDateTime(value: string): boolean {
+  const match = /^(\d{4}-\d{2}-\d{2})T(\d{2}):(\d{2}):(\d{2})(?:\.\d+)?Z$/.exec(value);
+  if (match === null || !validDate(match[1] ?? "")) return false;
+  return Number(match[2]) <= 23 && Number(match[3]) <= 59 && Number(match[4]) <= 59;
 }
 
 export function readText(path: string): string {
@@ -92,8 +115,8 @@ function schemaValidator(schemaName: string): ValidateFunction {
     strict: true,
     allowUnionTypes: true,
     formats: {
-      date: /^\d{4}-\d{2}-\d{2}$/,
-      "date-time": /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?Z$/,
+      date: { type: "string", validate: validDate },
+      "date-time": { type: "string", validate: validDateTime },
     },
   });
   for (const path of walkFiles("schemas").filter((item) => item.endsWith(".schema.json"))) {

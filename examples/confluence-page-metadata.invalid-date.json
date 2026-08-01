@@ -1,0 +1,16 @@
+{
+  "page_type": "weekly-status",
+  "metadata_key": "weekly-status-invalid-date",
+  "owner": "Project lead",
+  "status": "active",
+  "created": "2026-99-99",
+  "last_reviewed": "2026-08-01",
+  "review_due": "2026-08-08",
+  "jira_project": "AIPLATFORM",
+  "related_epics": [],
+  "related_stories": [],
+  "deliverable_id": null,
+  "confidentiality": "internal",
+  "managed_by": "jiraman",
+  "ownership": "jiraman-managed"
+}

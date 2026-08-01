@@ -16,29 +16,53 @@
     {
       "case": "managed",
       "ownership": "jiraman-managed",
-      "version": 4,
+      "current_version": 4,
       "operation": "page.update",
-      "full_replace": true
+      "full_replace": true,
+      "current_content": "current-managed",
+      "desired_content": "desired-managed",
+      "reason": "Refresh governed evidence",
+      "preconditions": [
+        "page remains in configured space/root",
+        "version remains current"
+      ],
+      "rollback_source": "version-4"
     },
     {
       "case": "mixed",
       "ownership": "mixed",
-      "version": 2,
+      "current_version": 2,
       "operation": "page.section-update",
       "section": "summary",
-      "full_replace": false
+      "full_replace": false,
+      "current_content": "current-mixed",
+      "desired_content": "desired-mixed",
+      "reason": "Refresh governed evidence",
+      "preconditions": [
+        "page remains in configured space/root",
+        "version remains current"
+      ],
+      "rollback_source": "version-2"
     },
     {
       "case": "human",
       "ownership": "human-owned",
-      "version": 7,
+      "current_version": 7,
       "operation": "page.comment",
-      "full_replace": false
+      "full_replace": false,
+      "current_content": "current-human",
+      "desired_content": "desired-human",
+      "reason": "Refresh governed evidence",
+      "preconditions": [
+        "page remains in configured space/root",
+        "version remains current"
+      ],
+      "rollback_source": "version-7"
     },
     {
       "case": "unchanged",
       "ownership": "jiraman-managed",
-      "version": 5,
+      "current_version": 5,
       "operation": "no-action"
     },
     {

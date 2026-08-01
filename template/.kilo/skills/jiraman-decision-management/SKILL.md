@@ -2,6 +2,8 @@
 name: jiraman-decision-management
 description: "Validate and reconcile governed decision records without writes."
 version: 5
+side_effects: none
+policy: .kilo/policies/jiraman-safety.md
 ---
 
 # jiraman-decision-management

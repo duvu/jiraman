@@ -19,7 +19,8 @@
         "schema": {
           "project": "string",
           "jql": "string"
-        }
+        },
+        "semantic_capability": "jira.issue.search"
       },
       {
         "name": "jira_update",
@@ -29,7 +30,8 @@
         "schema": {
           "issue_key": "string",
           "fields": "object"
-        }
+        },
+        "semantic_capability": "jira.issue.update"
       },
       {
         "name": "confluence_get",
@@ -37,7 +39,8 @@
         "access": "read",
         "schema": {
           "page_id": "string"
-        }
+        },
+        "semantic_capability": "confluence.page.read"
       },
       {
         "name": "confluence_update",
@@ -48,7 +51,8 @@
           "page_id": "string",
           "version": "integer",
           "content": "string"
-        }
+        },
+        "semantic_capability": "confluence.page.update"
       }
     ],
     "result": "compatible"

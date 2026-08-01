@@ -4,6 +4,10 @@ mode: primary
 color: warning
 temperature: 0.1
 steps: 70
+project: AIPLATFORM
+mcp_server: mcp-atlassian
+untrusted_content: evidence-only
+write_mode: exact-apply-only
 permission:
   task: deny
   websearch: deny
@@ -20,7 +24,7 @@ Before routing, enforce `.kilo/policies/jiraman-safety.md`, then read `.kilo/con
 
 # Allowed Skill Delegation
 
-Load only these package-owned skills: `jiraman-daily`, `jiraman-flow-analysis`, `jiraman-refinement`, `jiraman-sprint-planning`, `jiraman-meeting-actions`, `jiraman-risk-management`, `jiraman-decision-management`, `jiraman-status-report`, `jiraman-confluence-publish`, and `jiraman-apply-actions`. Do not delegate to arbitrary agents or infer a skill name.
+Load only these package-owned skills: `jiraman-daily`, `jiraman-sprint-health`, `jiraman-refinement`, `jiraman-next-two-weeks`, `jiraman-sprint-cadence`, `jiraman-meeting-actions`, `jiraman-risk-management`, `jiraman-decision-management`, `jiraman-confluence-reporting`, `jiraman-confluence-publish`, and `jiraman-apply-actions`. Do not delegate to arbitrary agents or infer a skill name.
 
 # Intent and Write Safety
 

@@ -2,44 +2,9 @@
   "schema_version": 5,
   "skills": [
     {
-      "name": "jiraman-daily",
-      "path": ".kilo/skills/jiraman-daily/SKILL.md",
-      "description": "Reconcile yesterday and propose evidence-backed daily commitments without writes."
-    },
-    {
-      "name": "jiraman-flow-analysis",
-      "path": ".kilo/skills/jiraman-flow-analysis/SKILL.md",
-      "description": "Diagnose sprint health, flow bottlenecks, and Ready runway from direct MCP evidence."
-    },
-    {
-      "name": "jiraman-refinement",
-      "path": ".kilo/skills/jiraman-refinement/SKILL.md",
-      "description": "Read specifications, reconcile existing work, and draft traceable Epic/Story/Sub-task action proposals."
-    },
-    {
-      "name": "jiraman-sprint-planning",
-      "path": ".kilo/skills/jiraman-sprint-planning/SKILL.md",
-      "description": "Build two-week scenarios, recommendations, sprint plans, reviews, and retrospectives without writes."
-    },
-    {
-      "name": "jiraman-meeting-actions",
-      "path": ".kilo/skills/jiraman-meeting-actions/SKILL.md",
-      "description": "Extract governed meeting outcomes and reconciled action proposals without writes."
-    },
-    {
-      "name": "jiraman-risk-management",
-      "path": ".kilo/skills/jiraman-risk-management/SKILL.md",
-      "description": "Validate and reconcile governed risk records without writes."
-    },
-    {
-      "name": "jiraman-decision-management",
-      "path": ".kilo/skills/jiraman-decision-management/SKILL.md",
-      "description": "Validate and reconcile governed decision records without writes."
-    },
-    {
-      "name": "jiraman-status-report",
-      "path": ".kilo/skills/jiraman-status-report/SKILL.md",
-      "description": "Prepare daily, weekly, sprint, retrospective, and two-week Confluence report proposals."
+      "name": "jiraman-apply-actions",
+      "path": ".kilo/skills/jiraman-apply-actions/SKILL.md",
+      "description": "Propose, reject, or directly apply only named approved PMG/PMA actions with full preflight and verification."
     },
     {
       "name": "jiraman-confluence-publish",
@@ -47,9 +12,49 @@
       "description": "Resolve governed pages and create safe version-bound Confluence proposals without writes."
     },
     {
-      "name": "jiraman-apply-actions",
-      "path": ".kilo/skills/jiraman-apply-actions/SKILL.md",
-      "description": "Propose, reject, or directly apply only named approved PMG/PMA actions with full preflight and verification."
+      "name": "jiraman-confluence-reporting",
+      "path": ".kilo/skills/jiraman-confluence-reporting/SKILL.md",
+      "description": "Prepare daily, weekly, sprint, retrospective, and two-week Confluence report proposals."
+    },
+    {
+      "name": "jiraman-daily",
+      "path": ".kilo/skills/jiraman-daily/SKILL.md",
+      "description": "Reconcile yesterday and propose evidence-backed daily commitments without writes."
+    },
+    {
+      "name": "jiraman-decision-management",
+      "path": ".kilo/skills/jiraman-decision-management/SKILL.md",
+      "description": "Validate and reconcile governed decision records without writes."
+    },
+    {
+      "name": "jiraman-meeting-actions",
+      "path": ".kilo/skills/jiraman-meeting-actions/SKILL.md",
+      "description": "Extract governed meeting outcomes and reconciled action proposals without writes."
+    },
+    {
+      "name": "jiraman-next-two-weeks",
+      "path": ".kilo/skills/jiraman-next-two-weeks/SKILL.md",
+      "description": "Build two-week scenarios, recommendations, sprint plans, reviews, and retrospectives without writes."
+    },
+    {
+      "name": "jiraman-refinement",
+      "path": ".kilo/skills/jiraman-refinement/SKILL.md",
+      "description": "Read specifications, reconcile existing work, and draft traceable Epic/Story/Sub-task action proposals."
+    },
+    {
+      "name": "jiraman-risk-management",
+      "path": ".kilo/skills/jiraman-risk-management/SKILL.md",
+      "description": "Validate and reconcile governed risk records without writes."
+    },
+    {
+      "name": "jiraman-sprint-cadence",
+      "path": ".kilo/skills/jiraman-sprint-cadence/SKILL.md",
+      "description": "Prepare evidence-bound sprint planning, review, and retrospective proposals without writes."
+    },
+    {
+      "name": "jiraman-sprint-health",
+      "path": ".kilo/skills/jiraman-sprint-health/SKILL.md",
+      "description": "Diagnose sprint health, flow bottlenecks, and Ready runway from direct MCP evidence."
     }
   ]
 }

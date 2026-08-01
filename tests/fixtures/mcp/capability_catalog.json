@@ -1,0 +1,235 @@
+{
+  "fixture_version": 1,
+  "kind": "mcp-capability-catalog",
+  "metadata": {
+    "source": "synthetic-sanitized",
+    "version": "5.0",
+    "sanitized": true,
+    "semantic_capability": "mcp.capability.coverage"
+  },
+  "expected": {
+    "complete": true
+  },
+  "data": {
+    "tools": [
+      {
+        "name": "fixture_tool_01",
+        "description": "Synthetic jira.project.read capability",
+        "semantic_capability": "jira.project.read",
+        "access": "read",
+        "schema": {
+          "scope": "AIPLATFORM",
+          "input": "object"
+        }
+      },
+      {
+        "name": "fixture_tool_02",
+        "description": "Synthetic jira.board.read capability",
+        "semantic_capability": "jira.board.read",
+        "access": "read",
+        "schema": {
+          "scope": "AIPLATFORM",
+          "input": "object"
+        }
+      },
+      {
+        "name": "fixture_tool_03",
+        "description": "Synthetic jira.sprint.read capability",
+        "semantic_capability": "jira.sprint.read",
+        "access": "read",
+        "schema": {
+          "scope": "AIPLATFORM",
+          "input": "object"
+        }
+      },
+      {
+        "name": "fixture_tool_04",
+        "description": "Synthetic jira.issue.search capability",
+        "semantic_capability": "jira.issue.search",
+        "access": "read",
+        "schema": {
+          "scope": "AIPLATFORM",
+          "input": "object"
+        }
+      },
+      {
+        "name": "fixture_tool_05",
+        "description": "Synthetic jira.issue.read capability",
+        "semantic_capability": "jira.issue.read",
+        "access": "read",
+        "schema": {
+          "scope": "AIPLATFORM",
+          "input": "object"
+        }
+      },
+      {
+        "name": "fixture_tool_06",
+        "description": "Synthetic jira.comment.read capability",
+        "semantic_capability": "jira.comment.read",
+        "access": "read",
+        "schema": {
+          "scope": "AIPLATFORM",
+          "input": "object"
+        }
+      },
+      {
+        "name": "fixture_tool_07",
+        "description": "Synthetic jira.link.read capability",
+        "semantic_capability": "jira.link.read",
+        "access": "read",
+        "schema": {
+          "scope": "AIPLATFORM",
+          "input": "object"
+        }
+      },
+      {
+        "name": "fixture_tool_08",
+        "description": "Synthetic jira.transition.read capability",
+        "semantic_capability": "jira.transition.read",
+        "access": "read",
+        "schema": {
+          "scope": "AIPLATFORM",
+          "input": "object"
+        }
+      },
+      {
+        "name": "fixture_tool_09",
+        "description": "Synthetic jira.issue.create capability",
+        "semantic_capability": "jira.issue.create",
+        "access": "write",
+        "permission": "ask",
+        "schema": {
+          "scope": "AIPLATFORM",
+          "input": "object"
+        }
+      },
+      {
+        "name": "fixture_tool_10",
+        "description": "Synthetic jira.issue.update capability",
+        "semantic_capability": "jira.issue.update",
+        "access": "write",
+        "permission": "ask",
+        "schema": {
+          "scope": "AIPLATFORM",
+          "input": "object"
+        }
+      },
+      {
+        "name": "fixture_tool_11",
+        "description": "Synthetic jira.comment.create capability",
+        "semantic_capability": "jira.comment.create",
+        "access": "write",
+        "permission": "ask",
+        "schema": {
+          "scope": "AIPLATFORM",
+          "input": "object"
+        }
+      },
+      {
+        "name": "fixture_tool_12",
+        "description": "Synthetic jira.link.create capability",
+        "semantic_capability": "jira.link.create",
+        "access": "write",
+        "permission": "ask",
+        "schema": {
+          "scope": "AIPLATFORM",
+          "input": "object"
+        }
+      },
+      {
+        "name": "fixture_tool_13",
+        "description": "Synthetic jira.transition.execute capability",
+        "semantic_capability": "jira.transition.execute",
+        "access": "write",
+        "permission": "ask",
+        "schema": {
+          "scope": "AIPLATFORM",
+          "input": "object"
+        }
+      },
+      {
+        "name": "fixture_tool_14",
+        "description": "Synthetic confluence.page.search capability",
+        "semantic_capability": "confluence.page.search",
+        "access": "read",
+        "schema": {
+          "scope": "AIPLATFORM",
+          "input": "object"
+        }
+      },
+      {
+        "name": "fixture_tool_15",
+        "description": "Synthetic confluence.page.read capability",
+        "semantic_capability": "confluence.page.read",
+        "access": "read",
+        "schema": {
+          "scope": "AIPLATFORM",
+          "input": "object"
+        }
+      },
+      {
+        "name": "fixture_tool_16",
+        "description": "Synthetic confluence.page.version.read capability",
+        "semantic_capability": "confluence.page.version.read",
+        "access": "read",
+        "schema": {
+          "scope": "AIPLATFORM",
+          "input": "object"
+        }
+      },
+      {
+        "name": "fixture_tool_17",
+        "description": "Synthetic confluence.label.read capability",
+        "semantic_capability": "confluence.label.read",
+        "access": "read",
+        "schema": {
+          "scope": "AIPLATFORM",
+          "input": "object"
+        }
+      },
+      {
+        "name": "fixture_tool_18",
+        "description": "Synthetic confluence.comment.read capability",
+        "semantic_capability": "confluence.comment.read",
+        "access": "read",
+        "schema": {
+          "scope": "AIPLATFORM",
+          "input": "object"
+        }
+      },
+      {
+        "name": "fixture_tool_19",
+        "description": "Synthetic confluence.page.create capability",
+        "semantic_capability": "confluence.page.create",
+        "access": "write",
+        "permission": "ask",
+        "schema": {
+          "scope": "AIPLATFORM",
+          "input": "object"
+        }
+      },
+      {
+        "name": "fixture_tool_20",
+        "description": "Synthetic confluence.page.update capability",
+        "semantic_capability": "confluence.page.update",
+        "access": "write",
+        "permission": "ask",
+        "schema": {
+          "scope": "AIPLATFORM",
+          "input": "object"
+        }
+      },
+      {
+        "name": "fixture_tool_21",
+        "description": "Synthetic confluence.comment.create capability",
+        "semantic_capability": "confluence.comment.create",
+        "access": "write",
+        "permission": "ask",
+        "schema": {
+          "scope": "AIPLATFORM",
+          "input": "object"
+        }
+      }
+    ]
+  }
+}

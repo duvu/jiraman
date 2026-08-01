@@ -18,7 +18,8 @@
         "access": "read",
         "schema": {
           "jql": "string"
-        }
+        },
+        "semantic_capability": "jira.issue.search"
       },
       {
         "name": "lookup_b",
@@ -26,7 +27,8 @@
         "access": "read",
         "schema": {
           "jql": "string"
-        }
+        },
+        "semantic_capability": "jira.issue.search"
       }
     ],
     "result": "blocked-ambiguous"

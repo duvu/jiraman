@@ -18,7 +18,8 @@
         "access": "read",
         "schema": {
           "jql": "string"
-        }
+        },
+        "semantic_capability": "jira.issue.search"
       }
     ],
     "result": "compatible-unambiguous"

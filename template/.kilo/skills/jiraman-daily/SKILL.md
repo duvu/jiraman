@@ -2,6 +2,8 @@
 name: jiraman-daily
 description: "Reconcile yesterday and propose evidence-backed daily commitments without writes."
 version: 5
+side_effects: none
+policy: .kilo/policies/jiraman-safety.md
 ---
 
 # jiraman-daily

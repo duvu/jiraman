@@ -18,7 +18,8 @@
         "access": "read",
         "schema": {
           "jql": "string"
-        }
+        },
+        "semantic_capability": "jira.issue.search"
       },
       {
         "name": "confluence_get",
@@ -26,7 +27,8 @@
         "access": "read",
         "schema": {
           "page_id": "string"
-        }
+        },
+        "semantic_capability": "confluence.page.read"
       }
     ],
     "result": "degraded-write-blocked"

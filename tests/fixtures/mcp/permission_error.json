@@ -20,7 +20,8 @@
         "schema": {
           "issue_key": "string",
           "fields": "object"
-        }
+        },
+        "semantic_capability": "jira.issue.update"
       }
     ],
     "result": "blocked-permission"

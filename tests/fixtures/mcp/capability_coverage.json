@@ -1,0 +1,141 @@
+{
+  "fixture_version": 1,
+  "kind": "mcp-capability-coverage",
+  "metadata": {
+    "source": "synthetic-sanitized",
+    "version": "5.0",
+    "sanitized": true,
+    "semantic_capability": "mcp.capability.coverage"
+  },
+  "expected": {
+    "complete": true
+  },
+  "data": [
+    {
+      "semantic": "jira.project.read",
+      "fixture": "capability_catalog.json",
+      "sanitized": true,
+      "expected_compatibility": "resolved"
+    },
+    {
+      "semantic": "jira.board.read",
+      "fixture": "capability_catalog.json",
+      "sanitized": true,
+      "expected_compatibility": "resolved"
+    },
+    {
+      "semantic": "jira.sprint.read",
+      "fixture": "capability_catalog.json",
+      "sanitized": true,
+      "expected_compatibility": "resolved"
+    },
+    {
+      "semantic": "jira.issue.search",
+      "fixture": "capability_catalog.json",
+      "sanitized": true,
+      "expected_compatibility": "resolved"
+    },
+    {
+      "semantic": "jira.issue.read",
+      "fixture": "capability_catalog.json",
+      "sanitized": true,
+      "expected_compatibility": "resolved"
+    },
+    {
+      "semantic": "jira.comment.read",
+      "fixture": "capability_catalog.json",
+      "sanitized": true,
+      "expected_compatibility": "resolved"
+    },
+    {
+      "semantic": "jira.link.read",
+      "fixture": "capability_catalog.json",
+      "sanitized": true,
+      "expected_compatibility": "resolved"
+    },
+    {
+      "semantic": "jira.transition.read",
+      "fixture": "capability_catalog.json",
+      "sanitized": true,
+      "expected_compatibility": "resolved"
+    },
+    {
+      "semantic": "jira.issue.create",
+      "fixture": "capability_catalog.json",
+      "sanitized": true,
+      "expected_compatibility": "resolved"
+    },
+    {
+      "semantic": "jira.issue.update",
+      "fixture": "capability_catalog.json",
+      "sanitized": true,
+      "expected_compatibility": "resolved"
+    },
+    {
+      "semantic": "jira.comment.create",
+      "fixture": "capability_catalog.json",
+      "sanitized": true,
+      "expected_compatibility": "resolved"
+    },
+    {
+      "semantic": "jira.link.create",
+      "fixture": "capability_catalog.json",
+      "sanitized": true,
+      "expected_compatibility": "resolved"
+    },
+    {
+      "semantic": "jira.transition.execute",
+      "fixture": "capability_catalog.json",
+      "sanitized": true,
+      "expected_compatibility": "resolved"
+    },
+    {
+      "semantic": "confluence.page.search",
+      "fixture": "capability_catalog.json",
+      "sanitized": true,
+      "expected_compatibility": "resolved"
+    },
+    {
+      "semantic": "confluence.page.read",
+      "fixture": "capability_catalog.json",
+      "sanitized": true,
+      "expected_compatibility": "resolved"
+    },
+    {
+      "semantic": "confluence.page.version.read",
+      "fixture": "capability_catalog.json",
+      "sanitized": true,
+      "expected_compatibility": "resolved"
+    },
+    {
+      "semantic": "confluence.label.read",
+      "fixture": "capability_catalog.json",
+      "sanitized": true,
+      "expected_compatibility": "resolved"
+    },
+    {
+      "semantic": "confluence.comment.read",
+      "fixture": "capability_catalog.json",
+      "sanitized": true,
+      "expected_compatibility": "resolved"
+    },
+    {
+      "semantic": "confluence.page.create",
+      "fixture": "capability_catalog.json",
+      "sanitized": true,
+      "expected_compatibility": "resolved"
+    },
+    {
+      "semantic": "confluence.page.update",
+      "fixture": "capability_catalog.json",
+      "sanitized": true,
+      "expected_compatibility": "resolved"
+    },
+    {
+      "semantic": "confluence.comment.create",
+      "fixture": "capability_catalog.json",
+      "sanitized": true,
+      "expected_compatibility": "resolved"
+    }
+  ]
+}

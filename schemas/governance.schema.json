@@ -1,0 +1,12 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["meeting", "risk", "decision", "duplicate_search"],
+  "properties": {
+    "meeting": {"type": "object", "additionalProperties": false, "required": ["source_page", "section", "items"], "properties": {"source_page": {"type": "string", "minLength": 1}, "section": {"type": "string", "minLength": 1}, "items": {"type": "array", "minItems": 1}}},
+    "risk": {"type": "object", "additionalProperties": false, "required": ["source_page", "owner", "likelihood", "impact", "mitigation", "trigger", "status", "review_date"], "properties": {"source_page": {"type": "string", "minLength": 1}, "owner": {"type": "string", "minLength": 1}, "likelihood": {"type": "string", "minLength": 1}, "impact": {"type": "string", "minLength": 1}, "mitigation": {"type": "string", "minLength": 1}, "trigger": {"type": "string", "minLength": 1}, "status": {"type": "string", "minLength": 1}, "review_date": {"type": "string", "format": "date"}}},
+    "decision": {"type": "object", "additionalProperties": false, "required": ["source_page", "context", "options", "decision", "rationale", "owner", "date", "consequences", "status"], "properties": {"source_page": {"type": "string", "minLength": 1}, "context": {"type": "string", "minLength": 1}, "options": {"type": "array", "minItems": 2, "items": {"type": "string", "minLength": 1}}, "decision": {"type": ["string", "null"]}, "rationale": {"type": ["string", "null"]}, "owner": {"type": "string", "minLength": 1}, "date": {"type": ["string", "null"], "format": "date"}, "consequences": {"type": "array"}, "status": {"type": "string", "minLength": 1}}},
+    "duplicate_search": {"type": "object", "additionalProperties": false, "required": ["result", "disposition"], "properties": {"result": {"enum": ["existing", "none", "ambiguous"]}, "disposition": {"enum": ["update-link", "create-proposal", "review"]}}}
+  }
+}

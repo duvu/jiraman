@@ -16,7 +16,8 @@
         "name": "jira_search",
         "description": "Search Jira issues",
         "access": "read",
-        "schema": null
+        "schema": null,
+        "semantic_capability": "jira.issue.search"
       }
     ],
     "result": "blocked-malformed-schema"

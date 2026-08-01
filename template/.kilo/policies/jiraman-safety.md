@@ -1,3 +1,10 @@
+---
+policy_version: 5
+project: AIPLATFORM
+mcp_ownership: external-user-owned
+write_mode: exact-apply-only
+---
+
 # Jiraman Shared Safety Policy
 
 This file is the single authority for every Jiraman workflow. Skills reference it and must not copy, override, or weaken it.

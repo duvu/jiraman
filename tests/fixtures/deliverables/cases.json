@@ -65,6 +65,33 @@
         "wip_impact": "unknown",
         "risk": "high",
         "confidence": "low"
+      },
+      {
+        "id": "DLV-20260801-03",
+        "class": "Refinement candidate",
+        "outcome": "Dependency risk is removed",
+        "primary_epic": "AIPLATFORM-100",
+        "stories": [
+          "AIPLATFORM-202"
+        ],
+        "target_sprint": "N+2",
+        "week_1_outcome": "dependency evidence gathered",
+        "week_2_outcome": "dependency removed",
+        "acceptance_signal": "dependent Story unblocked",
+        "rationale": "protect critical path",
+        "evidence": [
+          "blocked Story"
+        ],
+        "assumptions": [],
+        "hypotheses": [],
+        "readiness": "needs refinement",
+        "capacity_fit": "not feasible",
+        "dependencies": [
+          "architecture decision"
+        ],
+        "wip_impact": "requires refinement capacity",
+        "risk": "medium",
+        "confidence": "medium"
       }
     ],
     "scenarios": [
@@ -73,19 +100,32 @@
         "selected": [
           "DLV-20260801-01"
         ],
-        "trade_off": "delay hypothesis"
+        "displaced_work": [
+          "DLV-20260801-02",
+          "DLV-20260801-03"
+        ],
+        "trade_off": "finish ready work"
       },
       {
         "name": "Risk-reduction",
         "selected": [
-          "DLV-20260801-01"
+          "DLV-20260801-03"
         ],
-        "trade_off": "less new scope"
+        "displaced_work": [
+          "DLV-20260801-01",
+          "DLV-20260801-02"
+        ],
+        "trade_off": "spend capacity on dependency refinement"
       },
       {
         "name": "Value-first",
         "selected": [],
-        "trade_off": "No evidence-based recommendation"
+        "displaced_work": [
+          "DLV-20260801-01",
+          "DLV-20260801-02",
+          "DLV-20260801-03"
+        ],
+        "trade_off": "No evidence-based recommendation without value evidence"
       }
     ],
     "recommendation": "DLV-20260801-01",
