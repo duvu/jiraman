@@ -18,7 +18,7 @@ import {
   walkFiles,
 } from "./contracts.js";
 import { FIXTURE_DOMAINS, validateFixtures } from "./fixture-validation.js";
-import { goalContractMetadataViolations, type IndexedGoalDocument } from "./goal-contract-metadata-rules.js";
+import { goalContractMetadataViolations, goalTemplateSectionViolations, type IndexedGoalDocument, type IndexedGoalTemplate } from "./goal-contract-metadata-rules.js";
 import { missingChecklistGates } from "./release-rules.js";
 import { goalPolicyMetadataValid } from "./goal-rules.js";
 import { commandTableRoutes } from "./routing-rules.js";
@@ -134,12 +134,14 @@ function validateConfluenceTemplates(): void {
   const index = asObject(readJson("template/docs/project-management/templates/confluence/index.json"), "template index");
   const pages = asArray(index.page_types, "page types");
   const documents: IndexedGoalDocument[] = [];
+  const templates: IndexedGoalTemplate[] = [];
   invariant(pages.length === 12, `expected 12 page templates, found ${pages.length}`);
   for (const item of pages) {
     const page = asObject(item, "page type");
     const path = `template/docs/project-management/templates/confluence/${asString(page.file, "template file")}`;
     const text = readText(path);
     documents.push({path, goalContractRequired: page.goal_contract_required, goalContract: parseFrontmatter(text).get("goal_contract")});
+    templates.push({path, goalContractRequired: page.goal_contract_required, requiredGoalSections: page.required_goal_sections, text});
     for (const field of ["page_type", "owner", "status", "created", "last_reviewed", "review_due", "jira_project", "related_epics", "related_stories", "deliverable_id", "confidentiality", "managed_by", "ownership"]) {
       invariant(text.includes(`${field}:`), `${path} missing metadata ${field}`);
     }
@@ -148,6 +150,8 @@ function validateConfluenceTemplates(): void {
   const contract = asObject(index.goal_contract ?? null, "Goal contract");
   const violations = goalContractMetadataViolations(contract, documents);
   invariant(violations.length === 0, `template Goal contract metadata violations: ${violations.join(", ")}`);
+  const sectionViolations = goalTemplateSectionViolations(templates);
+  invariant(sectionViolations.length === 0, `template Goal section violations: ${sectionViolations.join(", ")}`);
 }
 
 function validateActions(): void {

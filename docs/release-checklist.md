@@ -2,7 +2,7 @@
 
 - [ ] <!-- gate:architecture checks:prompt-first,no-runtime --> Prompt-first architecture and no application runtime boundary reviewed.
 - [ ] <!-- gate:schemas checks:config,state,action,run-record,exact-traceability --> Config, Goal backlog/Sub-task, state, metadata, action, audit, fixture, and run-record schemas plus exact bidirectional traceability invariants pass.
-- [ ] <!-- gate:skills checks:primary-agent,named-skills,installed-goal-metadata --> Primary agent, every named skill, and every indexed installed document preserve the machine-declared Goal name/deadline/DoD/child contract.
+- [ ] <!-- gate:skills checks:primary-agent,named-skills,installed-goal-metadata --> Primary agent, every named skill, and every indexed installed document preserve the machine-declared Goal contract and required non-empty Goal section regions.
 - [ ] <!-- gate:aliases checks:canonical,v4-aliases,exact-write --> Canonical modes, v4 aliases, focus preservation, and exact write routing validate.
 - [ ] <!-- gate:migration checks:clean-install,v4-migration,mcp-preservation --> Clean install and v4 migration pass without changing MCP configuration.
 - [ ] <!-- gate:fixtures checks:mcp,workflow,sanitized,ready-evidence --> Sanitized MCP, Goal hierarchy/action/template, verified Ready evidence, deadline/DoD, and workflow fixture coverage is complete.

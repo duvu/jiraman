@@ -24,6 +24,7 @@ parent: Project Home
 
 - Source and retrieval time: [SOURCE]
 
+<!-- JIRAMAN:GOAL-SECTION:goal-status:BEGIN -->
 ## Goal Status
 
 | Goal Story | Goal name | Target date | Deadline status | Goal DoD evidence / gaps | Active Sub-tasks | Readiness / completion |
@@ -31,6 +32,7 @@ parent: Project Home
 | [AIPLATFORM-KEY] | [GOAL NAME] | [YYYY-MM-DD] | [ON TRACK / AT RISK / OVERDUE / COMPLETED / NOT VERIFIED] | [EVIDENCE / GAPS] | [KEYS + OUTCOMES] | [STATE] |
 
 Dates and completion remain `not verified` when Jira due-date or Goal DoD evidence cannot be read; status alone is not evidence.
+<!-- JIRAMAN:GOAL-SECTION:goal-status:END -->
 
 ## Delivered Outcomes and Next Goals
 

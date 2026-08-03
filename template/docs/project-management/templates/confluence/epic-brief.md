@@ -26,6 +26,7 @@ parent: Project Home
 - Epic: [AIPLATFORM-KEY OR DRAFT-REF]
 - Epic outcome: [OUTCOME]
 
+<!-- JIRAMAN:GOAL-SECTION:goal-register:BEGIN -->
 ## Goal Register
 
 Cardinality: [VERIFIED: AT LEAST TWO GOALS | VIOLATION: FEWER THAN TWO | NOT VERIFIED]
@@ -36,6 +37,7 @@ Cardinality: [VERIFIED: AT LEAST TWO GOALS | VIOLATION: FEWER THAN TWO | NOT VER
 | [AIPLATFORM-KEY] | [GOAL NAME] | [YYYY-MM-DD] | [SOURCE / NOT VERIFIED] | [DOD] | [STATE] | [COUNT >= 2] | [SUMMARY] |
 
 Every Goal is a Jira Story. Missing name, deadline, Goal DoD, or two valid Sub-tasks is visible as a contract violation and never Ready.
+<!-- JIRAMAN:GOAL-SECTION:goal-register:END -->
 
 ## Epic Exit Evidence
 

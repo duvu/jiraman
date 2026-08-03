@@ -26,6 +26,7 @@ parent: Project Home
 - Sprint and verified end date: [SPRINT] / [YYYY-MM-DD]
 - Capacity basis: [SOURCE / NOT VERIFIED]
 
+<!-- JIRAMAN:GOAL-SECTION:selected-goals:BEGIN -->
 ## Sprint Goal and Selected Goal Stories
 
 - Sprint Goal: [OUTCOME]
@@ -35,6 +36,7 @@ parent: Project Home
 | [AIPLATFORM-KEY] | [GOAL NAME] | [YYYY-MM-DD] | [FITS / APPROVED EXCEPTION / BLOCKED] | [DOD] | [READY / NOT VERIFIED] | [COUNT >= 2] | [VERIFIED / NOT VERIFIED] |
 
 Only complete Goal contracts may enter committed scope. Jira status, an undecomposed Story, or an over-four-hour Sub-task never substitutes for readiness.
+<!-- JIRAMAN:GOAL-SECTION:selected-goals:END -->
 
 ## Risks, Dependencies, and Decisions Required
 

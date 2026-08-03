@@ -20,6 +20,7 @@ parent: Epics
 # Goal Story Specification
 
 <!-- JIRAMAN:BEGIN summary -->
+<!-- JIRAMAN:GOAL-SECTION:goal-identity:BEGIN -->
 ## Verified Facts
 
 - Source and retrieval time: [SOURCE]
@@ -29,6 +30,7 @@ parent: Epics
 - Target completion date: [YYYY-MM-DD]
 - Deadline evidence source/reference: [SPRINT END | MILESTONE | SPECIFICATION | USER DECISION | NOT VERIFIED]
 - Readiness: [READY | REFINEMENT | DECISION REQUIRED | NOT VERIFIED]
+<!-- JIRAMAN:GOAL-SECTION:goal-identity:END -->
 
 ## Outcome and Scope
 
@@ -36,22 +38,27 @@ parent: Epics
 - In scope: [ITEMS]
 - Out of scope: [ITEMS]
 
+<!-- JIRAMAN:GOAL-SECTION:requirements-acceptance:BEGIN -->
 ## Requirements and Acceptance Criteria
 
 | ID | Requirement / acceptance condition | Evidence source |
 | --- | --- | --- |
 | [REQ-N / AC-N] | [CONDITION] | [SOURCE] |
+<!-- JIRAMAN:GOAL-SECTION:requirements-acceptance:END -->
 
+<!-- JIRAMAN:GOAL-SECTION:goal-dod:BEGIN -->
 ## Goal Definition of Done
 
 | DoD ID | Testable completion condition | Evidence | Status |
 | --- | --- | --- | --- |
 | [DOD-N] | [CONDITION] | [EVIDENCE / NOT VERIFIED] | [SATISFIED / UNSATISFIED / NOT VERIFIED] |
+<!-- JIRAMAN:GOAL-SECTION:goal-dod:END -->
 
 ## Validation and Acceptance Evidence
 
 - [COMMAND, REVIEW, OR OBSERVATION]
 
+<!-- JIRAMAN:GOAL-SECTION:subtask-plan:BEGIN -->
 ## Sub-task Plan
 
 At least two sibling Jira Sub-tasks are required; every original estimate satisfies `0h < estimate <= 4h`.
@@ -60,12 +67,15 @@ At least two sibling Jira Sub-tasks are required; every original estimate satisf
 | --- | --- | ---: | --- | --- | --- |
 | [AIPLATFORM-KEY] | [OUTCOME] | [0 < H <= 4] | [VALIDATION] | [DOD] | [ITEMS] |
 | [AIPLATFORM-KEY] | [OUTCOME] | [0 < H <= 4] | [VALIDATION] | [DOD] | [ITEMS] |
+<!-- JIRAMAN:GOAL-SECTION:subtask-plan:END -->
 
+<!-- JIRAMAN:GOAL-SECTION:traceability:BEGIN -->
 ## Traceability Matrix
 
 | REQ / AC / Goal DoD ID | Covering Sub-task refs | Coverage |
 | --- | --- | --- |
 | [ID] | [REFS] | [COMPLETE / GAP] |
+<!-- JIRAMAN:GOAL-SECTION:traceability:END -->
 
 ## Dependencies, Rollout, Recovery, and Decisions Required
 

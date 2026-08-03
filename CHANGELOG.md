@@ -2,7 +2,7 @@
 
 ## v5.0.0
 
-- Enforced Story-as-Goal delivery: at least two Goals per Epic, at least two `(0h, 4h]` Sub-tasks per Goal, verified Goal names/deadline references/Definitions of Done, exact bidirectional traceability, authoritative Jira update state and valid child counts, due-date-safe apply/read-back, indexed Goal-aware Confluence/workflow metadata, and release-blocking hostile-paraphrase fixtures.
+- Enforced Story-as-Goal delivery: at least two Goals per Epic, at least two `(0h, 4h]` Sub-tasks per Goal, verified Goal names/deadline references/Definitions of Done, exact bidirectional traceability, authoritative Jira update state and valid reused child counts, due-date-safe apply/read-back, indexed non-empty Goal section regions in Confluence templates, and release-blocking hostile-paraphrase fixtures.
 
 - Replaced the monolithic v4 prompt with a minimal primary agent and versioned workflow skills.
 - Established a prompt-first Markdown/JSON runtime with direct use of external `mcp-atlassian` tools.

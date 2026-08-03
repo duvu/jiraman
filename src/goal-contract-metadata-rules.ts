@@ -6,6 +6,13 @@ export interface IndexedGoalDocument {
   readonly goalContract: string | undefined;
 }
 
+export interface IndexedGoalTemplate {
+  readonly path: string;
+  readonly goalContractRequired: JsonValue | undefined;
+  readonly requiredGoalSections: JsonValue | undefined;
+  readonly text: string;
+}
+
 const EXPECTED_FIELDS = ["goal_name", "target_completion_date", "definition_of_done"] as const;
 const EXPECTED_KEYS = [
   "epic_parent_required",
@@ -39,6 +46,42 @@ export function goalContractMetadataViolations(contract: JsonObject, documents: 
       violations.push(`${document.path}:goal-contract-marker`);
     } else if (!document.goalContractRequired && document.goalContract !== undefined) {
       violations.push(`${document.path}:unexpected-goal-contract-marker`);
+    }
+  }
+  return violations;
+}
+
+function markerCount(text: string, marker: string): number {
+  return text.split(marker).length - 1;
+}
+
+export function goalTemplateSectionViolations(templates: readonly IndexedGoalTemplate[]): string[] {
+  const violations: string[] = [];
+  for (const template of templates) {
+    const rawSections = template.requiredGoalSections;
+    if (!Array.isArray(rawSections) || rawSections.some((section) => typeof section !== "string" || !/^[a-z0-9-]+$/.test(section))) {
+      violations.push(`${template.path}:required-goal-sections`);
+      continue;
+    }
+    const sections = rawSections.filter((section): section is string => typeof section === "string");
+    if (new Set(sections).size !== sections.length) violations.push(`${template.path}:duplicate-goal-section`);
+    if (template.goalContractRequired === true && sections.length === 0) violations.push(`${template.path}:missing-goal-sections`);
+    if (template.goalContractRequired === false && sections.length > 0) violations.push(`${template.path}:unexpected-goal-sections`);
+    const declared = new Set(sections);
+    const discovered = [...template.text.matchAll(/<!-- JIRAMAN:GOAL-SECTION:([a-z0-9-]+):(?:BEGIN|END) -->/g)]
+      .map((match) => match[1]).filter((section): section is string => section !== undefined);
+    if (discovered.some((section) => !declared.has(section))) violations.push(`${template.path}:undeclared-goal-section-marker`);
+    for (const section of sections) {
+      const begin = `<!-- JIRAMAN:GOAL-SECTION:${section}:BEGIN -->`;
+      const end = `<!-- JIRAMAN:GOAL-SECTION:${section}:END -->`;
+      if (markerCount(template.text, begin) !== 1 || markerCount(template.text, end) !== 1) {
+        violations.push(`${template.path}:${section}:markers`);
+        continue;
+      }
+      const start = template.text.indexOf(begin) + begin.length;
+      const finish = template.text.indexOf(end, start);
+      const content = finish < start ? "" : template.text.slice(start, finish).trim();
+      if (content.length === 0 || !/^##\s+\S/m.test(content)) violations.push(`${template.path}:${section}:content`);
     }
   }
   return violations;
