@@ -2,6 +2,8 @@
 
 ## v5.0.0
 
+- Made Vietnamese (`vi-VN`) the canonical default for every user-facing Jira draft/proposal/create/update/comment; added single-scope explicit overrides, exact technical-literal and Unicode preservation, existing-English managed-update/full-translation boundaries, proposal/apply routing metadata, and release-blocking adversarial fixtures.
+
 - Required complete testable structured Acceptance Criteria on Epic, Goal Story, and Sub-task tickets; added vi-VN managed Jira templates, REQ/parent/local AC traceability, actionable narrative-field validation, proposal/apply/read-back blocking, human-content preservation, and release-blocking negative fixtures.
 
 - Enforced Story-as-Goal delivery: at least two Goals per Epic, at least two `(0h, 4h]` Sub-tasks per Goal, verified Goal names/deadline references/Definitions of Done, exact bidirectional traceability, authoritative Jira update state, immutable no-write `issue.reuse` references, correctly typed parentage, due-date-safe apply/read-back, indexed non-empty Goal section regions in Confluence templates, and an evidence-only remote-content boundary with release-blocking adversarial diagnostics.

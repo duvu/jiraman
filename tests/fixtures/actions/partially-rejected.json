@@ -20,9 +20,11 @@
       "operation": "issue.comment",
       "target_ref": "AIPLATFORM-123",
       "target_version": null,
-      "before_state": {},
+      "before_state": {"issue_key": "AIPLATFORM-123", "human_content_language": "vi-VN"},
       "desired_state": {
-        "comment": "Rejected draft"
+        "comment": "Bản nháp đã bị từ chối",
+        "content_language": "vi-VN",
+        "literal_preservation": {"policy_ref": ".kilo/config/jiraman.json#/language/preserved_literal_kinds", "mode": "exact"}
       },
       "evidence": [
         "review feedback"
@@ -44,9 +46,11 @@
       "operation": "issue.comment",
       "target_ref": "AIPLATFORM-124",
       "target_version": null,
-      "before_state": {},
+      "before_state": {"issue_key": "AIPLATFORM-124", "human_content_language": "vi-VN"},
       "desired_state": {
-        "comment": "Pending draft"
+        "comment": "Bản nháp đang chờ",
+        "content_language": "vi-VN",
+        "literal_preservation": {"policy_ref": ".kilo/config/jiraman.json#/language/preserved_literal_kinds", "mode": "exact"}
       },
       "evidence": [
         "review feedback"

@@ -15,6 +15,8 @@
     "content_language": "vi-VN",
     "story_ref": "story-2",
     "goal": {
+      "content_language": "vi-VN",
+      "literal_preservation": {"policy_ref": ".kilo/config/jiraman.json#/language/preserved_literal_kinds", "mode": "exact"},
       "goal_name": "Verify the rollback guide",
       "target_completion_date": "2026-08-07",
       "definition_of_done": [
@@ -34,6 +36,8 @@
     "subtasks": [
       {
         "draft_ref": "subtask-3",
+        "content_language": "vi-VN",
+        "literal_preservation": {"policy_ref": ".kilo/config/jiraman.json#/language/preserved_literal_kinds", "mode": "exact"},
         "title": "Run the rollback guide walkthrough",
         "outcome": "Every undocumented rollback step is identified",
         "in_scope": ["rollback guide"],
@@ -58,6 +62,8 @@
       },
       {
         "draft_ref": "subtask-4",
+        "content_language": "vi-VN",
+        "literal_preservation": {"policy_ref": ".kilo/config/jiraman.json#/language/preserved_literal_kinds", "mode": "exact"},
         "title": "Verify the corrected rollback guide",
         "outcome": "A second walkthrough completes without undocumented steps",
         "in_scope": ["corrected rollback guide"],

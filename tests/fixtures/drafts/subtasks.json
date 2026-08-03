@@ -15,6 +15,8 @@
     "content_language": "vi-VN",
     "story_ref": "story-1",
     "goal": {
+      "content_language": "vi-VN",
+      "literal_preservation": {"policy_ref": ".kilo/config/jiraman.json#/language/preserved_literal_kinds", "mode": "exact"},
       "goal_name": "Restore v4 backups safely",
       "target_completion_date": "2026-08-07",
       "definition_of_done": [
@@ -34,6 +36,8 @@
     "subtasks": [
       {
         "draft_ref": "subtask-1",
+        "content_language": "vi-VN",
+        "literal_preservation": {"policy_ref": ".kilo/config/jiraman.json#/language/preserved_literal_kinds", "mode": "exact"},
         "title": "Verify v4 backup restoration",
         "outcome": "A byte comparison proves restoration",
         "in_scope": [
@@ -69,6 +73,8 @@
       },
       {
         "draft_ref": "subtask-2",
+        "content_language": "vi-VN",
+        "literal_preservation": {"policy_ref": ".kilo/config/jiraman.json#/language/preserved_literal_kinds", "mode": "exact"},
         "title": "Attach rollback verification evidence",
         "outcome": "The Goal Story contains the reviewed rollback evidence",
         "in_scope": [

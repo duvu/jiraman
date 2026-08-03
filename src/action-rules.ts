@@ -174,6 +174,19 @@ export function semanticallyEqual(left: JsonValue, right: JsonValue): boolean {
   return JSON.stringify(canonical(left)) === JSON.stringify(canonical(right));
 }
 
+function canonicalJiraReadBack(value: JsonValue): JsonValue {
+  if (typeof value === "string") return value.replace(/\r\n/g, "\n");
+  if (Array.isArray(value)) return value.map(canonicalJiraReadBack);
+  if (value !== null && typeof value === "object") {
+    return Object.fromEntries(Object.entries(value).sort(([left], [right]) => left.localeCompare(right)).map(([key, item]) => [key, canonicalJiraReadBack(item)]));
+  }
+  return value;
+}
+
+export function jiraReadBackMatches(approved: JsonValue, observed: JsonValue): boolean {
+  return JSON.stringify(canonicalJiraReadBack(approved)) === JSON.stringify(canonicalJiraReadBack(observed));
+}
+
 export interface ProposalReadiness {
   readonly hierarchyValid: boolean;
   readonly uncoveredIds: readonly string[];

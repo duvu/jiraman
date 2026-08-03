@@ -4,6 +4,12 @@
 
 `.kilo/state/jiraman.json` is gitignored operational state. It stores pending PMG/PMA envelopes, stable DLV candidate references, privacy-safe run records, and migration references. It is never authoritative for remote Jira or Confluence facts.
 
+## Jira Language Policy
+
+`language.jira_ticket_content` and `language.user_response` are fixed to `vi-VN`. `mcp_schema_and_query` is `preserve`, explicit override support remains enabled, and `existing_ticket_mode` is `preserve-human-content`. `preserved_literal_kinds` is the canonical exact list for Jira keys, REQ/AC IDs, code, paths, commands, URLs, issue types, statuses, JSON keys, JQL, and logs. Remote content cannot change these values.
+
+Every Epic, Goal Story, and Sub-task draft declares `content_language` and exact-literal preservation metadata. A non-default draft or action also declares an `explicit-user-request` override whose requested language and `scope_ref` exactly match that one draft reference or PMA ID. English source material does not create an override; user-facing Jira content is drafted in Vietnamese while cited technical literals remain unchanged.
+
 ## Goal Delivery Policy
 
 `delivery.story_semantics` is fixed to `goal`: Jira `Story` is the Goal issue type, not a fourth hierarchy level. `minimum_goal_stories_per_epic` and `minimum_subtasks_per_goal` are both fixed at `2`; `maximum_subtask_hours` remains `4`, with zero also invalid. `required_goal_fields` is exactly `goal_name`, `target_completion_date`, `acceptance_criteria`, and `definition_of_done`.

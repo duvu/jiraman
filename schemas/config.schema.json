@@ -6,6 +6,7 @@
   "required": [
     "schema_version",
     "project",
+    "language",
     "confluence",
     "delivery",
     "actions",
@@ -20,17 +21,12 @@
       "additionalProperties": false,
       "required": [
         "key",
-        "language",
         "timezone",
         "sprint_length_days"
       ],
       "properties": {
         "key": {
           "const": "AIPLATFORM"
-        },
-        "language": {
-          "type": "string",
-          "minLength": 1
         },
         "timezone": {
           "type": "string",
@@ -39,6 +35,28 @@
         "sprint_length_days": {
           "type": "integer",
           "minimum": 1
+        }
+      }
+    },
+    "language": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "jira_ticket_content",
+        "user_response",
+        "mcp_schema_and_query",
+        "explicit_override_allowed",
+        "existing_ticket_mode",
+        "preserved_literal_kinds"
+      ],
+      "properties": {
+        "jira_ticket_content": {"const": "vi-VN"},
+        "user_response": {"const": "vi-VN"},
+        "mcp_schema_and_query": {"const": "preserve"},
+        "explicit_override_allowed": {"const": true},
+        "existing_ticket_mode": {"const": "preserve-human-content"},
+        "preserved_literal_kinds": {
+          "const": ["jira-key", "req-id", "ac-id", "code", "path", "command", "url", "issue-type", "status", "json-key", "jql", "log"]
         }
       }
     },

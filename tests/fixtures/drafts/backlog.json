@@ -13,6 +13,9 @@
   "data": {
     "content_language": "vi-VN",
     "epic": {
+      "draft_ref": "epic-1",
+      "content_language": "vi-VN",
+      "literal_preservation": {"policy_ref": ".kilo/config/jiraman.json#/language/preserved_literal_kinds", "mode": "exact"},
       "disposition": "reuse",
       "key": "AIPLATFORM-100",
       "outcome": "Safe upgrades",
@@ -37,6 +40,8 @@
     "stories": [
       {
         "draft_ref": "story-1",
+        "content_language": "vi-VN",
+        "literal_preservation": {"policy_ref": ".kilo/config/jiraman.json#/language/preserved_literal_kinds", "mode": "exact"},
         "disposition": "create",
         "goal_name": "Restore v4 backups safely",
         "target_completion_date": "2026-08-07",
@@ -83,6 +88,8 @@
       },
       {
         "draft_ref": "story-2",
+        "content_language": "vi-VN",
+        "literal_preservation": {"policy_ref": ".kilo/config/jiraman.json#/language/preserved_literal_kinds", "mode": "exact"},
         "disposition": "create",
         "goal_name": "Verify the rollback guide",
         "target_completion_date": "2026-08-07",

@@ -1,6 +1,7 @@
 import type { JsonObject } from "../../src/contracts.js";
 
 export function goalHierarchyGroup(): JsonObject {
+  const literalPreservation = {policy_ref: ".kilo/config/jiraman.json#/language/preserved_literal_kinds", mode: "exact"};
   const goalActions = [
     {target_ref: "epic-1", dependencies: [], desired_state: {project: "AIPLATFORM", issue_type: "Epic", summary: "Safe upgrades", draft_ref: "epic-1", content_language: "vi-VN", acceptance_criteria_storage: "managed-description-section", acceptance_criteria: [{id: "AC-1", statement: "Các Goal Stories được nghiệm thu và thước đo thành công được xác minh", verification: "Đối chiếu Story map và bằng chứng thước đo thành công"}]}},
     {target_ref: "goal-1", dependencies: ["PMA-20260803-01"], desired_state: {project: "AIPLATFORM", issue_type: "Story", parent_ref: "epic-1", draft_ref: "goal-1", goal_name: "Restore backups", summary: "Restore backups", target_completion_date: "2026-08-07", target_completion_date_evidence: {source: "sprint-end", reference: "Sprint 7 end", verified: true}, due_date: "2026-08-07", definition_of_done: ["Restore evidence accepted"], canonical_spec: "Confluence page-200", requirements: ["REQ-1"], content_language: "vi-VN", acceptance_criteria_storage: "managed-description-section", acceptance_criteria: [{id: "AC-1", statement: "Bản sao lưu được khôi phục nguyên vẹn", verification: "restore drill", requirement_refs: ["REQ-1"]}], validation: ["restore drill"]}},
@@ -17,7 +18,7 @@ export function goalHierarchyGroup(): JsonObject {
     target_ref: action.target_ref,
     target_version: null,
     before_state: {},
-    desired_state: action.desired_state,
+    desired_state: {...action.desired_state, literal_preservation: literalPreservation},
     evidence: ["approved Goal draft"],
     reason: "Create approved Goal hierarchy",
     preconditions: ["Goal contract remains verified"],

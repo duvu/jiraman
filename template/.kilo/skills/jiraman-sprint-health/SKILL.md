@@ -5,6 +5,7 @@ version: 5
 side_effects: none
 policy: .kilo/policies/jiraman-safety.md
 jira_ticket_contract: docs/project-management/templates/jira/index.json
+jira_language_contract: docs/project-management/templates/jira/index.json#/proposal_workflows/jiraman-sprint-health
 goal_contract: goal-name,target-completion-date,structured-ac,goal-dod,epic-parent,min-two-subtasks,max-four-hours,traceability
 ---
 

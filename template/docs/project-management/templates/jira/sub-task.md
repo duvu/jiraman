@@ -1,6 +1,8 @@
 ---
 issue_type: Sub-task
 content_language: vi-VN
+literal_preservation_policy: .kilo/config/jiraman.json#/language/preserved_literal_kinds
+language_override_scope: jira-draft
 ownership: mixed
 acceptance_criteria_storage: managed-description-section
 ---

@@ -19,6 +19,8 @@
         "draft": {
           "content_language": "vi-VN",
           "epic": {
+            "content_language": "vi-VN",
+            "literal_preservation": {"policy_ref": ".kilo/config/jiraman.json#/language/preserved_literal_kinds", "mode": "exact"},
             "disposition": "create",
             "outcome": "Safe upgrades",
             "value_problem": "Operators need recoverable upgrades",
@@ -50,6 +52,8 @@
           "stories": [
             {
               "draft_ref": "story-1",
+              "content_language": "vi-VN",
+              "literal_preservation": {"policy_ref": ".kilo/config/jiraman.json#/language/preserved_literal_kinds", "mode": "exact"},
               "disposition": "create",
               "outcome": "Operators restore a v4 backup",
               "canonical_spec": "Confluence page-200",
@@ -88,6 +92,8 @@
         "draft": {
           "content_language": "vi-VN",
           "epic": {
+            "content_language": "vi-VN",
+            "literal_preservation": {"policy_ref": ".kilo/config/jiraman.json#/language/preserved_literal_kinds", "mode": "exact"},
             "disposition": "create",
             "outcome": "Safe upgrades",
             "value_problem": "Operators need recoverable upgrades",
@@ -127,6 +133,8 @@
           "stories": [
             {
               "draft_ref": "story-1",
+              "content_language": "vi-VN",
+              "literal_preservation": {"policy_ref": ".kilo/config/jiraman.json#/language/preserved_literal_kinds", "mode": "exact"},
               "disposition": "create",
               "goal_name": "Restore v4 backups safely",
               "target_completion_date": "2026-08-07",
@@ -172,6 +180,8 @@
             },
             {
               "draft_ref": "story-2",
+              "content_language": "vi-VN",
+              "literal_preservation": {"policy_ref": ".kilo/config/jiraman.json#/language/preserved_literal_kinds", "mode": "exact"},
               "disposition": "create",
               "goal_name": "Verify the rollback guide",
               "target_completion_date": "2026-08-07",

@@ -2,9 +2,16 @@
   "schema_version": 5,
   "project": {
     "key": "AIPLATFORM",
-    "language": "English",
     "timezone": "Asia/Ho_Chi_Minh",
     "sprint_length_days": 7
+  },
+  "language": {
+    "jira_ticket_content": "vi-VN",
+    "user_response": "vi-VN",
+    "mcp_schema_and_query": "preserve",
+    "explicit_override_allowed": true,
+    "existing_ticket_mode": "preserve-human-content",
+    "preserved_literal_kinds": ["jira-key", "req-id", "ac-id", "code", "path", "command", "url", "issue-type", "status", "json-key", "jql", "log"]
   },
   "confluence": {
     "allowed_space_keys": ["AIPLATFORM"],

@@ -4,6 +4,36 @@
   "acceptance_criteria_storage": "managed-description-section",
   "acceptance_criteria_heading": "## Tiêu chí nghiệm thu",
   "acceptance_criterion_fields": ["id", "statement", "verification"],
+  "preservation_policy_ref": ".kilo/config/jiraman.json#/language/preserved_literal_kinds",
+  "glossary": {
+    "goal": "Mục tiêu",
+    "definition_of_done": "Điều kiện hoàn thành",
+    "acceptance_criteria": "Tiêu chí nghiệm thu",
+    "blocked": "Bị chặn",
+    "ready": "Sẵn sàng",
+    "validation": "Xác minh"
+  },
+  "proposal_workflows": [
+    {"name": "jiraman-refinement", "default_content_language": "vi-VN", "source_language_mode": "translate-user-facing-content", "literal_mode": "preserve-exact", "existing_issue_match": "evidence-not-language", "ambiguity_mode": "vi-VN-with-assumption", "writes_allowed": false},
+    {"name": "jiraman-meeting-actions", "default_content_language": "vi-VN", "source_language_mode": "translate-user-facing-content", "literal_mode": "preserve-exact", "existing_issue_match": "evidence-not-language", "ambiguity_mode": "vi-VN-with-assumption", "writes_allowed": false},
+    {"name": "jiraman-risk-management", "default_content_language": "vi-VN", "source_language_mode": "translate-user-facing-content", "literal_mode": "preserve-exact", "existing_issue_match": "evidence-not-language", "ambiguity_mode": "vi-VN-with-assumption", "writes_allowed": false},
+    {"name": "jiraman-decision-management", "default_content_language": "vi-VN", "source_language_mode": "translate-user-facing-content", "literal_mode": "preserve-exact", "existing_issue_match": "evidence-not-language", "ambiguity_mode": "vi-VN-with-assumption", "writes_allowed": false},
+    {"name": "jiraman-next-two-weeks", "default_content_language": "vi-VN", "source_language_mode": "translate-user-facing-content", "literal_mode": "preserve-exact", "existing_issue_match": "evidence-not-language", "ambiguity_mode": "vi-VN-with-assumption", "writes_allowed": false},
+    {"name": "jiraman-sprint-cadence", "default_content_language": "vi-VN", "source_language_mode": "translate-user-facing-content", "literal_mode": "preserve-exact", "existing_issue_match": "evidence-not-language", "ambiguity_mode": "vi-VN-with-assumption", "writes_allowed": false},
+    {"name": "jiraman-daily", "default_content_language": "vi-VN", "source_language_mode": "translate-user-facing-content", "literal_mode": "preserve-exact", "existing_issue_match": "evidence-not-language", "ambiguity_mode": "vi-VN-with-assumption", "writes_allowed": false},
+    {"name": "jiraman-sprint-health", "default_content_language": "vi-VN", "source_language_mode": "translate-user-facing-content", "literal_mode": "preserve-exact", "existing_issue_match": "evidence-not-language", "ambiguity_mode": "vi-VN-with-assumption", "writes_allowed": false}
+  ],
+  "apply_workflow": {
+    "name": "jiraman-apply-actions",
+    "operations": ["issue.create", "issue.update", "issue.comment"],
+    "default_content_language": "vi-VN",
+    "override_scope": "single-approved-action",
+    "existing_ticket_mode": "preserve-human-content",
+    "read_back_normalization": ["crlf-to-lf", "object-key-order"],
+    "array_order": "preserve-exact",
+    "unicode": "preserve-exact",
+    "live_writes": "approved-safe-test-scope-only"
+  },
   "templates": [
     {
       "issue_type": "Epic",
@@ -21,6 +51,5 @@
       "file": "sub-task.md",
       "required_sections": ["outcome", "parent-traceability", "scope", "steps", "affected-files", "dependencies", "validation", "acceptance-criteria", "subtask-dod", "estimate"]
     }
-  ],
-  "preserve_literals": ["jira-key", "req-id", "ac-id", "code", "path", "command", "url", "issue-type", "status"]
+  ]
 }

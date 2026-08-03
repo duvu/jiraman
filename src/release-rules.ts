@@ -4,15 +4,15 @@ export const REQUIRED_RELEASE_GATES = ["architecture", "schemas", "skills", "ali
 
 export const REQUIRED_RELEASE_GATE_CHECKS: Readonly<Record<(typeof REQUIRED_RELEASE_GATES)[number], readonly string[]>> = {
   architecture: ["prompt-first", "no-runtime"],
-  schemas: ["config", "state", "action", "run-record", "exact-traceability", "structured-ac"],
-  skills: ["primary-agent", "named-skills", "installed-goal-metadata", "jira-ticket-templates"],
+  schemas: ["config", "state", "action", "run-record", "exact-traceability", "structured-ac", "jira-language"],
+  skills: ["primary-agent", "named-skills", "installed-goal-metadata", "jira-ticket-templates", "jira-language-routes"],
   aliases: ["canonical", "v4-aliases", "exact-write"],
   migration: ["clean-install", "v4-migration", "mcp-preservation"],
-  fixtures: ["mcp", "workflow", "sanitized", "ready-evidence", "acceptance-boundaries"],
-  security: ["scope", "injection", "approval", "replay", "symlink", "secrets", "hostile-paraphrases"],
+  fixtures: ["mcp", "workflow", "sanitized", "ready-evidence", "acceptance-boundaries", "vietnamese-jira-content", "unicode-literals"],
+  security: ["scope", "injection", "approval", "replay", "symlink", "secrets", "hostile-paraphrases", "language-injection"],
   reproducibility: ["manifest", "tar", "zip"],
   "package-verification": ["tar", "zip", "no-state", "no-backup", "no-runtime"],
-  "manual-smoke": ["read", "degraded", "proposal", "reject", "apply", "failure", "read-after-write", "jira-authority", "managed-ac", "acceptance-read-back"],
+  "manual-smoke": ["read", "degraded", "proposal", "reject", "apply", "failure", "read-after-write", "jira-authority", "managed-ac", "acceptance-read-back", "vietnamese-jira", "language-override", "existing-english", "unicode-read-back"],
   rollback: ["package", "managed-files", "action-state"],
 };
 

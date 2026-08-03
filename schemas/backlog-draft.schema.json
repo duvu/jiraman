@@ -12,6 +12,9 @@
     "epic": {
       "type": "object",
       "required": [
+        "draft_ref",
+        "content_language",
+        "literal_preservation",
         "disposition",
         "outcome",
         "value_problem",
@@ -28,6 +31,9 @@
       ],
       "additionalProperties": false,
       "properties": {
+        "content_language": {"$ref": "https://duvu.github.io/jiraman/schemas/jira-content-metadata.schema.json#/definitions/language-tag"},
+        "language_override": {"$ref": "https://duvu.github.io/jiraman/schemas/jira-content-metadata.schema.json#/definitions/language-override"},
+        "literal_preservation": {"$ref": "https://duvu.github.io/jiraman/schemas/jira-content-metadata.schema.json#/definitions/literal-preservation"},
         "disposition": {
           "enum": [
             "reuse",
@@ -71,6 +77,8 @@
         "additionalProperties": false,
         "required": [
           "draft_ref",
+          "content_language",
+          "literal_preservation",
           "disposition",
           "goal_name",
           "target_completion_date",
@@ -92,6 +100,9 @@
           "blocking_gaps"
         ],
         "properties": {
+          "content_language": {"$ref": "https://duvu.github.io/jiraman/schemas/jira-content-metadata.schema.json#/definitions/language-tag"},
+          "language_override": {"$ref": "https://duvu.github.io/jiraman/schemas/jira-content-metadata.schema.json#/definitions/language-override"},
+          "literal_preservation": {"$ref": "https://duvu.github.io/jiraman/schemas/jira-content-metadata.schema.json#/definitions/literal-preservation"},
           "draft_ref": {
             "type": "string",
             "minLength": 1

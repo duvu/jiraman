@@ -15,6 +15,21 @@ export function jiraTemplateViolations(): string[] {
   if (index.content_language !== "vi-VN") violations.push("content-language");
   if (index.acceptance_criteria_storage !== "managed-description-section") violations.push("acceptance-storage");
   if (index.acceptance_criteria_heading !== "## Tiêu chí nghiệm thu") violations.push("acceptance-heading");
+  if (index.preservation_policy_ref !== ".kilo/config/jiraman.json#/language/preserved_literal_kinds" || index.preserve_literals !== undefined) violations.push("preservation-policy");
+  const glossary = asObject(index.glossary ?? null, "Jira glossary");
+  const glossaryKeys = ["goal", "definition_of_done", "acceptance_criteria", "blocked", "ready", "validation"];
+  if (Object.keys(glossary).length !== glossaryKeys.length || glossaryKeys.some((key) => typeof glossary[key] !== "string" || glossary[key] === "")) violations.push("glossary");
+  const proposalWorkflows = asArray(index.proposal_workflows, "Jira proposal workflows").map((value) => asObject(value, "Jira proposal workflow"));
+  const expectedWorkflows = ["jiraman-refinement", "jiraman-meeting-actions", "jiraman-risk-management", "jiraman-decision-management", "jiraman-next-two-weeks", "jiraman-sprint-cadence", "jiraman-daily", "jiraman-sprint-health"];
+  const workflowNames = proposalWorkflows.map((workflow) => asString(workflow.name, "Jira proposal workflow name"));
+  if (new Set(workflowNames).size !== expectedWorkflows.length || expectedWorkflows.some((name) => !workflowNames.includes(name))) violations.push("proposal-workflows");
+  for (const workflow of proposalWorkflows) {
+    if (workflow.default_content_language !== "vi-VN" || workflow.source_language_mode !== "translate-user-facing-content" || workflow.literal_mode !== "preserve-exact" || workflow.existing_issue_match !== "evidence-not-language" || workflow.ambiguity_mode !== "vi-VN-with-assumption" || workflow.writes_allowed !== false) violations.push(`${asString(workflow.name, "workflow name")}:language-route`);
+  }
+  const applyWorkflow = asObject(index.apply_workflow ?? null, "Jira apply workflow");
+  const applyOperations = asArray(applyWorkflow.operations, "Jira apply operations").map((value) => asString(value, "Jira apply operation"));
+  const readBackNormalization = asArray(applyWorkflow.read_back_normalization, "Jira read-back normalization").map((value) => asString(value, "Jira read-back normalization item"));
+  if (applyWorkflow.name !== "jiraman-apply-actions" || JSON.stringify(applyOperations) !== JSON.stringify(["issue.create", "issue.update", "issue.comment"]) || applyWorkflow.default_content_language !== "vi-VN" || applyWorkflow.override_scope !== "single-approved-action" || applyWorkflow.existing_ticket_mode !== "preserve-human-content" || JSON.stringify(readBackNormalization) !== JSON.stringify(["crlf-to-lf", "object-key-order"]) || applyWorkflow.array_order !== "preserve-exact" || applyWorkflow.unicode !== "preserve-exact" || applyWorkflow.live_writes !== "approved-safe-test-scope-only") violations.push("apply-language-route");
   const fields = asArray(index.acceptance_criterion_fields, "Acceptance Criterion fields").map((value) => asString(value, "Acceptance Criterion field"));
   if (JSON.stringify(fields) !== JSON.stringify(["id", "statement", "verification"])) violations.push("acceptance-fields");
   const issueTypes = templates.map((template) => asString(template.issue_type, "issue type"));
@@ -28,7 +43,7 @@ export function jiraTemplateViolations(): string[] {
     const text = readText(path);
     const frontmatter = parseFrontmatter(text);
     const sections = asArray(template.required_sections, "required sections").map((value) => asString(value, "required section"));
-    if (frontmatter.get("content_language") !== "vi-VN" || frontmatter.get("acceptance_criteria_storage") !== "managed-description-section") violations.push(`${file}:metadata`);
+    if (frontmatter.get("content_language") !== "vi-VN" || frontmatter.get("acceptance_criteria_storage") !== "managed-description-section" || frontmatter.get("literal_preservation_policy") !== ".kilo/config/jiraman.json#/language/preserved_literal_kinds" || frontmatter.get("language_override_scope") !== "jira-draft") violations.push(`${file}:metadata`);
     if (!sections.includes("acceptance-criteria") || new Set(sections).size !== sections.length) violations.push(`${file}:sections`);
     if (markerCount(text, "<!-- JIRAMAN:BEGIN managed-ticket -->") !== 1 || markerCount(text, "<!-- JIRAMAN:END managed-ticket -->") !== 1 || markerCount(text, "<!-- HUMAN:BEGIN notes -->") !== 1 || markerCount(text, "<!-- HUMAN:END notes -->") !== 1) violations.push(`${file}:ownership`);
     for (const section of sections) {

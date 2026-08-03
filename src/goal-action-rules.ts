@@ -58,7 +58,7 @@ function hierarchyIssueType(value: JsonValue | undefined): HierarchyIssueType | 
 function hierarchyFieldsValid(issueType: HierarchyIssueType, state: JsonObject, ref: string | null): boolean {
   switch (issueType) {
     case "Epic":
-      return ref !== null && typeof state.summary === "string" && state.summary.length > 0 && state.content_language === "vi-VN" &&
+      return ref !== null && typeof state.summary === "string" && state.summary.length > 0 && typeof state.content_language === "string" &&
         state.acceptance_criteria_storage === "managed-description-section" && epicAcceptanceCriterionErrors(state.acceptance_criteria, "").length === 0 && acceptanceCriteriaIds(state.acceptance_criteria) !== null;
     case "Story": {
       const deadlineEvidence = objectValue(state.target_completion_date_evidence);
@@ -68,7 +68,7 @@ function hierarchyFieldsValid(issueType: HierarchyIssueType, state: JsonObject, 
         deadlineEvidence !== null && ["sprint-end", "milestone", "specification", "explicit-user-decision"].includes(String(deadlineEvidence.source)) && typeof deadlineEvidence.reference === "string" && deadlineEvidence.reference.length > 0 && deadlineEvidence.verified === true &&
         nonEmptyStrings(state.definition_of_done) && typeof state.canonical_spec === "string" && state.canonical_spec.length > 0 &&
         nonEmptyStrings(state.requirements) && acceptanceCriteriaIds(state.acceptance_criteria) !== null && goalAcceptanceCriterionErrors(state.requirements, state.acceptance_criteria, "").length === 0 &&
-        state.content_language === "vi-VN" && state.acceptance_criteria_storage === "managed-description-section" && nonEmptyStrings(state.validation);
+        typeof state.content_language === "string" && state.acceptance_criteria_storage === "managed-description-section" && nonEmptyStrings(state.validation);
     }
     case "Sub-task":
       return typeof state.parent_ref === "string" && state.parent_ref.length > 0 &&
@@ -76,7 +76,7 @@ function hierarchyFieldsValid(issueType: HierarchyIssueType, state: JsonObject, 
         typeof state.validation === "string" && state.validation.length > 0 && typeof state.definition_of_done === "string" && state.definition_of_done.length > 0 &&
         typeof state.original_estimate_hours === "number" && state.original_estimate_hours > 0 && state.original_estimate_hours <= 4 &&
         stringSet(state.requirements) !== null && stringSet(state.parent_acceptance_criteria_refs) !== null &&
-        state.content_language === "vi-VN" && state.acceptance_criteria_storage === "managed-description-section" &&
+        typeof state.content_language === "string" && state.acceptance_criteria_storage === "managed-description-section" &&
         localAcceptanceCriterionErrors(state.acceptance_criteria, "").length === 0 && acceptanceCriteriaIds(state.acceptance_criteria) !== null;
   }
 }
@@ -91,7 +91,7 @@ function hierarchyAcceptanceErrors(issueType: HierarchyIssueType, state: JsonObj
 
 function acceptanceUpdateModeValid(operation: JsonValue | undefined, desired: JsonObject): boolean {
   if (operation !== "issue.update") return true;
-  if (desired.description !== undefined) return false;
+  if (desired.description !== undefined) return desired.description_update_mode === "approved-full-translation" && desired.existing_content_mode === "approved-full-translation";
   if (desired.acceptance_criteria === undefined) return true;
   return desired.description_update_mode === "managed-section" && desired.managed_section === "acceptance-criteria" && desired.description === undefined;
 }
