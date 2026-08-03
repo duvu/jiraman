@@ -9,8 +9,8 @@
     "goal": "Mục tiêu",
     "definition_of_done": "Điều kiện hoàn thành",
     "acceptance_criteria": "Tiêu chí nghiệm thu",
-    "blocked": "Bị chặn",
-    "ready": "Sẵn sàng",
+    "blocked_prose": "Bị chặn",
+    "ready_prose": "Sẵn sàng",
     "validation": "Xác minh"
   },
   "override_authorization": {

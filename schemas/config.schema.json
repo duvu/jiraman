@@ -57,7 +57,7 @@
         "explicit_override_allowed": {"const": true},
         "existing_ticket_mode": {"const": "preserve-human-content"},
         "preserved_literal_kinds": {
-          "const": ["jira-key", "req-id", "ac-id", "pmg-id", "pma-id", "dlv-id", "issue-type", "status", "custom-field", "jql", "json-key", "mcp-tool", "mcp-schema", "technical-term", "code-symbol", "path", "command", "url", "code-block", "stack-trace", "log"]
+          "const": ["jira-key", "req-id", "ac-id", "pmg-id", "pma-id", "dlv-id", "issue-type", "status", "custom-field", "source-excerpt", "jql", "json-key", "mcp-tool", "mcp-schema", "technical-term", "code-symbol", "path", "command", "url", "code-block", "stack-trace", "log"]
         },
         "preserved_technical_terms": {
           "const": ["API", "CI/CD", "Kubernetes", "OAuth", "OpenID Connect"]

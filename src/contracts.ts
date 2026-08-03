@@ -4,6 +4,7 @@ import { basename, join, relative, resolve } from "node:path";
 
 import { Ajv, type ErrorObject, type ValidateFunction } from "ajv";
 
+import { canonicalPayloadHash } from "./action-rules.js";
 import { goalDraftSemanticErrors } from "./goal-rules.js";
 import { goalActionSemanticErrors } from "./goal-action-rules.js";
 import { jiraLanguageSemanticErrors, type JiraLanguageValidationContext } from "./jira-language-rules.js";
@@ -216,17 +217,46 @@ function actionGroupApprovalErrors(value: JsonValue): ErrorObject[] {
       message: "must equal the action group payload_hash",
     });
   }
+  if (typeof value.payload_hash === "string" && value.payload_hash !== canonicalPayloadHash(value.actions)) {
+    errors.push({
+      instancePath: "/payload_hash",
+      schemaPath: "#/x-action-group-approval/canonical-payload-hash",
+      keyword: "canonicalPayloadHash",
+      params: {},
+      message: "must equal the SHA-256 of the canonical immutable action payload",
+    });
+  }
   return errors;
+}
+
+function actionGroupSemanticErrors(value: JsonValue, context: JiraLanguageValidationContext): ErrorObject[] {
+  return [
+    ...actionGroupApprovalErrors(value),
+    ...goalActionSemanticErrors(value),
+    ...jiraLanguageSemanticErrors("action-group.schema.json", value, context),
+  ];
+}
+
+function prefixedErrors(errors: readonly ErrorObject[], prefix: string): ErrorObject[] {
+  return errors.map((error) => ({...error, instancePath: `${prefix}${error.instancePath}`}));
+}
+
+function stateActionGroupErrors(value: JsonValue, context: JiraLanguageValidationContext): ErrorObject[] {
+  if (value === null || typeof value !== "object" || Array.isArray(value) || value.pending_action_groups === null ||
+      typeof value.pending_action_groups !== "object" || Array.isArray(value.pending_action_groups)) return [];
+  return Object.entries(value.pending_action_groups).flatMap(([id, group]) =>
+    prefixedErrors(actionGroupSemanticErrors(group, context), `/pending_action_groups/${id.replace(/~/g, "~0").replace(/\//g, "~1")}`),
+  );
 }
 
 export function validateJson(schemaName: string, value: JsonValue, context: JiraLanguageValidationContext = {}): ValidationResult {
   const validator = schemaValidator(schemaName);
   const schemaValid = validator(value);
   const semanticErrors = [
-    ...(schemaName === "action-group.schema.json" ? actionGroupApprovalErrors(value) : []),
-    ...(schemaName === "action-group.schema.json" ? goalActionSemanticErrors(value) : []),
+    ...(schemaName === "action-group.schema.json" ? actionGroupSemanticErrors(value, context) : []),
+    ...(schemaName === "state.schema.json" ? stateActionGroupErrors(value, context) : []),
     ...goalDraftSemanticErrors(schemaName, value),
-    ...jiraLanguageSemanticErrors(schemaName, value, context),
+    ...(schemaName === "action-group.schema.json" ? [] : jiraLanguageSemanticErrors(schemaName, value, context)),
   ];
   return { valid: schemaValid && semanticErrors.length === 0, errors: [...(validator.errors ?? []), ...semanticErrors] };
 }

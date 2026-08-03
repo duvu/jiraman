@@ -2,7 +2,7 @@
 
 ## v5.0.0
 
-- Made Vietnamese (`vi-VN`) the canonical default for every user-facing Jira draft/proposal/create/update/comment; added trusted local-input single-scope overrides, complete exact technical-literal and Unicode preservation, existing-English managed-update/full-translation boundaries, proposal/apply routing metadata, and release-blocking adversarial fixtures across state, CI sanitization, install, and package surfaces.
+- Made Vietnamese (`vi-VN`) the canonical default for every user-facing Jira draft/proposal/create/update/comment; added trusted local-input single-scope overrides, complete exact technical-literal/source-excerpt and Unicode preservation, exact existing-English managed-update/full-translation field boundaries, canonical approval-hash verification, proposal/apply routing metadata, and release-blocking adversarial fixtures across state, CI sanitization, install, and package surfaces.
 
 - Required complete testable structured Acceptance Criteria on Epic, Goal Story, and Sub-task tickets; added vi-VN managed Jira templates, REQ/parent/local AC traceability, actionable narrative-field validation, proposal/apply/read-back blocking, human-content preservation, and release-blocking negative fixtures.
 

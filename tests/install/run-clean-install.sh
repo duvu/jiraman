@@ -33,6 +33,14 @@ grep -q '## Tiêu chí nghiệm thu' "$TARGET/docs/project-management/templates/
 grep -q '## Tiêu chí nghiệm thu' "$TARGET/docs/project-management/templates/jira/sub-task.md"
 "$ROOT/install.sh" "$TARGET" --check >/dev/null
 cmp "$TARGET/mcp.before" "$TARGET/.kilo/mcp.json"
+cp "$TARGET/.kilo/agents/jiraman.md" "$TARGET/agent.before"
+printf '\ncontent-drift-canary\n' >> "$TARGET/.kilo/agents/jiraman.md"
+if "$ROOT/install.sh" "$TARGET" --check >"$TARGET/drift-check.out" 2>&1; then echo "expected managed-content drift rejection" >&2; exit 1; fi
+grep -q 'managed content drift: .kilo/agents/jiraman.md' "$TARGET/drift-check.out"
+mv "$TARGET/agent.before" "$TARGET/.kilo/agents/jiraman.md"
+cp "$ROOT/tests/fixtures/state/vietnamese-content.valid.json" "$TARGET/.kilo/state/jiraman.json"
+cmp "$ROOT/tests/fixtures/state/vietnamese-content.valid.json" "$TARGET/.kilo/state/jiraman.json"
+"$ROOT/verify.sh" "$TARGET" >/dev/null
 if "$ROOT/install.sh" "$TARGET" >"$TARGET/reinstall.out" 2>&1; then echo "expected conflict refusal" >&2; exit 1; fi
 grep -q '.kilo/agents/jiraman.md' "$TARGET/reinstall.out"
 find "$TARGET/.kilo" -type f | while read -r path; do extension="${path##*.}"; [[ "$extension" != "p""y" ]]; done

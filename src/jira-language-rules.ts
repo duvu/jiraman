@@ -125,24 +125,68 @@ function preservationValid(value: JsonValue | undefined): boolean {
   return preservation?.policy_ref === ".kilo/config/jiraman.json#/language/preserved_literal_kinds" && preservation.mode === "exact";
 }
 
+const MANAGED_SECTION_FIELDS = new Set([
+  "acceptance_criteria",
+  "content_language",
+  "description_update_mode",
+  "existing_content_mode",
+  "language_override",
+  "literal_preservation",
+  "managed_content",
+  "managed_section",
+]);
+
+const FULL_TRANSLATION_FIELDS = new Set([
+  "content_language",
+  "description",
+  "description_update_mode",
+  "existing_content_mode",
+  "language_override",
+  "literal_preservation",
+  "summary",
+  "translation_authorization",
+]);
+
+const COMMENT_FIELDS = new Set([
+  "acceptance_criteria",
+  "body",
+  "comment",
+  "content_language",
+  "existing_content_mode",
+  "language_override",
+  "literal_preservation",
+  "managed_content_only",
+  "purpose",
+]);
+
+function containsOnlyFields(value: JsonObject, fields: ReadonlySet<string>): boolean {
+  return Object.keys(value).every((field) => fields.has(field));
+}
+
 function existingContentErrors(action: JsonObject, desired: JsonObject, path: string, context: JiraLanguageValidationContext): ErrorObject[] {
   if (action.operation !== "issue.update" && action.operation !== "issue.comment") return [];
   const before = objectValue(action.before_state);
   if (before === null || typeof before.human_content_language !== "string" || before.issue_key !== action.target_ref) {
     return [languageError(`${path}/before_state`, "must contain a fresh target-bound human_content_language snapshot")];
   }
-  if (before.human_content_language === "vi-VN") return [];
   if (action.operation === "issue.comment") {
-    return desired.existing_content_mode === "preserve-human-content" ? [] : [languageError(`${path}/desired_state/existing_content_mode`, "must preserve existing non-Vietnamese human content")];
+    return containsOnlyFields(desired, COMMENT_FIELDS) &&
+      (before.human_content_language === "vi-VN" || desired.existing_content_mode === "preserve-human-content")
+      ? []
+      : [languageError(`${path}/desired_state/existing_content_mode`, "must preserve existing non-Vietnamese human content and limit the action to comment fields")];
   }
+  if (before.human_content_language === "vi-VN") return [];
   if (desired.existing_content_mode === "managed-section-only") {
     const valid = desired.description_update_mode === "managed-section" && typeof desired.managed_section === "string" &&
-      desired.managed_section.length > 0 && desired.description === undefined && desired.summary === undefined;
+      desired.managed_section.length > 0 && desired.description === undefined && desired.summary === undefined &&
+      containsOnlyFields(desired, MANAGED_SECTION_FIELDS);
     return valid ? [] : [languageError(`${path}/desired_state`, "must update only one managed section on existing non-Vietnamese content")];
   }
   const authorization = objectValue(desired.translation_authorization);
   const fullTranslation = desired.existing_content_mode === "approved-full-translation" && desired.description_update_mode === "approved-full-translation" &&
-    typeof before.description === "string" && typeof desired.description === "string" && authorization?.source === "explicit-user-request" &&
+    typeof before.description === "string" && typeof desired.description === "string" &&
+    (desired.summary === undefined || typeof before.summary === "string") && containsOnlyFields(desired, FULL_TRANSLATION_FIELDS) &&
+    authorization?.source === "explicit-user-request" &&
     typeof action.id === "string" && typeof desired.content_language === "string" && hasTrustedAuthorization(context, "jira-full-description-translation", authorization.evidence_reference, "jira-action", action.id, desired.content_language) &&
     action.risk === "high" && action.approval_required === "per-action";
   return fullTranslation ? [] : [languageError(`${path}/desired_state`, "full translation requires complete before/after content and separate explicit high-risk approval")];

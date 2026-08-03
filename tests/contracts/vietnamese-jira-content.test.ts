@@ -1,7 +1,9 @@
+import { spawnSync } from "node:child_process";
+
 import { describe, expect, test } from "vitest";
 
 import { jiraReadBackMatches } from "../../src/action-rules.js";
-import { asArray, asObject, asString, readJson, type JsonObject } from "../../src/contracts.js";
+import { asArray, asObject, asString, readJson, validateJson, type JsonObject } from "../../src/contracts.js";
 import { validateFixtures } from "../../src/fixture-validation.js";
 import { jiraLanguageSemanticErrors, type JiraLanguageValidationContext, type TrustedUserAuthorization } from "../../src/jira-language-rules.js";
 import { missingChecklistGates, REQUIRED_RELEASE_GATE_CHECKS } from "../../src/release-rules.js";
@@ -73,11 +75,13 @@ describe("release-blocking Vietnamese Jira content", () => {
   test("covers every canonical technical literal category byte-for-byte", () => {
     const data = fixtureData();
     const literals = asObject(data.literal_preservation_case ?? null, "literal preservation case");
+    const output = asObject(data.literal_preservation_output ?? null, "literal preservation output");
     const config = asObject(readJson("template/.kilo/config/jiraman.json"), "config");
     const language = asObject(config.language ?? null, "language config");
     const kinds = asArray(language.preserved_literal_kinds, "preserved literal kinds").map((kind) => asString(kind, "literal kind"));
     expect(Object.keys(literals).sort()).toEqual([...kinds].sort());
-    expect(jiraReadBackMatches({literals}, {literals: structuredClone(literals)})).toBe(true);
+    expect(Object.keys(output).sort()).toEqual([...kinds].sort());
+    expect(jiraReadBackMatches({literals}, {literals: output})).toBe(true);
 
     for (const kind of kinds) {
       const changed = structuredClone(literals);
@@ -92,5 +96,20 @@ describe("release-blocking Vietnamese Jira content", () => {
     expect(REQUIRED_RELEASE_GATE_CHECKS.security).toContain("language-injection");
     expect(REQUIRED_RELEASE_GATE_CHECKS["manual-smoke"]).toEqual(expect.arrayContaining(["vietnamese-jira", "language-override", "existing-english", "unicode-read-back"]));
     expect(missingChecklistGates()).toEqual([]);
+  });
+
+  test("preserves non-empty Vietnamese action state through both validators", () => {
+    const statePath = "tests/fixtures/state/vietnamese-content.valid.json";
+    const state = readJson(statePath);
+    expect(validateJson("state.schema.json", state)).toEqual({valid: true, errors: []});
+    const installed = spawnSync("./verify.sh", ["--validate-state-file", statePath], {encoding: "utf8"});
+    expect(installed.status, installed.stderr).toBe(0);
+    const root = asObject(state, "Vietnamese state");
+    const groups = asObject(root.pending_action_groups ?? null, "pending action groups");
+    const group = asObject(Object.values(groups)[0] ?? null, "pending action group");
+    const action = asObject(asArray(group.actions, "pending actions")[0] ?? null, "pending action");
+    const body = asString(asObject(action.desired_state ?? null, "desired state").body, "Vietnamese comment body");
+    expect(Buffer.from(body, "utf8").toString("utf8")).toBe(body);
+    expect(/[^\u0000-\u007f]/u.test(body)).toBe(true);
   });
 });

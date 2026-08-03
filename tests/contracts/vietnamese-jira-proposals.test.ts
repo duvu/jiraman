@@ -1,6 +1,6 @@
 import { describe, expect, test } from "vitest";
 
-import { asArray, asObject, asString, parseFrontmatter, readJson, readText } from "../../src/contracts.js";
+import { asArray, asObject, asString, parseFrontmatter, readJson, readText, validateJson } from "../../src/contracts.js";
 import { resolveJiraContentLanguage } from "../../src/jira-language-rules.js";
 
 const WORKFLOWS = [
@@ -43,6 +43,7 @@ describe("Vietnamese Jira proposal workflows", () => {
   test("translates the canonical English-source hierarchy fixture to Vietnamese", () => {
     const backlogFixture = asObject(readJson("tests/fixtures/drafts/backlog.json"), "backlog fixture");
     const metadata = asObject(backlogFixture.metadata ?? null, "backlog metadata");
+    const source = asObject(metadata.source_user_facing_content ?? null, "English source content");
     const backlog = asObject(backlogFixture.data ?? null, "backlog data");
     const epic = asObject(backlog.epic ?? null, "Epic");
     const goal = asObject(asArray(backlog.stories, "Goal Stories")[0] ?? null, "Goal Story");
@@ -51,11 +52,15 @@ describe("Vietnamese Jira proposal workflows", () => {
     const subtask = asObject(asArray(subtaskData.subtasks, "Sub-tasks")[0] ?? null, "Sub-task");
 
     expect(metadata.source).toBe("synthetic-english-source-translated");
-    expect(epic.outcome).toBe("Nâng cấp an toàn");
-    expect(goal.goal_name).toBe("Khôi phục an toàn bản sao lưu v4");
-    expect(subtask.title).toBe("Xác minh việc khôi phục bản sao lưu v4");
-    expect(JSON.stringify({backlog, subtaskData})).toContain("./tests/install/run-v4-upgrade.sh");
-    expect(JSON.stringify({backlog, subtaskData})).toContain("REQ-1");
+    expect(validateJson("backlog-draft.schema.json", backlog)).toEqual({valid: true, errors: []});
+    expect(validateJson("subtask-draft.schema.json", subtaskData)).toEqual({valid: true, errors: []});
+    expect(epic.content_language).toBe("vi-VN");
+    expect(goal.content_language).toBe("vi-VN");
+    expect(source.epic_outcome).not.toBe(epic.outcome);
+    expect(source.goal_name).not.toBe(goal.goal_name);
+    expect(source.subtask_title).not.toBe(subtask.title);
+    const rendered = JSON.stringify({backlog, subtaskData});
+    for (const literal of asArray(metadata.preserved_literals, "preserved source literals")) expect(rendered).toContain(asString(literal, "preserved literal"));
   });
 
   test("binds every proposal skill to its exact indexed route", () => {

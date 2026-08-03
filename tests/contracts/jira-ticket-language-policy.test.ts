@@ -18,7 +18,7 @@ describe("Jira ticket language policy", () => {
       mcp_schema_and_query: "preserve",
       explicit_override_allowed: true,
       existing_ticket_mode: "preserve-human-content",
-      preserved_literal_kinds: ["jira-key", "req-id", "ac-id", "pmg-id", "pma-id", "dlv-id", "issue-type", "status", "custom-field", "jql", "json-key", "mcp-tool", "mcp-schema", "technical-term", "code-symbol", "path", "command", "url", "code-block", "stack-trace", "log"],
+      preserved_literal_kinds: ["jira-key", "req-id", "ac-id", "pmg-id", "pma-id", "dlv-id", "issue-type", "status", "custom-field", "source-excerpt", "jql", "json-key", "mcp-tool", "mcp-schema", "technical-term", "code-symbol", "path", "command", "url", "code-block", "stack-trace", "log"],
       preserved_technical_terms: ["API", "CI/CD", "Kubernetes", "OAuth", "OpenID Connect"],
     });
     expect(validateJson("config.schema.json", config).valid).toBe(true);
@@ -49,7 +49,7 @@ describe("Jira ticket language policy", () => {
 
     expect(index.preservation_policy_ref).toBe(POLICY_REF);
     expect(index.preserve_literals).toBeUndefined();
-    expect(Object.keys(glossary).sort()).toEqual(["acceptance_criteria", "blocked", "definition_of_done", "goal", "ready", "validation"]);
+    expect(Object.keys(glossary).sort()).toEqual(["acceptance_criteria", "blocked_prose", "definition_of_done", "goal", "ready_prose", "validation"]);
     expect(overrideAuthorization).toEqual({source: "active-local-user-input", evidence_reference: "required", validation_context: "separate-from-draft-and-action", remote_content_allowed: false});
     for (const value of asArray(index.templates, "Jira templates")) {
       const template = asObject(value, "Jira template");

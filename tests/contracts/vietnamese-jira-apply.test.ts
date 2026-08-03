@@ -1,6 +1,6 @@
 import { describe, expect, test } from "vitest";
 
-import { jiraReadBackMatches } from "../../src/action-rules.js";
+import { canonicalPayloadHash, jiraReadBackMatches } from "../../src/action-rules.js";
 import { asArray, asObject, asString, parseFrontmatter, readJson, readText, validateJson, type JsonObject } from "../../src/contracts.js";
 import { jiraLanguageSemanticErrors, type JiraLanguageValidationContext } from "../../src/jira-language-rules.js";
 import { goalHierarchyGroup } from "./goal-hierarchy-fixture.js";
@@ -15,18 +15,25 @@ function firstAction(group: JsonObject): JsonObject {
   return asObject(asArray(group.actions, "actions")[0] ?? null, "action");
 }
 
+function validateActionGroup(group: JsonObject, context: JiraLanguageValidationContext = {}) {
+  group.payload_hash = canonicalPayloadHash(asArray(group.actions, "actions"));
+  const approval = asObject(group.approval ?? null, "approval");
+  if (typeof approval.payload_hash === "string") approval.payload_hash = group.payload_hash;
+  return validateJson("action-group.schema.json", group, context);
+}
+
 describe("Vietnamese Jira apply contract", () => {
   test("requires vi-VN and literal metadata for create, user-facing update, and comment", () => {
     const valid = actionGroup();
-    expect(validateJson("action-group.schema.json", valid).valid).toBe(true);
+    expect(validateActionGroup(valid).valid).toBe(true);
 
     const missingLanguage = structuredClone(valid);
     delete asObject(firstAction(missingLanguage).desired_state ?? null, "desired state").content_language;
     const missingPreservation = structuredClone(valid);
     delete asObject(firstAction(missingPreservation).desired_state ?? null, "desired state").literal_preservation;
 
-    expect(validateJson("action-group.schema.json", missingLanguage).valid).toBe(false);
-    expect(validateJson("action-group.schema.json", missingPreservation).valid).toBe(false);
+    expect(validateActionGroup(missingLanguage).valid).toBe(false);
+    expect(validateActionGroup(missingPreservation).valid).toBe(false);
   });
 
   test("cannot bypass update metadata through a managed narrative field", () => {
@@ -36,6 +43,17 @@ describe("Vietnamese Jira apply contract", () => {
     action.desired_state = {validation: "Chạy `npm run ci` và lưu bằng chứng."};
 
     expect(jiraLanguageSemanticErrors("action-group.schema.json", update).some((error) => error.instancePath.endsWith("/content_language"))).toBe(true);
+  });
+
+  test("couples Jira operations to the Jira system before language classification", () => {
+    const relabeled = actionGroup();
+    const action = firstAction(relabeled);
+    const desired = asObject(action.desired_state ?? null, "desired state");
+    action.system = "confluence";
+    delete desired.content_language;
+    delete desired.literal_preservation;
+
+    expect(validateActionGroup(relabeled).valid).toBe(false);
   });
 
   test("binds an English override to one immutable action ID", () => {
@@ -69,9 +87,9 @@ describe("Vietnamese Jira apply contract", () => {
       }],
     };
 
-    expect(validateJson("action-group.schema.json", overridden).valid).toBe(false);
-    expect(validateJson("action-group.schema.json", overridden, trustedAuthorization).valid).toBe(true);
-    expect(validateJson("action-group.schema.json", leaked).valid).toBe(false);
+    expect(validateActionGroup(overridden).valid).toBe(false);
+    expect(validateActionGroup(overridden, trustedAuthorization).valid).toBe(true);
+    expect(validateActionGroup(leaked).valid).toBe(false);
   });
 
   test("accepts well-formed BCP 47 override tags only with matching trusted input", () => {
@@ -97,7 +115,7 @@ describe("Vietnamese Jira apply contract", () => {
         }],
       };
 
-      expect(validateJson("action-group.schema.json", overridden, trustedAuthorization).valid, language).toBe(true);
+      expect(validateActionGroup(overridden, trustedAuthorization).valid, language).toBe(true);
     }
   });
 
@@ -141,7 +159,7 @@ describe("Vietnamese Jira apply contract", () => {
     unsafeAction.risk = "medium";
     unsafeAction.approval_required = "group";
 
-    expect(validateJson("action-group.schema.json", managed).valid).toBe(true);
+    expect(validateActionGroup(managed).valid).toBe(true);
     const trustedTranslation: JiraLanguageValidationContext = {
       trustedUserAuthorizations: [{
         reference: "user-request-2026-08-03",
@@ -161,10 +179,46 @@ describe("Vietnamese Jira apply contract", () => {
       }],
     };
 
-    expect(validateJson("action-group.schema.json", translated).valid).toBe(false);
-    expect(validateJson("action-group.schema.json", translated, wrongCapability).valid).toBe(false);
-    expect(validateJson("action-group.schema.json", translated, trustedTranslation).valid).toBe(true);
-    expect(validateJson("action-group.schema.json", unsafe).valid).toBe(false);
+    expect(validateActionGroup(translated).valid).toBe(false);
+    expect(validateActionGroup(translated, wrongCapability).valid).toBe(false);
+    expect(validateActionGroup(translated, trustedTranslation).valid).toBe(true);
+    expect(validateActionGroup(unsafe).valid).toBe(false);
+
+    const managedFieldExpansion = structuredClone(managed);
+    Object.assign(asObject(firstAction(managedFieldExpansion).desired_state ?? null, "managed desired state"), {
+      status: "Done",
+      assignee: "unexpected-user",
+    });
+    expect(validateActionGroup(managedFieldExpansion).valid).toBe(false);
+
+    const commentFieldExpansion = actionGroup();
+    Object.assign(asObject(firstAction(commentFieldExpansion).desired_state ?? null, "comment desired state"), {
+      summary: "Tóm tắt không thuộc bình luận",
+      description: "Mô tả không thuộc bình luận",
+    });
+    expect(validateActionGroup(commentFieldExpansion).valid).toBe(false);
+
+    const vietnameseCommentExpansion = actionGroup();
+    const vietnameseCommentAction = firstAction(vietnameseCommentExpansion);
+    asObject(vietnameseCommentAction.before_state ?? null, "Vietnamese comment before state").human_content_language = "vi-VN";
+    const vietnameseCommentDesired = asObject(vietnameseCommentAction.desired_state ?? null, "Vietnamese comment desired state");
+    delete vietnameseCommentDesired.existing_content_mode;
+    vietnameseCommentDesired.assignee = "unexpected-user";
+    expect(validateActionGroup(vietnameseCommentExpansion).valid).toBe(false);
+
+    const unpairedSummary = structuredClone(translated);
+    const unpairedAction = firstAction(unpairedSummary);
+    delete asObject(unpairedAction.before_state ?? null, "translation before state").summary;
+    asObject(unpairedAction.desired_state ?? null, "translation desired state").summary = "Tóm tắt đã dịch";
+    expect(validateActionGroup(unpairedSummary, trustedTranslation).valid).toBe(false);
+
+    const pairedSummary = structuredClone(translated);
+    asObject(firstAction(pairedSummary).desired_state ?? null, "translation desired state").summary = "Tóm tắt đã dịch";
+    expect(validateActionGroup(pairedSummary, trustedTranslation).valid).toBe(true);
+
+    const translatedFieldExpansion = structuredClone(translated);
+    asObject(firstAction(translatedFieldExpansion).desired_state ?? null, "translation desired state").assignee = "unexpected-user";
+    expect(validateActionGroup(translatedFieldExpansion, trustedTranslation).valid).toBe(false);
   });
 
   test("read-back normalizes only CRLF and object key order", () => {

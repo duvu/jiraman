@@ -5,7 +5,13 @@
     "source": "synthetic-english-source-translated",
     "version": "5.0",
     "sanitized": true,
-    "semantic_capability": "refinement.draft"
+    "semantic_capability": "refinement.draft",
+    "source_user_facing_content": {
+      "epic_outcome": "Upgrade safely",
+      "goal_name": "Restore the v4 backup safely",
+      "subtask_title": "Verify the v4 backup restoration"
+    },
+    "preserved_literals": ["./tests/install/run-v4-upgrade.sh", "REQ-1"]
   },
   "expected": {
     "complete": true

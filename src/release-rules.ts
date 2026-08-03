@@ -4,12 +4,12 @@ export const REQUIRED_RELEASE_GATES = ["architecture", "schemas", "skills", "ali
 
 export const REQUIRED_RELEASE_GATE_CHECKS: Readonly<Record<(typeof REQUIRED_RELEASE_GATES)[number], readonly string[]>> = {
   architecture: ["prompt-first", "no-runtime"],
-  schemas: ["config", "state", "action", "run-record", "exact-traceability", "structured-ac", "jira-language"],
+  schemas: ["config", "state", "action", "run-record", "exact-traceability", "structured-ac", "jira-language", "state-action-semantics", "canonical-payload-hash", "system-operation-binding"],
   skills: ["primary-agent", "named-skills", "installed-goal-metadata", "jira-ticket-templates", "jira-language-routes"],
   aliases: ["canonical", "v4-aliases", "exact-write"],
-  migration: ["clean-install", "v4-migration", "mcp-preservation", "utf8-install", "utf8-state"],
+  migration: ["clean-install", "v4-migration", "mcp-preservation", "utf8-install", "utf8-state", "installed-content-byte-integrity"],
   fixtures: ["mcp", "workflow", "sanitized", "ready-evidence", "acceptance-boundaries", "vietnamese-jira-content", "unicode-literals", "literal-categories", "english-source-translation"],
-  security: ["scope", "injection", "approval", "replay", "symlink", "secrets", "hostile-paraphrases", "language-injection", "trusted-language-authorization", "update-field-coverage", "utf8-sanitized-log"],
+  security: ["scope", "injection", "approval", "replay", "symlink", "secrets", "hostile-paraphrases", "language-injection", "trusted-language-authorization", "update-field-coverage", "existing-content-field-confinement", "installed-state-semantics", "utf8-sanitized-log"],
   reproducibility: ["manifest", "tar", "zip"],
   "package-verification": ["tar", "zip", "no-state", "no-backup", "no-runtime", "utf8-content"],
   "manual-smoke": ["read", "degraded", "proposal", "reject", "apply", "failure", "read-after-write", "jira-authority", "managed-ac", "acceptance-read-back", "vietnamese-jira", "language-override", "existing-english", "unicode-read-back", "cleanup"],

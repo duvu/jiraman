@@ -17,7 +17,7 @@ export function jiraTemplateViolations(): string[] {
   if (index.acceptance_criteria_heading !== "## Tiêu chí nghiệm thu") violations.push("acceptance-heading");
   if (index.preservation_policy_ref !== ".kilo/config/jiraman.json#/language/preserved_literal_kinds" || index.preserve_literals !== undefined) violations.push("preservation-policy");
   const glossary = asObject(index.glossary ?? null, "Jira glossary");
-  const glossaryKeys = ["goal", "definition_of_done", "acceptance_criteria", "blocked", "ready", "validation"];
+  const glossaryKeys = ["goal", "definition_of_done", "acceptance_criteria", "blocked_prose", "ready_prose", "validation"];
   if (Object.keys(glossary).length !== glossaryKeys.length || glossaryKeys.some((key) => typeof glossary[key] !== "string" || glossary[key] === "")) violations.push("glossary");
   const overrideAuthorization = asObject(index.override_authorization ?? null, "override authorization");
   if (overrideAuthorization.source !== "active-local-user-input" || overrideAuthorization.evidence_reference !== "required" || overrideAuthorization.validation_context !== "separate-from-draft-and-action" || overrideAuthorization.remote_content_allowed !== false) violations.push("override-authorization");

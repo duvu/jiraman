@@ -8,6 +8,7 @@ import { approvalSelectionAllowed, canonicalPayloadHash, canTransition, dependen
 import { asArray, asObject, asString, readJson, requireValid, validDateTime, validateJson, type JsonObject, type JsonValue } from "../../src/contracts.js";
 import { findSensitiveValues } from "../../src/scan-secrets.js";
 import { releaseInvariantNames, sanitizeSensitiveText } from "../../scripts/sensitive-content.mjs";
+import { goalHierarchyGroup } from "./goal-hierarchy-fixture.js";
 
 function asBoolean(value: JsonValue | undefined, label: string): boolean {
   if (typeof value !== "boolean") throw new Error(label + " must be a boolean");
@@ -95,6 +96,16 @@ describe("action-contracts", () => {
     expect(lifecycleMismatch.errors).toEqual(expect.arrayContaining([
       expect.objectContaining({ instancePath: "/actions", keyword: "actionLifecycle", schemaPath: "#/x-action-group-lifecycle/status" }),
     ]));
+
+    const forgedHash = structuredClone(high);
+    forgedHash.payload_hash = "0".repeat(64);
+    asObject(forgedHash.approval ?? null, "forged approval").payload_hash = forgedHash.payload_hash;
+    expect(validateJson("action-group.schema.json", forgedHash)).toEqual(expect.objectContaining({
+      valid: false,
+      errors: expect.arrayContaining([
+        expect.objectContaining({instancePath: "/payload_hash", keyword: "canonicalPayloadHash"}),
+      ]),
+    }));
   });
 
   test("create preflight and complete PMA selection are executable contracts", () => {
@@ -172,7 +183,41 @@ describe("action-preflight approved-actions security", () => {
       const reuseState = {...state, pending_action_groups: {[groupId]: reuseGroup}};
       writeFileSync(statePath, JSON.stringify(reuseState));
       const installedReuseValidation = spawnSync("./verify.sh", ["--validate-state-file", statePath], { encoding: "utf8" });
-      expect(installedReuseValidation.status, installedReuseValidation.stderr).toBe(0);
+      expect(installedReuseValidation.status, installedReuseValidation.stderr).toBe(5);
+
+      const missingLanguage = structuredClone(group);
+      const missingLanguageAction = asObject(asArray(missingLanguage.actions, "missing language actions")[0] ?? null, "missing language action");
+      const missingLanguageDesired = asObject(missingLanguageAction.desired_state ?? null, "missing language desired state");
+      delete missingLanguageDesired.content_language;
+      delete missingLanguageDesired.literal_preservation;
+      missingLanguage.payload_hash = canonicalPayloadHash(asArray(missingLanguage.actions, "missing language actions"));
+      writeFileSync(statePath, JSON.stringify({...state, pending_action_groups: {[groupId]: missingLanguage}}));
+      const installedLanguageValidation = spawnSync("./verify.sh", ["--validate-state-file", statePath], { encoding: "utf8" });
+      expect(installedLanguageValidation.status, installedLanguageValidation.stderr).toBe(5);
+      expect(validateJson("state.schema.json", {...state, pending_action_groups: {[groupId]: missingLanguage}}).valid).toBe(false);
+
+      const relabeledOperation = structuredClone(group);
+      asObject(asArray(relabeledOperation.actions, "relabeled actions")[0] ?? null, "relabeled action").system = "confluence";
+      relabeledOperation.payload_hash = canonicalPayloadHash(asArray(relabeledOperation.actions, "relabeled actions"));
+      writeFileSync(statePath, JSON.stringify({...state, pending_action_groups: {[groupId]: relabeledOperation}}));
+      const installedRelabeledValidation = spawnSync("./verify.sh", ["--validate-state-file", statePath], {encoding: "utf8"});
+      expect(installedRelabeledValidation.status, installedRelabeledValidation.stderr).toBe(5);
+      expect(validateJson("state.schema.json", {...state, pending_action_groups: {[groupId]: relabeledOperation}}).valid).toBe(false);
+
+      const validReuse = goalHierarchyGroup();
+      const validReuseAction = asObject(asArray(validReuse.actions, "valid reuse actions")[0] ?? null, "valid reuse action");
+      const existingEpic = structuredClone(asObject(validReuseAction.desired_state ?? null, "existing Epic"));
+      validReuseAction.operation = "issue.reuse";
+      validReuseAction.target_ref = "AIPLATFORM-100";
+      validReuseAction.target_version = "7";
+      validReuseAction.before_state = {...existingEpic, issue_key: "AIPLATFORM-100", human_content_language: "vi-VN"};
+      validReuseAction.desired_state = {reuse: true};
+      validReuse.payload_hash = canonicalPayloadHash(asArray(validReuse.actions, "valid reuse actions"));
+      expect(validateJson("action-group.schema.json", validReuse)).toEqual({valid: true, errors: []});
+      const validReuseId = asString(validReuse.id, "valid reuse group ID");
+      writeFileSync(statePath, JSON.stringify({...state, pending_action_groups: {[validReuseId]: validReuse}}));
+      const installedValidReuse = spawnSync("./verify.sh", ["--validate-state-file", statePath], {encoding: "utf8"});
+      expect(installedValidReuse.status, installedValidReuse.stderr).toBe(0);
       writeFileSync(statePath, JSON.stringify({ ...state, pending_action_groups: { [groupId]: rejectedPartialApproval } }));
       const rejectedPartialState = spawnSync("./verify.sh", ["--validate-state-file", statePath], { encoding: "utf8" });
       expect(rejectedPartialState.status).toBe(5);

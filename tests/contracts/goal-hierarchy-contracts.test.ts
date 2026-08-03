@@ -1,5 +1,6 @@
 import { describe, expect, test } from "vitest";
 
+import { canonicalPayloadHash } from "../../src/action-rules.js";
 import { asArray, asObject, asString, parseFrontmatter, readJson, readText, validateJson, type JsonObject } from "../../src/contracts.js";
 import { inspectUntrustedContent } from "../../src/security-rules.js";
 import { candidateCanCommit, sprintReviewAccepted } from "../../src/workflow-rules.js";
@@ -11,6 +12,11 @@ const VIETNAMESE_ACTION_METADATA = {
   content_language: "vi-VN",
   literal_preservation: {policy_ref: ".kilo/config/jiraman.json#/language/preserved_literal_kinds", mode: "exact"},
 };
+
+function rehash(group: JsonObject): JsonObject {
+  group.payload_hash = canonicalPayloadHash(asArray(group.actions, "actions"));
+  return group;
+}
 
 describe("goal hierarchy contracts", () => {
   test("configuration and draft schemas reject incomplete Goal hierarchies", () => {
@@ -211,7 +217,7 @@ describe("goal hierarchy contracts", () => {
 
     // When
     const results = cases.map((item) => ({...item, result: validateJson("action-group.schema.json", item.group)}));
-    const validUpdateResult = validateJson("action-group.schema.json", validUpdate);
+    const validUpdateResult = validateJson("action-group.schema.json", rehash(validUpdate));
 
     // Then
     expect(validUpdateResult.valid).toBe(true);
@@ -252,8 +258,8 @@ describe("goal hierarchy contracts", () => {
     }
 
     // When
-    const epicResult = validateJson("action-group.schema.json", epicWithUpdatedGoals);
-    const goalResult = validateJson("action-group.schema.json", goalWithUpdatedChildren);
+    const epicResult = validateJson("action-group.schema.json", rehash(epicWithUpdatedGoals));
+    const goalResult = validateJson("action-group.schema.json", rehash(goalWithUpdatedChildren));
 
     // Then
     expect(epicResult.valid, JSON.stringify(epicResult.errors)).toBe(true);
@@ -275,7 +281,7 @@ describe("goal hierarchy contracts", () => {
     const mutated: JsonObject = structuredClone(group);
     asObject(asArray(mutated.actions, "mutated actions")[2] ?? null, "mutated reuse").desired_state = {reuse: true, summary: "hidden write"};
 
-    const result = validateJson("action-group.schema.json", group);
+    const result = validateJson("action-group.schema.json", rehash(group));
     const mutationResult = validateJson("action-group.schema.json", mutated);
 
     expect(result.valid, JSON.stringify(result.errors)).toBe(true);

@@ -1,3 +1,4 @@
+import { canonicalPayloadHash } from "../../src/action-rules.js";
 import type { JsonObject } from "../../src/contracts.js";
 
 export function goalHierarchyGroup(): JsonObject {
@@ -29,5 +30,5 @@ export function goalHierarchyGroup(): JsonObject {
     rollback_guidance: "Dừng và báo cáo các Jira key đã tạo",
     status: "proposed",
   }));
-  return {schema_version: 5, id: "PMG-20260803-01", project: "AIPLATFORM", summary: "Tạo hệ phân cấp Mục tiêu", created_at: "2026-08-03T00:00:00Z", expires_at: "2026-08-04T00:00:00Z", status: "proposed", payload_hash: "0".repeat(64), approval: {group_approved_by: null, approved_action_ids: [], approved_at: null, payload_hash: null}, actions};
+  return {schema_version: 5, id: "PMG-20260803-01", project: "AIPLATFORM", summary: "Tạo hệ phân cấp Mục tiêu", created_at: "2026-08-03T00:00:00Z", expires_at: "2026-08-04T00:00:00Z", status: "proposed", payload_hash: canonicalPayloadHash(actions), approval: {group_approved_by: null, approved_action_ids: [], approved_at: null, payload_hash: null}, actions};
 }
