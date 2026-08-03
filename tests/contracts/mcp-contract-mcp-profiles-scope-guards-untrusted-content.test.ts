@@ -42,6 +42,10 @@ describe("scope-guards and untrusted-content", () => {
     expect(finding?.preservedEvidenceIds).toEqual(["REQ-1"]);
     expect(finding?.blockedEffect).toEqual(["scope change", "tool selection", "write approval", "secret disclosure", "goal policy override"]);
     expect(inspectUntrustedContent(asString(injection.source, "source"), asString(injection.baseline_content, "baseline"))).toBeNull();
+  });
+
+  test("blocks paraphrased cardinality hours Goal DoD deadline tool scope and approval overrides", () => {
+    const injection = asObject(asObject(readJson("tests/fixtures/security/untrusted-content.json"), "injection").data ?? null, "data");
     const hostileCases = asArray(injection.hostile_cases, "hostile cases").map((value) => asObject(value, "hostile case"));
     for (const item of hostileCases) {
       const hostile = inspectUntrustedContent(asString(injection.source, "source"), asString(item.content, "hostile content"));

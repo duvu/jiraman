@@ -30,9 +30,10 @@ const SCOPE_OVERRIDE_PATTERNS = [
   /\b(?:update|edit|modify|move)\s+[A-Z][A-Z0-9_]+-[0-9]+\b/i,
   /\bchange\s+(?:the\s+)?(?:project|scope)\b/i,
   /\b(?:work|operate|write|create|move|switch)\s+(?:in|to)\s+(?:project\s+)?[A-Z][A-Z0-9_]{2,}\b/,
+  /\b(?:outside|another|different)\s+(?:the\s+)?(?:configured\s+)?(?:project|scope)\b/i,
 ] as const;
 const TOOL_OVERRIDE_PATTERNS = [
-  /\b(?:switch|use|call|invoke|select)\s+(?:to\s+)?(?:the\s+)?(?:[\w.-]*(?:tool|mcp)|jira_[a-z_]+|confluence_[a-z_]+)\b/i,
+  /\b(?:switch|use|call|invoke|select)\s+(?:to\s+)?(?:(?:the|another|different)\s+)?(?:[\w.-]*(?:tool|mcp|connector)|jira_[a-z_]+|confluence_[a-z_]+)\b/i,
   /\bfake\s+mcp\b/i,
 ] as const;
 const APPROVAL_OVERRIDE_PATTERNS = [
@@ -40,6 +41,7 @@ const APPROVAL_OVERRIDE_PATTERNS = [
   /\bapprove\s+(?:the\s+)?write\b/i,
   /\b(?:consider|treat|mark)\s+(?:this|it)\s+(?:as\s+)?approved\b/i,
   /\b(?:skip|bypass|ignore)\s+(?:the\s+)?approval\b/i,
+  /\bself-?approve\b|\bwrite\s+without\s+(?:an?\s+)?ask\b/i,
 ] as const;
 const SECRET_DISCLOSURE_PATTERNS = [
   /\b(?:reveal|expose|print|show|send)\b.{0,32}\b(?:secret|credential|password|token|api[- ]?key)\b/i,
@@ -47,9 +49,14 @@ const SECRET_DISCLOSURE_PATTERNS = [
 const GOAL_OVERRIDE_PATTERNS = [
   /\b(?:ignore|bypass|override|disregard)\s+(?:the\s+)?(?:goal\s+)?(?:policy|instructions?)\b/i,
   /\b(?:set|lower|reduce|change|override)\b.{0,40}\b(?:minimum|goal count|child count|sub-?tasks?)\b.{0,24}\b(?:0|1|zero|one)\b/i,
+  /\b(?:make|treat)\b.{0,32}\b(?:children|sub-?tasks?)\b.{0,20}\boptional\b/i,
+  /\b(?:keep|use|create)\b.{0,32}\b(?:single|one|fewer)\b.{0,20}\b(?:child|sub-?task)\b/i,
   /\b(?:allow|permit|raise|increase|set)\b.{0,40}\b(?:[5-9]|[1-9][0-9]+|five|six|seven|eight|nine|ten|eleven|twelve)(?:-|\s*)hours?\b.{0,20}\b(?:tasks?|sub-?tasks?)\b/i,
   /\b(?:allow|permit|raise|increase|set)\b.{0,40}\b(?:tasks?|sub-?tasks?)\b.{0,24}\b(?:[5-9]|[1-9][0-9]+|five|six|seven|eight|nine|ten|eleven|twelve)(?:-|\s*)hours?\b/i,
+  /\b(?:allow|permit)\b.{0,32}\bestimates?\b.{0,24}\b(?:over|above|greater than)\s+(?:4|four)\s*hours?\b/i,
   /\b(?:omit|remove|drop|skip)\b.{0,32}\b(?:goal\s+)?(?:name|deadline|target completion date|dod|definition of done)\b/i,
+  /\b(?:make|treat)\b.{0,32}\b(?:goal\s+)?(?:dod|definition of done|deadline)\b.{0,20}\boptional\b/i,
+  /\b(?:invent|guess|assume|fabricate)\b.{0,48}\b(?:due date|deadline|target completion date)\b/i,
   /\b(?:invent|guess|assume|use|set)\b.{0,32}\b(?:tomorrow|next week|soon|asap)\b.{0,24}\b(?:due date|deadline|target completion date)\b/i,
 ] as const;
 
