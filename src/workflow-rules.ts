@@ -17,6 +17,10 @@ function stringList(value: JsonValue | undefined): readonly string[] | null {
   return new Set(items).size === items.length ? items : null;
 }
 
+function stringArrayValid(value: JsonValue | undefined, minimumItems: number): boolean {
+  return Array.isArray(value) && value.length >= minimumItems && value.every((item) => typeof item === "string" && item.length > 0);
+}
+
 function traceabilityMapValid(value: JsonValue | undefined, expectedIds: readonly string[], subtaskRefs: ReadonlySet<string>): boolean {
   const map = objectValue(value);
   if (map === null || Object.keys(map).length !== expectedIds.length || expectedIds.some((id) => map[id] === undefined)) return false;
@@ -54,8 +58,8 @@ function goalChildTraceabilityValid(goal: JsonObject, requirementIds: readonly s
     const dependencies = stringList(subtask?.dependencies);
     if (subtask === null || typeof subtask.ref !== "string" || !/^AIPLATFORM-[0-9]+$/.test(subtask.ref) || subtaskRefs.has(subtask.ref) || requirements === null || criteria === null || dependencies === null ||
       requirements.some((id) => !declaredRequirements.has(id)) || criteria.some((id) => !declaredCriteria.has(id)) || typeof subtask.summary !== "string" || subtask.summary.length === 0 ||
-      typeof subtask.outcome !== "string" || subtask.outcome.length === 0 || !Array.isArray(subtask.in_scope) || subtask.in_scope.length === 0 || !Array.isArray(subtask.out_of_scope) ||
-      !Array.isArray(subtask.steps) || subtask.steps.length === 0 || !Array.isArray(subtask.affected_files) || typeof subtask.validation !== "string" || subtask.validation.length === 0 ||
+      typeof subtask.outcome !== "string" || subtask.outcome.length === 0 || !stringArrayValid(subtask.in_scope, 1) || !stringArrayValid(subtask.out_of_scope, 0) ||
+      !stringArrayValid(subtask.steps, 1) || !stringArrayValid(subtask.affected_files, 0) || typeof subtask.validation !== "string" || subtask.validation.length === 0 ||
       typeof subtask.definition_of_done !== "string" || subtask.definition_of_done.length === 0 ||
       typeof subtask.estimate_hours !== "number" || subtask.estimate_hours <= 0 || subtask.estimate_hours > 4 ||
       subtask.content_language !== "vi-VN" || subtask.acceptance_criteria_storage !== "managed-description-section" || acceptanceCriteriaIds(subtask.acceptance_criteria) === null ||

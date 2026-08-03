@@ -1,7 +1,7 @@
 import { describe, expect, test } from "vitest";
 
 import { acceptanceCriteriaReadBackMatches } from "../../src/action-rules.js";
-import { asArray, asObject, readJson, validateJson, type JsonObject } from "../../src/contracts.js";
+import { asArray, asObject, readJson, validateJson, type JsonObject, type JsonValue } from "../../src/contracts.js";
 import { goalActionSemanticErrors } from "../../src/goal-action-rules.js";
 import { goalReadinessViolations } from "../../src/workflow-rules.js";
 import { goalHierarchyGroup } from "./goal-hierarchy-fixture.js";
@@ -88,6 +88,9 @@ describe("Acceptance Criteria adversarial contract", () => {
       "test [foo]()",
       "review [x]()",
       "test [foo](https://)",
+      "test [foo",
+      "review [x",
+      "test foo]",
       "the test passes",
       "the review is complete",
       "check the results",
@@ -112,7 +115,7 @@ describe("Acceptance Criteria adversarial contract", () => {
       item.verification = verification;
       return validateJson("backlog-draft.schema.json", backlog);
     });
-    const placeholderStatements = ["[STATEMENT]", "[foo]", "Backup [foo]", "Backup [foo.bar]", "Backup [foo/bar]", "Backup []"].map((statement) => {
+    const placeholderStatements = ["[STATEMENT]", "[foo]", "Backup [foo]", "Backup [foo.bar]", "Backup [foo/bar]", "Backup []", "Backup [foo", "Backup foo]"].map((statement) => {
       const backlog = structuredClone(source);
       const story = asObject(asArray(backlog.stories, "placeholder Goal Stories")[0] ?? null, "placeholder Goal Story");
       const item = asObject(asArray(story.acceptance_criteria, "placeholder Acceptance Criteria")[0] ?? null, "placeholder Acceptance Criterion");
@@ -127,6 +130,25 @@ describe("Acceptance Criteria adversarial contract", () => {
     expect(validateJson("backlog-draft.schema.json", concise).valid).toBe(true);
     expect(concreteVerifications.every((result) => result.valid)).toBe(true);
     expect(placeholderStatements.every((result) => result.errors.some((error) => error.keyword === "testableAcceptanceCriterion"))).toBe(true);
+  });
+
+  test("requires canonical Sub-task scope and execution lists to contain strings", () => {
+    // Given
+    const source = asObject(asObject(readJson("tests/fixtures/drafts/subtasks.json"), "Sub-task fixture").data ?? null, "Sub-task draft");
+    const malformed: ReadonlyArray<readonly [string, JsonValue]> = [
+      ["in_scope", [null]],
+      ["out_of_scope", [false]],
+      ["steps", [{}]],
+      ["affected_files", [42]],
+      ["dependencies", [null]],
+    ];
+
+    // When / Then
+    for (const [field, value] of malformed) {
+      const draft = structuredClone(source);
+      asObject(asArray(draft.subtasks, "Sub-tasks")[0] ?? null, "Sub-task")[field] = value;
+      expect(validateJson("subtask-draft.schema.json", draft).valid, field).toBe(false);
+    }
   });
 
   test("requires Ready goals to contain requirements and structured criteria", () => {
@@ -163,10 +185,21 @@ describe("Acceptance Criteria adversarial contract", () => {
     asObject(asArray(unresolvedDependency.subtasks, "unresolved-dependency Sub-tasks")[0] ?? null, "unresolved-dependency Sub-task").dependencies = ["AIPLATFORM-999"];
     const cyclicDependencies = readyGoal();
     asObject(asArray(cyclicDependencies.subtasks, "cyclic-dependency Sub-tasks")[0] ?? null, "cyclic-dependency Sub-task").dependencies = ["AIPLATFORM-102"];
+    const malformedListValues: ReadonlyArray<readonly [string, JsonValue]> = [
+      ["in_scope", [null]],
+      ["out_of_scope", [false]],
+      ["steps", [{}]],
+      ["affected_files", [42]],
+    ];
+    const malformedChildLists = malformedListValues.map(([field, value]) => {
+      const goal = readyGoal();
+      asObject(asArray(goal.subtasks, "malformed-list Sub-tasks")[0] ?? null, "malformed-list Sub-task")[field] = value;
+      return goal;
+    });
 
     // When / Then
     expect(goalReadinessViolations(readyGoal())).not.toContain("incomplete-acceptance-criteria");
-    for (const goal of [uncovered, unresolved, invalidLocalTrace, duplicateDependencies, unresolvedDependency, cyclicDependencies, ...incompleteChildren]) {
+    for (const goal of [uncovered, unresolved, invalidLocalTrace, duplicateDependencies, unresolvedDependency, cyclicDependencies, ...incompleteChildren, ...malformedChildLists]) {
       expect(goalReadinessViolations(goal)).toContain("incomplete-acceptance-criteria");
       expect(goalReadinessViolations(goal)).toContain("incomplete-traceability");
     }

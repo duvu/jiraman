@@ -52,7 +52,9 @@ function hasSpecificContentBeyondMethod(value: string): boolean {
 
 function hasUnresolvedPlaceholder(value: string): boolean {
   if (PLACEHOLDER_MARKER.test(value)) return true;
-  return [...value.matchAll(BRACKETED_SEGMENT)].some((match) => match[1] === undefined || !COMPLETE_LOCATOR.test(match[1]));
+  const segments = [...value.matchAll(BRACKETED_SEGMENT)];
+  if (segments.some((match) => match[1] === undefined || !COMPLETE_LOCATOR.test(match[1]))) return true;
+  return /[\[\]]/u.test(value.replace(BRACKETED_SEGMENT, ""));
 }
 
 function isConcreteStatement(value: string): boolean {
