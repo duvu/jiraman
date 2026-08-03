@@ -8,11 +8,15 @@ const VERIFICATION_METHOD = /(?:^|[^\p{L}\p{N}])(?:assert(?:ion)?|audit|benchmar
 
 const VERIFICATION_FILLER = /(?:^|[^\p{L}\p{N}])(?:a|all|an|and|after|anything|are|be|been|before|behavior|by|complete(?:d)?|details?|everything|features?|functionality|is|it|or|outcome|output|pass(?:ed|es)?|results?|something|stuff|that|the|them|then|thing|this|using|via|was|were|with|bằng|cái này|điều đó|được|hoàn tất|kết quả|là|mọi thứ|nó|qua|sau|sử dụng|tất cả|trước|và|xong)(?=$|[^\p{L}\p{N}])/gu;
 
-const TECHNICAL_VERIFICATION = /(?:^|\s)(?:https?:\/\/[a-z0-9](?:[a-z0-9.-]*[a-z0-9])?(?::[0-9]+)?(?:\/[^\s]*)?|\.{0,2}\/[a-z0-9_.-]+(?:\/[a-z0-9_.-]+)*)(?=$|\s)/u;
+const COMPLETE_LOCATOR = /^(?:https?:\/\/[a-z0-9](?:[a-z0-9.-]*[a-z0-9])?(?::[0-9]+)?(?:\/[^\s]*)?|\.{0,2}\/[a-z0-9_.-]+(?:\/[a-z0-9_.-]+)*)$/u;
 
-const INCOMPLETE_TECHNICAL_LOCATOR = /(?:^|\s)(?:https?:\/\/|\.{0,2}\/)(?=$|\s)/u;
+const TECHNICAL_VERIFICATION = /(?:^|[^\p{L}\p{N}])(?:https?:\/\/[a-z0-9](?:[a-z0-9.-]*[a-z0-9])?(?::[0-9]+)?(?:\/[^\s)\]]*)?|\.{0,2}\/[a-z0-9_.-]+(?:\/[a-z0-9_.-]+)*)(?=$|[^\p{L}\p{N}._/-])/u;
 
-const UNRESOLVED_PLACEHOLDER = /\[[\p{L}\p{N}][\p{L}\p{N} _-]*\](?!\()|\b(?:placeholder|tbc|tbd|todo)\b/u;
+const INCOMPLETE_TECHNICAL_LOCATOR = /(?:https?:\/\/(?=$|[^\p{L}\p{N}])|(?:^|[^\p{L}\p{N}:\/])\.{0,2}\/(?=$|[^\p{L}\p{N}]))/u;
+
+const BRACKETED_SEGMENT = /\[[\p{L}\p{N}][\p{L}\p{N} _-]*\](?:\(([^()\s]+)\))?/gu;
+
+const PLACEHOLDER_MARKER = /\b(?:placeholder|tbc|tbd|todo)\b/u;
 
 const IMPLEMENTATION_PREFIXES = [
   "add ",
@@ -46,12 +50,17 @@ function hasSpecificContentBeyondMethod(value: string): boolean {
   return /[\p{L}\p{N}]/u.test(remainder);
 }
 
+function hasUnresolvedPlaceholder(value: string): boolean {
+  if (PLACEHOLDER_MARKER.test(value)) return true;
+  return [...value.matchAll(BRACKETED_SEGMENT)].some((match) => match[1] === undefined || !COMPLETE_LOCATOR.test(match[1]));
+}
+
 function isConcreteStatement(value: string): boolean {
-  return !UNRESOLVED_PLACEHOLDER.test(value) && !GENERIC_ASSESSMENT_END.test(value) && !IMPLEMENTATION_PREFIXES.some((prefix) => value.startsWith(prefix)) && hasSpecificContentBeyondMethod(value);
+  return !hasUnresolvedPlaceholder(value) && !GENERIC_ASSESSMENT_END.test(value) && !IMPLEMENTATION_PREFIXES.some((prefix) => value.startsWith(prefix)) && hasSpecificContentBeyondMethod(value);
 }
 
 function isConcreteVerification(value: string): boolean {
-  return !UNRESOLVED_PLACEHOLDER.test(value) && !INCOMPLETE_TECHNICAL_LOCATOR.test(value) && !GENERIC_ASSESSMENT_END.test(value) &&
+  return !hasUnresolvedPlaceholder(value) && !INCOMPLETE_TECHNICAL_LOCATOR.test(value) && !GENERIC_ASSESSMENT_END.test(value) &&
     (TECHNICAL_VERIFICATION.test(value) || (value.match(VERIFICATION_METHOD) !== null && hasSpecificContentBeyondMethod(value)));
 }
 

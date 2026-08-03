@@ -15,6 +15,16 @@ function criterion(): JsonObject {
   };
 }
 
+function localCriterion(): JsonObject {
+  return {
+    id: "AC-1",
+    statement: "Bằng chứng restore được lưu trong hồ sơ nghiệm thu",
+    verification: "review restore evidence checklist",
+    validation_ref: "VAL-1",
+    definition_of_done_ref: "DOD-1",
+  };
+}
+
 function readyGoal(): JsonObject {
   return {
     goal_name: "Restore backups",
@@ -25,8 +35,8 @@ function readyGoal(): JsonObject {
     requirements: ["REQ-1"],
     acceptance_criteria: [criterion()],
     subtasks: [
-      {ref: "AIPLATFORM-101", estimate_hours: 2, requirements: ["REQ-1"], parent_acceptance_criteria_refs: ["AC-1"]},
-      {ref: "AIPLATFORM-102", estimate_hours: 3, requirements: ["REQ-1"], parent_acceptance_criteria_refs: ["AC-1"]},
+      {ref: "AIPLATFORM-101", summary: "Run restore drill", outcome: "Restore is verified", validation: "restore test", definition_of_done: "Evidence is attached", dependencies: [], estimate_hours: 2, requirements: ["REQ-1"], parent_acceptance_criteria_refs: ["AC-1"], content_language: "vi-VN", acceptance_criteria_storage: "managed-description-section", acceptance_criteria: [localCriterion()]},
+      {ref: "AIPLATFORM-102", summary: "Review restore evidence", outcome: "Evidence is accepted", validation: "review checklist", definition_of_done: "Review is recorded", dependencies: [], estimate_hours: 3, requirements: ["REQ-1"], parent_acceptance_criteria_refs: ["AC-1"], content_language: "vi-VN", acceptance_criteria_storage: "managed-description-section", acceptance_criteria: [localCriterion()]},
     ],
     traceability_complete: true,
     dependencies: [],
@@ -72,6 +82,12 @@ describe("Acceptance Criteria adversarial contract", () => {
       "/",
       "run https://",
       "run ./",
+      "test:https://",
+      "review(https://)",
+      "https://?",
+      "test [foo]()",
+      "review [x]()",
+      "test [foo](https://)",
       "the test passes",
       "the review is complete",
       "check the results",
@@ -89,6 +105,13 @@ describe("Acceptance Criteria adversarial contract", () => {
     const conciseStory = asObject(asArray(concise.stories, "concise Goal Stories")[0] ?? null, "concise Goal Story");
     const conciseCriterion = asObject(asArray(conciseStory.acceptance_criteria, "concise Acceptance Criteria")[0] ?? null, "concise Acceptance Criterion");
     conciseCriterion.statement = "GET /health 200";
+    const concreteVerifications = ["./verify.sh --source-tree", "https://example.com/evidence", "review [restore evidence](https://example.com/evidence)"].map((verification) => {
+      const backlog = structuredClone(source);
+      const story = asObject(asArray(backlog.stories, "concrete Goal Stories")[0] ?? null, "concrete Goal Story");
+      const item = asObject(asArray(story.acceptance_criteria, "concrete Acceptance Criteria")[0] ?? null, "concrete Acceptance Criterion");
+      item.verification = verification;
+      return validateJson("backlog-draft.schema.json", backlog);
+    });
     const placeholderStatements = ["[STATEMENT]", "[foo]", "Backup [foo]"].map((statement) => {
       const backlog = structuredClone(source);
       const story = asObject(asArray(backlog.stories, "placeholder Goal Stories")[0] ?? null, "placeholder Goal Story");
@@ -102,6 +125,7 @@ describe("Acceptance Criteria adversarial contract", () => {
       expect(item.result.errors.some((error) => error.keyword === "testableAcceptanceCriterion"), item.verification).toBe(true);
     }
     expect(validateJson("backlog-draft.schema.json", concise).valid).toBe(true);
+    expect(concreteVerifications.every((result) => result.valid)).toBe(true);
     expect(placeholderStatements.every((result) => result.errors.some((error) => error.keyword === "testableAcceptanceCriterion"))).toBe(true);
   });
 
@@ -126,10 +150,19 @@ describe("Acceptance Criteria adversarial contract", () => {
     uncovered.acceptance_criteria = [criterion(), {...criterion(), id: "AC-2", statement: "Bằng chứng restore được lưu trong hồ sơ nghiệm thu"}];
     const unresolved = readyGoal();
     delete asObject(asArray(unresolved.subtasks, "unresolved Sub-tasks")[0] ?? null, "unresolved Sub-task").parent_acceptance_criteria_refs;
+    const incompleteChildren = ["summary", "outcome", "validation", "definition_of_done", "dependencies", "acceptance_criteria", "content_language", "acceptance_criteria_storage"].map((field) => {
+      const goal = readyGoal();
+      delete asObject(asArray(goal.subtasks, "incomplete Sub-tasks")[0] ?? null, "incomplete Sub-task")[field];
+      return goal;
+    });
+    const invalidLocalTrace = readyGoal();
+    asObject(asArray(asObject(asArray(invalidLocalTrace.subtasks, "invalid-trace Sub-tasks")[0] ?? null, "invalid-trace Sub-task").acceptance_criteria, "invalid local criteria")[0] ?? null, "invalid local criterion").validation_ref = "VAL-999";
+    const duplicateDependencies = readyGoal();
+    asObject(asArray(duplicateDependencies.subtasks, "duplicate-dependency Sub-tasks")[0] ?? null, "duplicate-dependency Sub-task").dependencies = ["AIPLATFORM-99", "AIPLATFORM-99"];
 
     // When / Then
     expect(goalReadinessViolations(readyGoal())).not.toContain("incomplete-acceptance-criteria");
-    for (const goal of [uncovered, unresolved]) {
+    for (const goal of [uncovered, unresolved, invalidLocalTrace, duplicateDependencies, ...incompleteChildren]) {
       expect(goalReadinessViolations(goal)).toContain("incomplete-acceptance-criteria");
       expect(goalReadinessViolations(goal)).toContain("incomplete-traceability");
     }
@@ -284,7 +317,7 @@ describe("Acceptance Criteria adversarial contract", () => {
       const action = structuredClone(asObject(asArray(group.actions, "comment actions")[0] ?? null, "comment action"));
       action.operation = "issue.comment";
       action.target_ref = "AIPLATFORM-101";
-      action.before_state = {project: "AIPLATFORM", issue_type: "Story", requirements: ["REQ-1"], description: "human-authored text"};
+      action.before_state = {issue_key: "AIPLATFORM-101", project: "AIPLATFORM", issue_type: "Story", requirements: ["REQ-1"], description: "human-authored text"};
       action.desired_state = desiredState;
       group.actions = [action];
       return goalActionSemanticErrors(group);
@@ -297,21 +330,33 @@ describe("Acceptance Criteria adversarial contract", () => {
     const validAction = structuredClone(asObject(asArray(validGroup.actions, "valid comment actions")[0] ?? null, "valid comment action"));
     validAction.operation = "issue.comment";
     validAction.target_ref = "AIPLATFORM-101";
-    validAction.before_state = {project: "AIPLATFORM", issue_type: "Story", requirements: ["REQ-1"], description: "human-authored text"};
+    validAction.before_state = {issue_key: "AIPLATFORM-101", project: "AIPLATFORM", issue_type: "Story", requirements: ["REQ-1"], description: "human-authored text"};
     validAction.desired_state = {purpose: "acceptance-criteria-gap", content_language: "vi-VN", managed_content_only: true, acceptance_criteria: [criterion()]};
-    validGroup.actions = [validAction];
+    const uncoveredComment = {...validGroup, actions: [validAction]};
+    const validChildren = asArray(validGroup.actions, "valid comment children").slice(2, 4).map((value) => structuredClone(asObject(value, "valid comment child")));
+    for (const child of validChildren) asObject(child.desired_state ?? null, "valid comment child state").parent_ref = "AIPLATFORM-101";
+    validGroup.actions = [validAction, ...validChildren];
+    expect(goalActionSemanticErrors(uncoveredComment).some((error) => error.keyword === "goalAcceptanceSubtaskCoverage")).toBe(true);
     expect(goalActionSemanticErrors(validGroup)).toEqual([]);
+
+    const mismatchedSnapshot = structuredClone(validGroup);
+    asObject(asObject(asArray(mismatchedSnapshot.actions, "mismatched comment actions")[0] ?? null, "mismatched comment action").before_state ?? null, "mismatched comment before state").issue_key = "AIPLATFORM-999";
+    expect(goalActionSemanticErrors(mismatchedSnapshot).some((error) => error.keyword === "acceptanceCriteriaComment")).toBe(true);
+
+    const targetAlreadyHasCriteria = structuredClone(validGroup);
+    asObject(asObject(asArray(targetAlreadyHasCriteria.actions, "existing-criteria comment actions")[0] ?? null, "existing-criteria comment action").before_state ?? null, "existing-criteria comment before state").acceptance_criteria = [criterion()];
+    expect(goalActionSemanticErrors(targetAlreadyHasCriteria).some((error) => error.keyword === "acceptanceCriteriaComment")).toBe(true);
 
     const crossProject = structuredClone(validGroup);
     const crossProjectAction = asObject(asArray(crossProject.actions, "cross-project comment actions")[0] ?? null, "cross-project comment action");
     crossProjectAction.target_ref = "OTHER-101";
-    crossProjectAction.before_state = {project: "OTHER", issue_type: "Story", requirements: ["REQ-1"]};
+    crossProjectAction.before_state = {issue_key: "OTHER-101", project: "OTHER", issue_type: "Story", requirements: ["REQ-1"]};
     expect(goalActionSemanticErrors(crossProject).some((error) => error.keyword === "acceptanceCriteriaComment")).toBe(true);
 
     for (const issueType of ["Epic", "Sub-task"] as const) {
       const wrongRole = structuredClone(validGroup);
       const wrongRoleAction = asObject(asArray(wrongRole.actions, "wrong-role actions")[0] ?? null, "wrong-role action");
-      wrongRoleAction.before_state = {project: "AIPLATFORM", issue_type: issueType, description: "human-authored text"};
+      wrongRoleAction.before_state = {issue_key: "AIPLATFORM-101", project: "AIPLATFORM", issue_type: issueType, description: "human-authored text"};
       expect(goalActionSemanticErrors(wrongRole).some((error) => error.keyword === "acceptanceCriteriaComment")).toBe(true);
     }
   });

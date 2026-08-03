@@ -44,8 +44,50 @@
             "epic_parent": "AIPLATFORM-100",
             "readiness": "ready",
             "subtasks": [
-              {"ref": "AIPLATFORM-102", "estimate_hours": 3},
-              {"ref": "AIPLATFORM-103", "estimate_hours": 2}
+              {
+                "ref": "AIPLATFORM-102",
+                "summary": "Run rollback drill",
+                "outcome": "Rollback behavior is verified",
+                "validation": "rollback drill",
+                "definition_of_done": "Drill evidence is attached",
+                "dependencies": [],
+                "estimate_hours": 3,
+                "requirements": ["REQ-1"],
+                "parent_acceptance_criteria_refs": ["AC-1"],
+                "content_language": "vi-VN",
+                "acceptance_criteria_storage": "managed-description-section",
+                "acceptance_criteria": [
+                  {
+                    "id": "AC-1",
+                    "statement": "Bằng chứng rollback drill được lưu trong hồ sơ nghiệm thu",
+                    "verification": "review rollback drill evidence checklist",
+                    "validation_ref": "VAL-1",
+                    "definition_of_done_ref": "DOD-1"
+                  }
+                ]
+              },
+              {
+                "ref": "AIPLATFORM-103",
+                "summary": "Review rollback evidence",
+                "outcome": "Rollback evidence is accepted",
+                "validation": "review rollback evidence checklist",
+                "definition_of_done": "Review is recorded",
+                "dependencies": [],
+                "estimate_hours": 2,
+                "requirements": ["REQ-1"],
+                "parent_acceptance_criteria_refs": ["AC-1"],
+                "content_language": "vi-VN",
+                "acceptance_criteria_storage": "managed-description-section",
+                "acceptance_criteria": [
+                  {
+                    "id": "AC-1",
+                    "statement": "Kết quả review rollback được ghi nhận đầy đủ",
+                    "verification": "review rollback evidence checklist",
+                    "validation_ref": "VAL-1",
+                    "definition_of_done_ref": "DOD-1"
+                  }
+                ]
+              }
             ],
             "traceability": {
               "requirements": {"REQ-1": ["AIPLATFORM-102", "AIPLATFORM-103"]},

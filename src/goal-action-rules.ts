@@ -42,6 +42,7 @@ type HierarchyIssueType = "Epic" | "Story" | "Sub-task";
 interface ValidHierarchyAction {
   readonly index: number;
   readonly isCreate: boolean;
+  readonly validatesParentage: boolean;
   readonly issueType: HierarchyIssueType;
   readonly ref: string;
   readonly parentRef: string | null;
@@ -108,14 +109,19 @@ export function goalActionSemanticErrors(value: JsonValue): ErrorObject[] {
       const comment = objectValue(action.desired_state);
       const before = objectValue(action.before_state);
       const targetType = hierarchyIssueType(before?.issue_type);
+      const targetRef = typeof action.target_ref === "string" ? action.target_ref : null;
       const targetMissingAcceptance = targetType !== null && acceptanceCriteriaIds(before?.acceptance_criteria) === null;
       if (targetMissingAcceptance || comment?.purpose === "acceptance-criteria-gap") {
         const commentState = {...(before ?? {}), acceptance_criteria: comment?.acceptance_criteria ?? null};
         const commentErrors = targetType === null ? acceptanceCriterionSemanticErrors(comment?.acceptance_criteria, "") : hierarchyAcceptanceErrors(targetType, commentState);
-        const targetContractValid = targetType !== null && before?.project === "AIPLATFORM" && typeof action.target_ref === "string" && /^AIPLATFORM-[0-9]+$/.test(action.target_ref) &&
+        const targetContractValid = targetType !== null && before?.project === "AIPLATFORM" && targetRef !== null && before.issue_key === targetRef && /^AIPLATFORM-[0-9]+$/.test(targetRef) &&
           (targetType !== "Story" || stringSet(before.requirements) !== null);
-        if (comment === null || comment.purpose !== "acceptance-criteria-gap" || comment.content_language !== "vi-VN" || comment.managed_content_only !== true || !targetContractValid || acceptanceCriteriaIds(comment.acceptance_criteria) === null || commentErrors.length > 0) {
+        const commentValid = comment !== null && targetMissingAcceptance && comment.purpose === "acceptance-criteria-gap" && comment.content_language === "vi-VN" && comment.managed_content_only === true && targetContractValid && acceptanceCriteriaIds(comment.acceptance_criteria) !== null && commentErrors.length === 0;
+        if (!commentValid) {
           errors.push(semanticError(index, "acceptanceCriteriaComment", "Acceptance Criteria gap comments require complete approved Vietnamese managed content"));
+        } else if (targetType === "Story" && targetRef !== null) {
+          refs.push(targetRef);
+          validActions.push({index, isCreate: false, validatesParentage: false, issueType: "Story", ref: targetRef, parentRef: null, parentState: null, state: commentState});
         }
       }
       continue;
@@ -173,6 +179,7 @@ export function goalActionSemanticErrors(value: JsonValue): ErrorObject[] {
       validActions.push({
         index,
         isCreate,
+        validatesParentage: true,
         issueType,
         ref,
         parentRef: typeof effective.parent_ref === "string" ? effective.parent_ref : null,
@@ -184,7 +191,7 @@ export function goalActionSemanticErrors(value: JsonValue): ErrorObject[] {
   if (new Set(refs).size !== refs.length) errors.push(semanticError(0, "uniqueDraftRefs", "hierarchy draft references must be unique"));
   const invalidParentage = new Set<number>();
   const byRef = new Map(validActions.map((action) => [action.ref, action]));
-  for (const action of validActions.filter((candidate) => candidate.issueType !== "Epic")) {
+  for (const action of validActions.filter((candidate) => candidate.issueType !== "Epic" && candidate.validatesParentage)) {
     const parent = action.parentRef === null ? undefined : byRef.get(action.parentRef);
     const expected = action.issueType === "Story" ? "Epic" : "Story";
     if (parent !== undefined && parent.issueType !== expected) {

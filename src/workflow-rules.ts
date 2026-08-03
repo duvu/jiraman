@@ -1,4 +1,4 @@
-import { acceptanceCriteriaIds, goalAcceptanceCriterionErrors } from "./acceptance-criteria-rules.js";
+import { acceptanceCriteriaIds, goalAcceptanceCriterionErrors, localAcceptanceCriterionErrors } from "./acceptance-criteria-rules.js";
 import { asArray, asObject, asString, invariant, validDate, type JsonObject, type JsonValue } from "./contracts.js";
 
 function objectValue(value: JsonValue | undefined): JsonObject | null {
@@ -32,7 +32,13 @@ function goalChildTraceabilityValid(goal: JsonObject, requirementIds: readonly s
     const requirements = stringIds(subtask?.requirements);
     const criteria = stringIds(subtask?.parent_acceptance_criteria_refs);
     if (subtask === null || typeof subtask.ref !== "string" || !/^AIPLATFORM-[0-9]+$/.test(subtask.ref) || subtaskRefs.has(subtask.ref) || requirements === null || criteria === null ||
-      requirements.some((id) => !declaredRequirements.has(id)) || criteria.some((id) => !declaredCriteria.has(id))) return false;
+      requirements.some((id) => !declaredRequirements.has(id)) || criteria.some((id) => !declaredCriteria.has(id)) || typeof subtask.summary !== "string" || subtask.summary.length === 0 ||
+      typeof subtask.outcome !== "string" || subtask.outcome.length === 0 || typeof subtask.validation !== "string" || subtask.validation.length === 0 ||
+      typeof subtask.definition_of_done !== "string" || subtask.definition_of_done.length === 0 || !Array.isArray(subtask.dependencies) ||
+      subtask.dependencies.some((dependency) => typeof dependency !== "string" || dependency.length === 0) || new Set(subtask.dependencies).size !== subtask.dependencies.length ||
+      typeof subtask.estimate_hours !== "number" || subtask.estimate_hours <= 0 || subtask.estimate_hours > 4 ||
+      subtask.content_language !== "vi-VN" || subtask.acceptance_criteria_storage !== "managed-description-section" || acceptanceCriteriaIds(subtask.acceptance_criteria) === null ||
+      localAcceptanceCriterionErrors(subtask.acceptance_criteria, "").length > 0) return false;
     subtaskRefs.add(subtask.ref);
     for (const id of requirements) coveredRequirements.add(id);
     for (const id of criteria) coveredCriteria.add(id);
@@ -104,7 +110,8 @@ export function candidateCanCommit(candidate: JsonObject): boolean {
       traceabilityMapValid(traceability.requirements, requirements, subtaskRefs) &&
       traceabilityMapValid(traceability.acceptance_criteria, acceptanceCriteria, subtaskRefs) &&
       traceabilityMapValid(traceability.goal_definition_of_done, dodIds, subtaskRefs);
-    return deadlineFits && typeof value.story_ref === "string" && value.story_ref.startsWith("AIPLATFORM-") && typeof value.canonical_spec === "string" && value.canonical_spec.length > 0 && typeof value.epic_parent === "string" && value.epic_parent.startsWith("AIPLATFORM-") && value.traceability_complete === true && traceabilityValid && value.readiness === "ready" && subtasksValid;
+    const childTraceabilityValid = requirements !== null && acceptanceCriteria !== null && goalChildTraceabilityValid(value, requirements, acceptanceCriteria);
+    return deadlineFits && typeof value.story_ref === "string" && value.story_ref.startsWith("AIPLATFORM-") && typeof value.canonical_spec === "string" && value.canonical_spec.length > 0 && typeof value.epic_parent === "string" && value.epic_parent.startsWith("AIPLATFORM-") && value.traceability_complete === true && traceabilityValid && childTraceabilityValid && value.readiness === "ready" && subtasksValid;
   });
 }
 
