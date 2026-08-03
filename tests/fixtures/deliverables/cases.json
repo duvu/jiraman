@@ -25,13 +25,26 @@
             "story_ref": "AIPLATFORM-101",
             "goal_name": "Restore v5 upgrades safely",
             "target_completion_date": "2026-08-07",
+            "target_completion_date_evidence": {
+              "source": "sprint-end",
+              "reference": "AIPLATFORM Sprint 7 ends 2026-08-07",
+              "verified": true
+            },
             "definition_of_done": ["Rollback drill evidence is accepted"],
+            "canonical_spec": "Confluence page-200",
+            "requirements": ["REQ-1"],
+            "acceptance_criteria": ["AC-1"],
             "epic_parent": "AIPLATFORM-100",
             "readiness": "ready",
             "subtasks": [
               {"ref": "AIPLATFORM-102", "estimate_hours": 3},
               {"ref": "AIPLATFORM-103", "estimate_hours": 2}
             ],
+            "traceability": {
+              "requirements": {"REQ-1": ["AIPLATFORM-102", "AIPLATFORM-103"]},
+              "acceptance_criteria": {"AC-1": ["AIPLATFORM-102", "AIPLATFORM-103"]},
+              "goal_definition_of_done": {"DOD-1": ["AIPLATFORM-102", "AIPLATFORM-103"]}
+            },
             "traceability_complete": true,
             "deadline_exception_approved": false
           }

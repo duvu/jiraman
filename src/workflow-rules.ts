@@ -1,4 +1,23 @@
-import { asArray, asObject, asString, invariant, validDate, type JsonObject } from "./contracts.js";
+import { asArray, asObject, asString, invariant, validDate, type JsonObject, type JsonValue } from "./contracts.js";
+
+function objectValue(value: JsonValue | undefined): JsonObject | null {
+  return value !== null && typeof value === "object" && !Array.isArray(value) ? value : null;
+}
+
+function stringIds(value: JsonValue | undefined): readonly string[] | null {
+  if (!Array.isArray(value) || value.length === 0 || value.some((item) => typeof item !== "string" || item.length === 0)) return null;
+  const ids = value.filter((item): item is string => typeof item === "string");
+  return new Set(ids).size === ids.length ? ids : null;
+}
+
+function traceabilityMapValid(value: JsonValue | undefined, expectedIds: readonly string[], subtaskRefs: ReadonlySet<string>): boolean {
+  const map = objectValue(value);
+  if (map === null || Object.keys(map).length !== expectedIds.length || expectedIds.some((id) => map[id] === undefined)) return false;
+  return Object.values(map).every((refs) => {
+    const ids = stringIds(refs);
+    return ids !== null && ids.every((ref) => subtaskRefs.has(ref));
+  });
+}
 
 export function sprintHealth(input: JsonObject): "Green" | "Amber" | "Red" | "Not verified" {
   if (input.active_sprint === null) return "Not verified";
@@ -44,12 +63,26 @@ export function candidateCanCommit(candidate: JsonObject): boolean {
   return candidate.goals.every((value) => {
     if (value === null || typeof value !== "object" || Array.isArray(value)) return false;
     if (typeof value.goal_name !== "string" || value.goal_name.length === 0 || typeof value.target_completion_date !== "string" || !validDate(value.target_completion_date)) return false;
+    const deadlineEvidence = objectValue(value.target_completion_date_evidence);
+    if (deadlineEvidence === null || !["sprint-end", "milestone", "specification", "explicit-user-decision"].includes(String(deadlineEvidence.source)) || typeof deadlineEvidence.reference !== "string" || deadlineEvidence.reference.length === 0 || deadlineEvidence.verified !== true) return false;
     const deadlineFits = value.target_completion_date <= sprintEnd || value.deadline_exception_approved === true;
+    const subtaskRefs = new Set<string>();
     const subtasksValid = Array.isArray(value.subtasks) && value.subtasks.length >= 2 && value.subtasks.every((subtask) => {
       if (subtask === null || typeof subtask !== "object" || Array.isArray(subtask)) return false;
+      if (typeof subtask.ref !== "string" || subtask.ref.length === 0 || subtaskRefs.has(subtask.ref)) return false;
+      subtaskRefs.add(subtask.ref);
       return typeof subtask.estimate_hours === "number" && subtask.estimate_hours > 0 && subtask.estimate_hours <= 4;
     });
-    return deadlineFits && Array.isArray(value.definition_of_done) && value.definition_of_done.length > 0 && typeof value.epic_parent === "string" && value.epic_parent.startsWith("AIPLATFORM-") && value.traceability_complete === true && value.readiness === "ready" && subtasksValid;
+    const requirements = stringIds(value.requirements);
+    const acceptanceCriteria = stringIds(value.acceptance_criteria);
+    const definitionOfDone = stringIds(value.definition_of_done);
+    const traceability = objectValue(value.traceability);
+    const dodIds = definitionOfDone?.map((_, index) => `DOD-${index + 1}`) ?? [];
+    const traceabilityValid = requirements !== null && acceptanceCriteria !== null && definitionOfDone !== null && traceability !== null &&
+      traceabilityMapValid(traceability.requirements, requirements, subtaskRefs) &&
+      traceabilityMapValid(traceability.acceptance_criteria, acceptanceCriteria, subtaskRefs) &&
+      traceabilityMapValid(traceability.goal_definition_of_done, dodIds, subtaskRefs);
+    return deadlineFits && typeof value.story_ref === "string" && value.story_ref.startsWith("AIPLATFORM-") && typeof value.canonical_spec === "string" && value.canonical_spec.length > 0 && typeof value.epic_parent === "string" && value.epic_parent.startsWith("AIPLATFORM-") && value.traceability_complete === true && traceabilityValid && value.readiness === "ready" && subtasksValid;
   });
 }
 
