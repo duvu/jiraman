@@ -234,4 +234,40 @@ describe("goal hierarchy contracts", () => {
       expect(item.result.errors.some((error) => error.keyword === item.keyword), item.name).toBe(true);
     }
   });
+
+  test("valid reused Jira updates satisfy new hierarchy decomposition", () => {
+    // Given
+    const epicWithUpdatedGoals: JsonObject = structuredClone(goalHierarchyGroup());
+    const epicActions = asArray(epicWithUpdatedGoals.actions, "Epic actions").map((value) => asObject(value, "Epic action"));
+    for (const [index, targetRef] of [[1, "AIPLATFORM-201"], [4, "AIPLATFORM-202"]] as const) {
+      const action = epicActions[index];
+      const desired = asObject(action?.desired_state ?? null, "Goal desired state");
+      if (action === undefined) throw new Error("missing Goal action");
+      action.operation = "issue.update";
+      action.target_ref = targetRef;
+      action.target_version = "1";
+      action.before_state = {...Object.fromEntries(Object.entries(desired).filter(([key]) => key !== "draft_ref")), parent_ref: "AIPLATFORM-OLD"};
+      action.desired_state = {parent_ref: "epic-1"};
+    }
+    const goalWithUpdatedChildren: JsonObject = structuredClone(goalHierarchyGroup());
+    const goalActions = asArray(goalWithUpdatedChildren.actions, "Goal actions").map((value) => asObject(value, "Goal action"));
+    for (const [index, targetRef] of [[2, "AIPLATFORM-301"], [3, "AIPLATFORM-302"]] as const) {
+      const action = goalActions[index];
+      const desired = asObject(action?.desired_state ?? null, "Sub-task desired state");
+      if (action === undefined) throw new Error("missing Sub-task action");
+      action.operation = "issue.update";
+      action.target_ref = targetRef;
+      action.target_version = "1";
+      action.before_state = {...Object.fromEntries(Object.entries(desired).filter(([key]) => key !== "draft_ref")), parent_ref: "AIPLATFORM-OLD"};
+      action.desired_state = {parent_ref: "goal-1"};
+    }
+
+    // When
+    const epicResult = validateJson("action-group.schema.json", epicWithUpdatedGoals);
+    const goalResult = validateJson("action-group.schema.json", goalWithUpdatedChildren);
+
+    // Then
+    expect(epicResult.valid, JSON.stringify(epicResult.errors)).toBe(true);
+    expect(goalResult.valid, JSON.stringify(goalResult.errors)).toBe(true);
+  });
 });

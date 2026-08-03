@@ -26,8 +26,9 @@ function isJiraIssueWrite(action: JsonObject): boolean {
 
 type HierarchyIssueType = "Epic" | "Story" | "Sub-task";
 
-interface ValidHierarchyCreate {
+interface ValidHierarchyWrite {
   readonly index: number;
+  readonly isCreate: boolean;
   readonly issueType: HierarchyIssueType;
   readonly ref: string;
   readonly parentRef: string | null;
@@ -66,7 +67,7 @@ export function goalActionSemanticErrors(value: JsonValue): ErrorObject[] {
   const actions = group.actions.map(objectValue);
   const errors: ErrorObject[] = [];
   const refs: string[] = [];
-  const validCreates: ValidHierarchyCreate[] = [];
+  const validWrites: ValidHierarchyWrite[] = [];
   for (const [index, action] of actions.entries()) {
     if (action === null || !isJiraIssueWrite(action)) continue;
     const desired = objectValue(action.desired_state);
@@ -102,18 +103,18 @@ export function goalActionSemanticErrors(value: JsonValue): ErrorObject[] {
       errors.push(semanticError(index, keyword, `${issueType} writes require the complete approved hierarchy contract`));
     }
     if (ref !== null) refs.push(ref);
-    if (isCreate && authorityValid && projectValid && fieldsValid && ref !== null) {
-      validCreates.push({index, issueType, ref, parentRef: typeof effective.parent_ref === "string" ? effective.parent_ref : null});
+    if (authorityValid && projectValid && fieldsValid && ref !== null) {
+      validWrites.push({index, isCreate, issueType, ref, parentRef: typeof effective.parent_ref === "string" ? effective.parent_ref : null});
     }
   }
   if (new Set(refs).size !== refs.length) errors.push(semanticError(0, "uniqueDraftRefs", "hierarchy draft references must be unique"));
-  for (const parent of validCreates) {
+  for (const parent of validWrites.filter((candidate) => candidate.isCreate)) {
     if (parent.issueType === "Epic") {
-      const goalCount = validCreates.filter((candidate) => candidate.issueType === "Story" && candidate.parentRef === parent.ref).length;
+      const goalCount = validWrites.filter((candidate) => candidate.issueType === "Story" && candidate.parentRef === parent.ref).length;
       if (goalCount < 2) errors.push(semanticError(parent.index, "minimumGoals", "an Epic create group requires at least two valid Goal Story writes"));
     }
     if (parent.issueType === "Story") {
-      const subtaskCount = validCreates.filter((candidate) => candidate.issueType === "Sub-task" && candidate.parentRef === parent.ref).length;
+      const subtaskCount = validWrites.filter((candidate) => candidate.issueType === "Sub-task" && candidate.parentRef === parent.ref).length;
       if (subtaskCount < 2) errors.push(semanticError(parent.index, "minimumSubtasks", "a Goal Story create group requires at least two valid Sub-task writes"));
     }
   }
