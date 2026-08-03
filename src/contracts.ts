@@ -114,7 +114,12 @@ export function parseFrontmatter(text: string): ReadonlyMap<string, string> {
   return values;
 }
 
+const schemaValidators = new Map<string, ValidateFunction>();
+
 function schemaValidator(schemaName: string): ValidateFunction {
+  const cached = schemaValidators.get(schemaName);
+  if (cached !== undefined) return cached;
+
   const ajv = new Ajv({
     allErrors: true,
     strict: true,
@@ -130,6 +135,7 @@ function schemaValidator(schemaName: string): ValidateFunction {
   }
   const validator = ajv.getSchema(schemaName);
   invariant(validator !== undefined, `schema not registered: ${schemaName}`);
+  schemaValidators.set(schemaName, validator);
   return validator;
 }
 
