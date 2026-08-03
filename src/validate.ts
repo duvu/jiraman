@@ -63,10 +63,13 @@ function validateSkills(): void {
   const index = asObject(readJson("template/.kilo/skills/index.json"), "skills index");
   const entries = asArray(index.skills, "skills index skills");
   const documents: IndexedGoalDocument[] = [];
+  const indexedNames = new Set<string>();
   invariant(entries.length === files.length, "skill index must cover every installed skill exactly once");
   for (const item of entries) {
     const entry = asObject(item, "skill entry");
-    invariant(names.has(asString(entry.name, "skill entry name")), "skill index has unresolved name");
+    const indexedName = asString(entry.name, "skill entry name");
+    invariant(names.has(indexedName) && !indexedNames.has(indexedName), "skill index has unresolved or duplicate name");
+    indexedNames.add(indexedName);
     const path = asString(entry.path, "skill entry path").replace(/^\.kilo\//, "template/.kilo/");
     invariant(existsSync(path), "skill index has unresolved path");
     documents.push({path, goalContractRequired: entry.goal_contract_required, goalContract: parseFrontmatter(readText(path)).get("goal_contract")});
@@ -135,10 +138,14 @@ function validateConfluenceTemplates(): void {
   const pages = asArray(index.page_types, "page types");
   const documents: IndexedGoalDocument[] = [];
   const templates: IndexedGoalTemplate[] = [];
-  invariant(pages.length === 12, `expected 12 page templates, found ${pages.length}`);
+  const templateFiles = walkFiles("template/docs/project-management/templates/confluence").filter((path) => path.endsWith(".md"));
+  const indexedFiles = new Set<string>();
+  invariant(pages.length === 12 && pages.length === templateFiles.length, `expected ${templateFiles.length} indexed page templates, found ${pages.length}`);
   for (const item of pages) {
     const page = asObject(item, "page type");
     const path = `template/docs/project-management/templates/confluence/${asString(page.file, "template file")}`;
+    invariant(templateFiles.includes(path) && !indexedFiles.has(path), `template index has unresolved or duplicate path: ${path}`);
+    indexedFiles.add(path);
     const text = readText(path);
     documents.push({path, goalContractRequired: page.goal_contract_required, goalContract: parseFrontmatter(text).get("goal_contract")});
     templates.push({path, goalContractRequired: page.goal_contract_required, requiredGoalSections: page.required_goal_sections, text});
