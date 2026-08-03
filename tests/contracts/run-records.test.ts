@@ -19,4 +19,15 @@ test("release checklist requires structural gate and smoke coverage", () => {
   expect(checklistViolations(blank)).toContain("malformed:architecture");
   const missingSmoke = valid.replace("failure,read-after-write", "failure");
   expect(checklistViolations(missingSmoke)).toContain("missing-check:manual-smoke:read-after-write");
+  const hardenedChecks = [
+    ["schemas", "exact-traceability"],
+    ["skills", "installed-goal-metadata"],
+    ["fixtures", "ready-evidence"],
+    ["security", "hostile-paraphrases"],
+    ["manual-smoke", "jira-authority"],
+  ] as const;
+  for (const [gate, check] of hardenedChecks) {
+    const omitted = valid.replace(`,${check}`, "");
+    expect(checklistViolations(omitted)).toContain(`missing-check:${gate}:${check}`);
+  }
 });

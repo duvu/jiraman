@@ -4,15 +4,15 @@ export const REQUIRED_RELEASE_GATES = ["architecture", "schemas", "skills", "ali
 
 export const REQUIRED_RELEASE_GATE_CHECKS: Readonly<Record<(typeof REQUIRED_RELEASE_GATES)[number], readonly string[]>> = {
   architecture: ["prompt-first", "no-runtime"],
-  schemas: ["config", "state", "action", "run-record"],
-  skills: ["primary-agent", "named-skills"],
+  schemas: ["config", "state", "action", "run-record", "exact-traceability"],
+  skills: ["primary-agent", "named-skills", "installed-goal-metadata"],
   aliases: ["canonical", "v4-aliases", "exact-write"],
   migration: ["clean-install", "v4-migration", "mcp-preservation"],
-  fixtures: ["mcp", "workflow", "sanitized"],
-  security: ["scope", "injection", "approval", "replay", "symlink", "secrets"],
+  fixtures: ["mcp", "workflow", "sanitized", "ready-evidence"],
+  security: ["scope", "injection", "approval", "replay", "symlink", "secrets", "hostile-paraphrases"],
   reproducibility: ["manifest", "tar", "zip"],
   "package-verification": ["tar", "zip", "no-state", "no-backup", "no-runtime"],
-  "manual-smoke": ["read", "degraded", "proposal", "reject", "apply", "failure", "read-after-write"],
+  "manual-smoke": ["read", "degraded", "proposal", "reject", "apply", "failure", "read-after-write", "jira-authority"],
   rollback: ["package", "managed-files", "action-state"],
 };
 

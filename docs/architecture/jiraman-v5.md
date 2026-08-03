@@ -33,9 +33,9 @@ Dependencies point inward to the shared policy and configuration. Skills may cal
 
 ## Goal Contract Boundary
 
-Goal is a semantic role of Jira `Story`; no custom issue type or fourth hierarchy level exists. The shared safety policy owns the invariant of at least two Goal Stories per Epic, at least two Sub-tasks per Goal, verified Goal name/date/DoD/specification/traceability, and `(0h, 4h]` Sub-task estimates. Schemas own structural rejection, TypeScript owns cross-document reference/action/readiness invariants, skills own evidence acquisition and classification, and Confluence templates expose the same fields to readers.
+Goal is a semantic role of Jira `Story`; no custom issue type or fourth hierarchy level exists. The shared safety policy owns the invariant of at least two Goal Stories per Epic, at least two Sub-tasks per Goal, verified Goal name/date/DoD/specification, exact traceability, and `(0h, 4h]` Sub-task estimates. Schemas own structural rejection, TypeScript owns cross-document relation, authoritative action-state, readiness, and installed-metadata invariants, skills own evidence acquisition and classification, and Confluence templates expose the same fields to readers. Skill and page indexes explicitly mark Goal-aware documents, and release validation derives their required frontmatter marker from one canonical contract.
 
-Jira remains authoritative for issue type, hierarchy, due date, original estimate, and execution state. Confluence owns narrative specifications and evidence. Executable Goal writes require operation-specific due-date schema support and read-after-write verification; missing support blocks apply without introducing another Atlassian client.
+Jira remains authoritative for issue type, project, hierarchy, due date, original estimate, and execution state. Updates merge fresh authoritative `before_state` with approved changes and reject type/project drift; only valid in-scope Jira creates count toward Goal cardinality. Confluence owns narrative specifications and evidence. Executable Goal writes require operation-specific due-date schema support and read-after-write verification; missing support blocks apply without introducing another Atlassian client.
 
 MCP configuration, credentials, and tool registration are external user-owned state. Jiraman must never create or modify them.
 
