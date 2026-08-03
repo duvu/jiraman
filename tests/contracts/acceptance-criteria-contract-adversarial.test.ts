@@ -34,7 +34,18 @@ describe("Acceptance Criteria adversarial contract", () => {
   test("rejects vague variants instead of only exact blacklist phrases", () => {
     // Given
     const source = asObject(asObject(readJson("tests/fixtures/drafts/backlog.json"), "backlog fixture").data ?? null, "backlog");
-    const values = ["đạt yêu cầu hoàn toàn", "looks good", "acceptable", "tốt", "đúng"];
+    const values = [
+      "đạt yêu cầu hoàn toàn",
+      "looks good",
+      "acceptable",
+      "tốt",
+      "đúng",
+      "all good",
+      "good enough",
+      "looks fine",
+      "pass",
+      "được",
+    ];
 
     // When
     const results = values.map((verification) => {
@@ -133,7 +144,11 @@ describe("Acceptance Criteria adversarial contract", () => {
     ordinaryAction.target_ref = "AIPLATFORM-101";
     ordinaryAction.target_version = 7;
     ordinaryAction.dependencies = [];
-    ordinaryAction.before_state = {...Object.fromEntries(Object.entries(ordinaryBefore).filter(([key]) => key !== "draft_ref")), parent_issue_type: "Epic", parent_project: "AIPLATFORM"};
+    ordinaryAction.before_state = {
+      ...Object.fromEntries(Object.entries(ordinaryBefore).filter(([key]) => key !== "draft_ref")),
+      parent_ref: "AIPLATFORM-100",
+      parent_state: {issue_key: "AIPLATFORM-100", issue_type: "Epic", project: "AIPLATFORM"},
+    };
     ordinaryAction.desired_state = {summary: "Restore backups"};
     ordinaryUpdate.actions = [ordinaryAction];
 
@@ -142,20 +157,37 @@ describe("Acceptance Criteria adversarial contract", () => {
     const subtaskState = asObject(subtaskAction.desired_state ?? null, "Sub-task state");
     subtaskAction.target_ref = "external-task";
     subtaskAction.dependencies = [];
+    subtaskAction.before_state = {
+      parent_state: {
+        issue_key: "AIPLATFORM-101",
+        issue_type: "Story",
+        project: "AIPLATFORM",
+        requirements: ["REQ-1"],
+        acceptance_criteria: [criterion()],
+      },
+    };
     subtaskAction.desired_state = {
       ...Object.fromEntries(Object.entries(subtaskState).filter(([key]) => key !== "draft_ref")),
       parent_ref: "AIPLATFORM-101",
-      parent_issue_type: "Story",
-      parent_project: "AIPLATFORM",
-      parent_requirement_ids: ["REQ-1"],
-      parent_acceptance_criteria_ids: ["AC-1"],
       requirements: ["REQ-999"],
     };
     externalSubtask.actions = [subtaskAction];
 
+    const validExternalSubtask = structuredClone(externalSubtask);
+    const validExternalState = asObject(asObject(asArray(validExternalSubtask.actions, "valid external actions")[0] ?? null, "valid external action").desired_state ?? null, "valid external state");
+    validExternalState.requirements = ["REQ-1"];
+    const forgedAuthority = structuredClone(validExternalSubtask);
+    const forgedState = asObject(asObject(asArray(forgedAuthority.actions, "forged actions")[0] ?? null, "forged action").desired_state ?? null, "forged state");
+    forgedState.requirements = ["REQ-999"];
+    forgedState.parent_acceptance_criteria_refs = ["AC-999"];
+    forgedState.parent_requirement_ids = ["REQ-999"];
+    forgedState.parent_acceptance_criteria_ids = ["AC-999"];
+
     // When / Then
     expect(goalActionSemanticErrors(ordinaryUpdate).some((error) => error.keyword === "goalAcceptanceSubtaskCoverage")).toBe(true);
     expect(goalActionSemanticErrors(externalSubtask).some((error) => error.keyword === "resolvedParentRequirementReference")).toBe(true);
+    expect(goalActionSemanticErrors(validExternalSubtask)).toEqual([]);
+    expect(goalActionSemanticErrors(forgedAuthority).some((error) => error.keyword === "parentAuthorityPlacement")).toBe(true);
   });
 
   test("derives AC-gap comment safeguards from an authoritative missing-AC target", () => {

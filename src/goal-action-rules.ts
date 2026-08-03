@@ -33,10 +33,6 @@ function stringSet(value: JsonValue | undefined): ReadonlySet<string> | null {
   return new Set(values).size === values.length ? new Set(values) : null;
 }
 
-function sameSet(left: ReadonlySet<string>, right: ReadonlySet<string>): boolean {
-  return left.size === right.size && [...left].every((value) => right.has(value));
-}
-
 function isJiraHierarchyAction(action: JsonObject): boolean {
   return action.system === "jira" && (action.operation === "issue.create" || action.operation === "issue.update" || action.operation === "issue.reuse");
 }
@@ -49,8 +45,7 @@ interface ValidHierarchyAction {
   readonly issueType: HierarchyIssueType;
   readonly ref: string;
   readonly parentRef: string | null;
-  readonly parentIssueType: JsonValue | undefined;
-  readonly parentProject: JsonValue | undefined;
+  readonly parentState: JsonObject | null;
   readonly state: JsonObject;
 }
 
@@ -80,7 +75,6 @@ function hierarchyFieldsValid(issueType: HierarchyIssueType, state: JsonObject, 
         typeof state.validation === "string" && state.validation.length > 0 && typeof state.definition_of_done === "string" && state.definition_of_done.length > 0 &&
         typeof state.original_estimate_hours === "number" && state.original_estimate_hours > 0 && state.original_estimate_hours <= 4 &&
         stringSet(state.requirements) !== null && stringSet(state.parent_acceptance_criteria_refs) !== null &&
-        stringSet(state.parent_requirement_ids) !== null && stringSet(state.parent_acceptance_criteria_ids) !== null &&
         state.content_language === "vi-VN" && state.acceptance_criteria_storage === "managed-description-section" &&
         localAcceptanceCriterionErrors(state.acceptance_criteria, "").length === 0 && acceptanceCriteriaIds(state.acceptance_criteria) !== null;
   }
@@ -138,6 +132,10 @@ export function goalActionSemanticErrors(value: JsonValue): ErrorObject[] {
       continue;
     }
     let authorityValid = true;
+    if (["parent_state", "parent_issue_type", "parent_project", "parent_requirement_ids", "parent_acceptance_criteria_ids"].some((field) => desired[field] !== undefined)) {
+      errors.push(semanticError(index, "parentAuthorityPlacement", "fresh parent authority belongs only in before_state.parent_state, never writable desired state"));
+      authorityValid = false;
+    }
     if (isReuse && (desired.reuse !== true || Object.keys(desired).length !== 1)) {
       errors.push(semanticError(index, "reuseMutation", "a reuse action must be an evidence-only reference with no desired Jira mutation"));
       authorityValid = false;
@@ -174,8 +172,7 @@ export function goalActionSemanticErrors(value: JsonValue): ErrorObject[] {
         issueType,
         ref,
         parentRef: typeof effective.parent_ref === "string" ? effective.parent_ref : null,
-        parentIssueType: effective.parent_issue_type,
-        parentProject: effective.parent_project,
+        parentState: objectValue(before?.parent_state),
         state: effective,
       });
     }
@@ -189,15 +186,23 @@ export function goalActionSemanticErrors(value: JsonValue): ErrorObject[] {
     if (parent !== undefined && parent.issueType !== expected) {
       errors.push(semanticError(action.index, "parentType", `${action.issueType} parent must resolve to ${expected}`));
       invalidParentage.add(action.index);
-    } else if (parent === undefined && (action.parentIssueType !== expected || action.parentProject !== "AIPLATFORM")) {
+    } else if (parent === undefined && (action.parentState?.issue_key !== action.parentRef || action.parentState.issue_type !== expected || action.parentState.project !== "AIPLATFORM")) {
       errors.push(semanticError(action.index, "parentAuthority", `${action.issueType} external parent requires authoritative AIPLATFORM ${expected} state`));
       invalidParentage.add(action.index);
     }
     if (action.issueType === "Sub-task") {
-      const parentRequirementIds = stringSet(action.state.parent_requirement_ids);
-      const parentCriterionIds = stringSet(action.state.parent_acceptance_criteria_ids);
+      const parentContract = parent?.state ?? action.parentState;
+      const parentRequirementIds = stringSet(parentContract?.requirements);
+      const parentCriteria = acceptanceCriteriaIds(parentContract?.acceptance_criteria);
+      const parentCriterionIds = parentCriteria === null ? null : new Set(parentCriteria);
       const requirementRefs = stringSet(action.state.requirements);
       const criterionRefs = stringSet(action.state.parent_acceptance_criteria_refs);
+      const parentContractValid = parentContract !== null && parentRequirementIds !== null && parentCriterionIds !== null &&
+        goalAcceptanceCriterionErrors(parentContract.requirements, parentContract.acceptance_criteria, "").length === 0;
+      if (!parentContractValid) {
+        errors.push(semanticError(action.index, "parentContractAuthority", "Sub-task requires a complete freshly read parent Goal contract"));
+        invalidParentage.add(action.index);
+      }
       if (parentRequirementIds === null || requirementRefs === null || [...requirementRefs].some((ref) => !parentRequirementIds.has(ref))) {
         errors.push(semanticError(action.index, "resolvedParentRequirementReference", "Sub-task requirements must resolve to the authoritative parent Goal requirements"));
         invalidParentage.add(action.index);
@@ -205,14 +210,6 @@ export function goalActionSemanticErrors(value: JsonValue): ErrorObject[] {
       if (parentCriterionIds === null || criterionRefs === null || [...criterionRefs].some((ref) => !parentCriterionIds.has(ref))) {
         errors.push(semanticError(action.index, "resolvedParentAcceptanceReference", "Sub-task parent Acceptance Criteria references must resolve to the authoritative parent Goal criteria"));
         invalidParentage.add(action.index);
-      }
-      if (parent?.issueType === "Story" && parentRequirementIds !== null && parentCriterionIds !== null) {
-        const actualRequirementIds = stringSet(parent.state.requirements);
-        const actualCriterionIds = new Set(acceptanceCriteriaIds(parent.state.acceptance_criteria) ?? []);
-        if (actualRequirementIds === null || !sameSet(parentRequirementIds, actualRequirementIds) || !sameSet(parentCriterionIds, actualCriterionIds)) {
-          errors.push(semanticError(action.index, "parentContractAuthority", "Sub-task parent contract IDs must match the resolved Goal Story"));
-          invalidParentage.add(action.index);
-        }
       }
     }
   }

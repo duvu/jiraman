@@ -174,8 +174,8 @@ describe("goal hierarchy contracts", () => {
     const validUpdateAction: JsonObject = structuredClone(updateEnvelope);
     validUpdateAction.before_state = {
       ...Object.fromEntries(Object.entries(story).filter(([key]) => key !== "draft_ref")),
-      parent_issue_type: "Epic",
-      parent_project: "AIPLATFORM",
+      parent_ref: "AIPLATFORM-100",
+      parent_state: {issue_key: "AIPLATFORM-100", issue_type: "Epic", project: "AIPLATFORM"},
     };
     validUpdateAction.desired_state = {
       target_completion_date: "2026-08-08",

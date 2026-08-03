@@ -2,18 +2,11 @@ import type { ErrorObject } from "ajv";
 
 import type { JsonObject, JsonValue } from "./contracts.js";
 
-const VAGUE_TEXT_PATTERNS = [
-  /^(?:đã )?kiểm tra(?: (?:xong|hoàn tất|hoàn toàn|đầy đủ))*$/u,
-  /^đạt yêu cầu(?: (?:hoàn toàn|đầy đủ|cơ bản|chung|mong đợi))*$/u,
-  /^hoạt động đúng(?: (?:hoàn toàn|ổn định|như mong đợi))*$/u,
-  /^ổn định(?: (?:hoàn toàn|đầy đủ))*$/u,
-  /^ok(?: (?:hoàn toàn|đầy đủ))*$/u,
-  /^stable(?: (?:enough|fully))*$/u,
-  /^tested(?: (?:fully|completely))*$/u,
-  /^works?(?: correctly| as expected)?(?: (?:fully|properly))*$/u,
-  /^(?:looks? good|acceptable|fine|satisfactory)$/u,
-  /^(?:tốt|đúng|chấp nhận được)$/u,
-] as const;
+const GENERIC_ASSESSMENT_END = /(?:^|\s)(?:(?:all|everything|it|kết quả|mọi thứ)\s+)?(?:(?:is|are|looks?|seems?|feels?|là|trông|có vẻ|hoạt động|đã)\s+)?(?:good|fine|acceptable|satisfactory|stable|ok(?:ay)?|correct(?:ly)?|pass(?:ed)?|works?|đạt yêu cầu|tốt|đúng|ổn(?: định)?|được|chấp nhận được|kiểm tra)(?:\s+(?:as expected|enough|fully|completely|properly|hoàn toàn|đầy đủ|cơ bản|chung|mong đợi|như mong đợi|xong|hoàn tất))*$/u;
+
+const VERIFICATION_METHOD = /(?:^|[^\p{L}\p{N}])(?:assert(?:ion)?|audit|benchmark|check(?:list)?|compar(?:e|ison)|demo(?:nstration)?|drill|evidence|inspect(?:ion)?|log|measure(?:ment)?|metric|query|report|review|run|scan|test|validat(?:e|ion)|verif(?:y|ication)|walkthrough|bằng chứng|chạy|đo|đối chiếu|duyệt|ghi nhận|kiểm tra|thử|truy vấn|xác minh)(?=$|[^\p{L}\p{N}])/u;
+
+const TECHNICAL_VERIFICATION = /(?:^|\s)(?:\.{0,2}\/|--?[a-z0-9]|https?:\/\/)|[\\/][a-z0-9_.-]+/u;
 
 const IMPLEMENTATION_PREFIXES = [
   "add ",
@@ -40,6 +33,18 @@ function objectValue(value: JsonValue | undefined): JsonObject | null {
 
 function normalizedText(value: string): string {
   return value.toLocaleLowerCase("vi").trim().replace(/\s+/g, " ").replace(/[.!?]+$/g, "");
+}
+
+function wordCount(value: string): number {
+  return value.match(/[\p{L}\p{N}]+/gu)?.length ?? 0;
+}
+
+function isConcreteStatement(value: string): boolean {
+  return wordCount(value) >= 4 && !GENERIC_ASSESSMENT_END.test(value) && !IMPLEMENTATION_PREFIXES.some((prefix) => value.startsWith(prefix));
+}
+
+function isConcreteVerification(value: string): boolean {
+  return !GENERIC_ASSESSMENT_END.test(value) && (VERIFICATION_METHOD.test(value) || TECHNICAL_VERIFICATION.test(value));
 }
 
 function canonicalCriterionValue(value: JsonValue): JsonValue {
@@ -128,7 +133,8 @@ export function acceptanceCriterionSemanticErrors(value: JsonValue | undefined, 
       const text = criterion[field];
       if (typeof text !== "string" || text.trim().length === 0) continue;
       const normalized = normalizedText(text);
-      if (VAGUE_TEXT_PATTERNS.some((pattern) => pattern.test(normalized)) || (field === "statement" && IMPLEMENTATION_PREFIXES.some((prefix) => normalized.startsWith(prefix)))) {
+      const concrete = field === "statement" ? isConcreteStatement(normalized) : isConcreteVerification(normalized);
+      if (!concrete) {
         errors.push(semanticError(`${instancePath}/${index}/${field}`, "testableAcceptanceCriterion", `${field} must describe a concrete observable outcome or verification method`));
       }
     }
