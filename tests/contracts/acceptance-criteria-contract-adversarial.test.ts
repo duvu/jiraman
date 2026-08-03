@@ -24,7 +24,10 @@ function readyGoal(): JsonObject {
     epic_parent: "AIPLATFORM-100",
     requirements: ["REQ-1"],
     acceptance_criteria: [criterion()],
-    subtasks: [{estimate_hours: 2}, {estimate_hours: 3}],
+    subtasks: [
+      {ref: "AIPLATFORM-101", estimate_hours: 2, requirements: ["REQ-1"], parent_acceptance_criteria_refs: ["AC-1"]},
+      {ref: "AIPLATFORM-102", estimate_hours: 3, requirements: ["REQ-1"], parent_acceptance_criteria_refs: ["AC-1"]},
+    ],
     traceability_complete: true,
     dependencies: [],
   };
@@ -58,6 +61,17 @@ describe("Acceptance Criteria adversarial contract", () => {
       "run [COMMAND]",
       "test [TARGET]",
       "check [EVIDENCE]",
+      "run [EXPECTED]",
+      "test [FOO]",
+      "review [ACCEPTANCE]",
+      "test [foo]",
+      "review [x]",
+      "check [ticket]",
+      "https://",
+      "./",
+      "/",
+      "run https://",
+      "run ./",
       "the test passes",
       "the review is complete",
       "check the results",
@@ -69,21 +83,26 @@ describe("Acceptance Criteria adversarial contract", () => {
       const story = asObject(asArray(backlog.stories, "Goal Stories")[0] ?? null, "Goal Story");
       const item = asObject(asArray(story.acceptance_criteria, "Acceptance Criteria")[0] ?? null, "Acceptance Criterion");
       item.verification = verification;
-      return validateJson("backlog-draft.schema.json", backlog);
+      return {verification, result: validateJson("backlog-draft.schema.json", backlog)};
     });
     const concise = structuredClone(source);
     const conciseStory = asObject(asArray(concise.stories, "concise Goal Stories")[0] ?? null, "concise Goal Story");
     const conciseCriterion = asObject(asArray(conciseStory.acceptance_criteria, "concise Acceptance Criteria")[0] ?? null, "concise Acceptance Criterion");
     conciseCriterion.statement = "GET /health 200";
-    const placeholderStatement = structuredClone(source);
-    const placeholderStory = asObject(asArray(placeholderStatement.stories, "placeholder Goal Stories")[0] ?? null, "placeholder Goal Story");
-    const placeholderCriterion = asObject(asArray(placeholderStory.acceptance_criteria, "placeholder Acceptance Criteria")[0] ?? null, "placeholder Acceptance Criterion");
-    placeholderCriterion.statement = "[STATEMENT]";
+    const placeholderStatements = ["[STATEMENT]", "[foo]", "Backup [foo]"].map((statement) => {
+      const backlog = structuredClone(source);
+      const story = asObject(asArray(backlog.stories, "placeholder Goal Stories")[0] ?? null, "placeholder Goal Story");
+      const item = asObject(asArray(story.acceptance_criteria, "placeholder Acceptance Criteria")[0] ?? null, "placeholder Acceptance Criterion");
+      item.statement = statement;
+      return validateJson("backlog-draft.schema.json", backlog);
+    });
 
     // Then
-    expect(results.every((result) => result.errors.some((error) => error.keyword === "testableAcceptanceCriterion"))).toBe(true);
+    for (const item of results) {
+      expect(item.result.errors.some((error) => error.keyword === "testableAcceptanceCriterion"), item.verification).toBe(true);
+    }
     expect(validateJson("backlog-draft.schema.json", concise).valid).toBe(true);
-    expect(validateJson("backlog-draft.schema.json", placeholderStatement).errors.some((error) => error.keyword === "testableAcceptanceCriterion")).toBe(true);
+    expect(placeholderStatements.every((result) => result.errors.some((error) => error.keyword === "testableAcceptanceCriterion"))).toBe(true);
   });
 
   test("requires Ready goals to contain requirements and structured criteria", () => {
@@ -98,6 +117,21 @@ describe("Acceptance Criteria adversarial contract", () => {
     // When / Then
     for (const goal of [missingRequirements, missingCriteria, emptyCriteria]) {
       expect(goalReadinessViolations(goal)).toContain("incomplete-acceptance-criteria");
+    }
+  });
+
+  test("requires Ready goals to prove every Goal criterion through child references", () => {
+    // Given
+    const uncovered = readyGoal();
+    uncovered.acceptance_criteria = [criterion(), {...criterion(), id: "AC-2", statement: "Bằng chứng restore được lưu trong hồ sơ nghiệm thu"}];
+    const unresolved = readyGoal();
+    delete asObject(asArray(unresolved.subtasks, "unresolved Sub-tasks")[0] ?? null, "unresolved Sub-task").parent_acceptance_criteria_refs;
+
+    // When / Then
+    expect(goalReadinessViolations(readyGoal())).not.toContain("incomplete-acceptance-criteria");
+    for (const goal of [uncovered, unresolved]) {
+      expect(goalReadinessViolations(goal)).toContain("incomplete-acceptance-criteria");
+      expect(goalReadinessViolations(goal)).toContain("incomplete-traceability");
     }
   });
 
