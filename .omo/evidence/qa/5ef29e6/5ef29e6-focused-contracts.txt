@@ -1,0 +1,9 @@
+
+ RUN  v4.1.10 /tmp/jiraman-review-5ef2-qa
+
+
+ Test Files  3 passed (3)
+      Tests  8 passed (8)
+   Start at  02:03:02
+   Duration  777ms (transform 266ms, setup 0ms, import 555ms, tests 820ms, environment 0ms)
+

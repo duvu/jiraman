@@ -1,0 +1,1 @@
+mkdir: cannot create directory ‘/tmp/jiraman-umask-af82-0700.Vg0Kyi/.jiraman-stage.MZtYp7/new’: Permission denied

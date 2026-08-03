@@ -1,0 +1,40 @@
+## preflight approved
+usage: preflight_action_group.py GROUP.json CURRENT.json --expect STATUS
+## preflight stale expected blocked
+{
+  "conflicts": [
+    {
+      "action_id": "PMA-20260801-01",
+      "before": 1,
+      "code": "TARGET_STALE",
+      "current": 2,
+      "desired": {
+        "summary": "new"
+      },
+      "message": "Target version changed."
+    },
+    {
+      "action_id": "PMA-20260801-01",
+      "before": {
+        "summary": "old"
+      },
+      "code": "TARGET_FIELDS_CHANGED",
+      "current": {
+        "summary": "changed",
+        "token": "[redacted]",
+        "version": 2
+      },
+      "desired": {
+        "summary": "new"
+      },
+      "message": "Approved before state no longer matches."
+    }
+  ],
+  "resolved_dependencies": [],
+  "status": "blocked"
+}
+## action group validation
+VALID examples/action-group.valid.json
+## envelope/schema contract tests
+.........                                                                [100%]
+9 passed in 0.10s

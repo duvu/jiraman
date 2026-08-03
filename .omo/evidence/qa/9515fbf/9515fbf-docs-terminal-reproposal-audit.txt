@@ -1,0 +1,17 @@
+exact_sha=
+9515fbfb1741b89c50495d66d54a2ccdd3385197
+command-reference line 7:
+The longest exact prefix wins and remaining text is preserved as focus. Unknown modes list supported commands and remain read-only. Exact `propose` stores the displayed PMG/PMA envelope locally; exact `reject <PMG/PMA...>` changes named local state only. Only exact `apply <PMG/PMA...>` records approval and can request MCP writes.
+command-reference line 9:
+For a multi-action high-risk group, `apply` must enumerate every PMA in that group; a single PMA is executable only when the PMG contains one action. Lower-risk groups may be selected by PMG. Partial group approval is never persisted.
+manual-smoke line 11:
+7. Reject: reject a proposed PMA; expect only local state mutation and no MCP write.
+manual-smoke negative boundary lines:
+| Stale target or modified/expired/partial approval | Capability resolution and required preflight reads only | Zero MCP writes for the whole group; mark stale/blocked and require a new proposal. |
+| First write returns an error | Preflight reads, then only the failing approved write | Stop immediately; make zero dependent writes and record `failed` with rollback guidance. |
+| Write succeeds but verification differs | Preflight reads, approved write, same-target verification read | Record `verification-failed`; do not report success or issue follow-on writes. |
+| Replay of rejected, stale, applied, failed, or verification-failed ID | Local named-state check only | Zero MCP reads and writes; terminal actions never transition back to executable. |
+command_reference_explicit_terminal_pma=
+1
+manual_smoke_explicit_terminal_pma=
+1

@@ -1,0 +1,8 @@
+Existing managed files backed up to: /tmp/jiraman-custom-install.YldmEF/.jiraman-backup-20260802-014752.qHHKkc
+Installed Jiraman v5 into: /tmp/jiraman-custom-install.YldmEF
+Primary agent: .kilo/agents/jiraman.md
+Skills: .kilo/skills/
+Configuration: .kilo/config/jiraman.json
+Operational state: .kilo/state/jiraman.json (gitignored)
+MCP configuration was not changed and no target packages were installed.
+Run: /tmp/jiraman-review-af82-qa/verify.sh "/tmp/jiraman-custom-install.YldmEF"

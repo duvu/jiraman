@@ -1,0 +1,6 @@
+{"id":"blank_then_later_continuation","detector_names":["provider-credential"],"scanner_rc":1,"scanner_positive":true,"opaque_marker_leaked":true,"later_continuation_leaked":true,"safe_record_retained":true}
+{"id":"even_backslash_double","detector_names":["provider-credential"],"scanner_rc":1,"scanner_positive":true,"opaque_marker_leaked":true,"later_continuation_leaked":true,"safe_record_retained":true}
+{"id":"even_backslash_single","detector_names":["provider-credential"],"scanner_rc":1,"scanner_positive":true,"opaque_marker_leaked":true,"later_continuation_leaked":true,"safe_record_retained":true}
+{"id":"odd_backslash_double","detector_names":["provider-credential"],"scanner_rc":1,"scanner_positive":true,"opaque_marker_leaked":false,"later_continuation_leaked":false,"safe_record_retained":true}
+{"id":"even_backslash_double_crlf","detector_names":["provider-credential"],"scanner_rc":1,"scanner_positive":true,"opaque_marker_leaked":true,"later_continuation_leaked":true,"safe_record_retained":true}
+{"cases":5,"blank_continuation_leak":true,"even_backslash_leaks":3,"scanner_positive_count":5,"all_scanner_positive":true,"all_redacted_expected":false}

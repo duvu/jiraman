@@ -1,0 +1,13 @@
+/tmp/jiraman-review-96b178d1d009/tests/install/output/race-project/sentinel.before /tmp/jiraman-review-96b178d1d009/tests/install/output/race-outside/jiraman.md differ: byte 1, line 1
+
+--- symlink detail ---
+Refusing unsafe symbolic link in managed path: /tmp/jiraman-review-96b178d1d009/tests/install/output/symlink-project/.jiraman-stage.VzitWR/new/.kilo/agents
+
+--- race detail ---
+Installed Jiraman v5 into: /tmp/jiraman-review-96b178d1d009/tests/install/output/race-project
+Primary agent: .kilo/agents/jiraman.md
+Skills: .kilo/skills/
+Configuration: .kilo/config/jiraman.json
+Operational state: .kilo/state/jiraman.json (gitignored)
+MCP configuration was not changed and no target packages were installed.
+Run: /tmp/jiraman-review-96b178d1d009/verify.sh "/tmp/jiraman-review-96b178d1d009/tests/install/output/race-project"

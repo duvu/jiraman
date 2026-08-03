@@ -1,0 +1,93 @@
+## canonical daily
+{
+  "schema_version": 1,
+  "raw": "daily",
+  "mode": "daily",
+  "skill": "jiraman-daily",
+  "focus": "",
+  "action_ids": [],
+  "recognized": true,
+  "action_mode_authorized": false,
+  "mcp_write_authorized": false,
+  "message": null
+}
+## canonical refine
+{
+  "schema_version": 1,
+  "raw": "refine DLV-20260801-01",
+  "mode": "refine",
+  "skill": "jiraman-refinement",
+  "focus": "DLV-20260801-01",
+  "action_ids": [],
+  "recognized": true,
+  "action_mode_authorized": false,
+  "mcp_write_authorized": false,
+  "message": null
+}
+## canonical apply
+{
+  "schema_version": 1,
+  "raw": "apply PMA-20260801-01",
+  "mode": "apply",
+  "skill": "jiraman-apply-actions",
+  "focus": "PMA-20260801-01",
+  "action_ids": [
+    "PMA-20260801-01"
+  ],
+  "recognized": true,
+  "action_mode_authorized": true,
+  "mcp_write_authorized": true,
+  "message": null
+}
+## alias health
+{
+  "schema_version": 1,
+  "raw": "health focus",
+  "mode": "health",
+  "skill": "jiraman-flow-analysis",
+  "focus": "focus",
+  "action_ids": [],
+  "recognized": true,
+  "action_mode_authorized": false,
+  "mcp_write_authorized": false,
+  "message": null
+}
+## alias next-two-weeks
+{
+  "schema_version": 1,
+  "raw": "next-two-weeks platform reliability",
+  "mode": "plan next-2-weeks",
+  "skill": "jiraman-sprint-planning",
+  "focus": "platform reliability",
+  "action_ids": [],
+  "recognized": true,
+  "action_mode_authorized": false,
+  "mcp_write_authorized": false,
+  "message": null
+}
+## default
+{
+  "schema_version": 1,
+  "raw": "",
+  "mode": "daily",
+  "skill": "jiraman-daily",
+  "focus": "",
+  "action_ids": [],
+  "recognized": true,
+  "action_mode_authorized": false,
+  "mcp_write_authorized": false,
+  "message": null
+}
+## unsupported prose
+{
+  "schema_version": 1,
+  "raw": "please create tickets from this spec",
+  "mode": "daily",
+  "skill": "jiraman-daily",
+  "focus": "please create tickets from this spec",
+  "action_ids": [],
+  "recognized": false,
+  "action_mode_authorized": false,
+  "mcp_write_authorized": false,
+  "message": "No recognized mode; treated as daily focus. Supported: daily, health, flow, runway, plan next-2-weeks, brainstorm, refine, meeting, risks, decision, status, retrospective, propose, apply, reject"
+}

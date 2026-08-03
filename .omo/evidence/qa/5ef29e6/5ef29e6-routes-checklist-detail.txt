@@ -1,0 +1,9 @@
+propose {"mode":"propose","mutatesState":true,"mayWriteMcp":false,"focus":""}
+propose arbitrary prose {"mode":"propose","mutatesState":false,"mayWriteMcp":false,"focus":"arbitrary prose"}
+apply PMA-20260801-01 {"mode":"apply","mutatesState":true,"mayWriteMcp":true,"focus":"PMA-20260801-01"}
+reject PMG-20260801-01 {"mode":"reject","mutatesState":true,"mayWriteMcp":false,"focus":"PMG-20260801-01"}
+plan next-2-weeks {"mode":"plan next-2-weeks","mutatesState":false,"mayWriteMcp":false,"focus":""}
+valid []
+duplicate ["duplicate:security"]
+blank ["malformed:architecture"]
+missing-smoke ["missing-check:manual-smoke:read-after-write"]

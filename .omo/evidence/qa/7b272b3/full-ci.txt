@@ -1,0 +1,153 @@
+169 files already formatted
+All checks passed!
+0 errors, 0 warnings, 0 notes
+fixture safety: PASS (tests/fixtures/mcp)
+============================= test session starts ==============================
+platform linux -- Python 3.13.14, pytest-9.1.1, pluggy-1.6.0
+rootdir: /tmp/jiraman-review-7b272b330d62-v7
+configfile: pyproject.toml
+testpaths: tests
+plugins: cov-7.1.0
+collected 134 items
+
+tests/actions/test_action_schema.py ..                                   [  1%]
+tests/actions/test_apply_workflow.py ..                                  [  2%]
+tests/actions/test_audit.py .                                            [  3%]
+tests/actions/test_concurrency.py ..                                     [  5%]
+tests/actions/test_preflight.py ..                                       [  6%]
+tests/actions/test_verification.py .                                     [  7%]
+tests/analyzers/test_capacity_runway.py ...                              [  9%]
+tests/analyzers/test_dependencies.py ..                                  [ 11%]
+tests/analyzers/test_document_freshness.py ..                            [ 12%]
+tests/analyzers/test_flow_metrics.py ...                                 [ 14%]
+tests/analyzers/test_hierarchy.py .                                      [ 15%]
+tests/analyzers/test_link_audit.py .                                     [ 16%]
+tests/analyzers/test_readiness.py ...                                    [ 18%]
+tests/analyzers/test_traceability.py ..                                  [ 20%]
+tests/collectors/test_confluence_collector.py ..                         [ 21%]
+tests/collectors/test_jira_collector.py ..                               [ 23%]
+tests/commands/test_jiraman_router.py ......                             [ 27%]
+tests/confluence/test_page_resolution.py ..                              [ 29%]
+tests/confluence/test_section_patch.py ...                               [ 31%]
+tests/contracts/test_mcp_contracts.py ....                               [ 34%]
+tests/evals/test_eval_runner.py ...                                      [ 36%]
+tests/executors/test_confluence_executor.py ...                          [ 38%]
+tests/executors/test_jira_executor.py ...                                [ 41%]
+tests/mcp/test_capability_profiles.py ...                                [ 43%]
+tests/mcp/test_capability_resolver.py ....                               [ 46%]
+tests/observability/test_events.py .                                     [ 47%]
+tests/observability/test_redaction.py .                                  [ 47%]
+tests/package/test_package_cli.py .                                      [ 48%]
+tests/planning/test_deliverable_candidates.py .                          [ 49%]
+tests/planning/test_recommendation.py ..                                 [ 50%]
+tests/planning/test_scenarios.py .                                       [ 51%]
+tests/refinement/test_action_group_mapping.py ..                         [ 52%]
+tests/refinement/test_deliverable_handoff.py .                           [ 53%]
+tests/refinement/test_epic_story_drafting.py ..                          [ 55%]
+tests/refinement/test_existing_work_reconciliation.py ...                [ 57%]
+tests/refinement/test_subtask_decomposition.py ..                        [ 58%]
+tests/regression/analyzers/test_invariants.py ...                        [ 61%]
+tests/regression/security/test_release_matrix.py ..                      [ 62%]
+tests/reporting/test_report_renderers.py ...                             [ 64%]
+tests/schemas/test_project_snapshot_schema.py ...                        [ 67%]
+tests/security/test_artifact_scanner.py .                                [ 67%]
+tests/security/test_scope_guards.py ....                                 [ 70%]
+tests/security/test_untrusted_content.py ...                             [ 73%]
+tests/security/test_write_boundary.py ...........                        [ 81%]
+tests/snapshot/test_diff.py ..                                           [ 82%]
+tests/snapshot/test_persistence.py ...                                   [ 85%]
+tests/specs/test_spec_parser.py ...                                      [ 87%]
+tests/templates/test_confluence_templates.py ..                          [ 88%]
+tests/workflows/test_daily_control.py ..                                 [ 90%]
+tests/workflows/test_decisions.py ..                                     [ 91%]
+tests/workflows/test_meeting_actions.py ..                               [ 93%]
+tests/workflows/test_retrospective.py .                                  [ 94%]
+tests/workflows/test_risks.py ..                                         [ 95%]
+tests/workflows/test_runway.py ..                                        [ 97%]
+tests/workflows/test_sprint_health.py ..                                 [ 98%]
+tests/workflows/test_sprint_planning.py .                                [ 99%]
+tests/workflows/test_sprint_review.py .                                  [100%]
+
+============================= 134 passed in 1.54s ==============================
+artifact safety: PASS (.test-output)
+release documentation: PASS
+package verification: PASS (/tmp/tmp.n0xqFZKjfD/jiraman-5.0.0.tar.gz)
+package verification: PASS (/tmp/tmp.n0xqFZKjfD/jiraman-5.0.0.zip)
+Jiraman release gates: PASS
+169 files already formatted
+All checks passed!
+0 errors, 0 warnings, 0 notes
+fixture safety: PASS (tests/fixtures/mcp)
+============================= test session starts ==============================
+platform linux -- Python 3.13.14, pytest-9.1.1, pluggy-1.6.0
+rootdir: /tmp/jiraman-review-7b272b330d62-v7
+configfile: pyproject.toml
+testpaths: tests
+plugins: cov-7.1.0
+collected 134 items
+
+tests/actions/test_action_schema.py ..                                   [  1%]
+tests/actions/test_apply_workflow.py ..                                  [  2%]
+tests/actions/test_audit.py .                                            [  3%]
+tests/actions/test_concurrency.py ..                                     [  5%]
+tests/actions/test_preflight.py ..                                       [  6%]
+tests/actions/test_verification.py .                                     [  7%]
+tests/analyzers/test_capacity_runway.py ...                              [  9%]
+tests/analyzers/test_dependencies.py ..                                  [ 11%]
+tests/analyzers/test_document_freshness.py ..                            [ 12%]
+tests/analyzers/test_flow_metrics.py ...                                 [ 14%]
+tests/analyzers/test_hierarchy.py .                                      [ 15%]
+tests/analyzers/test_link_audit.py .                                     [ 16%]
+tests/analyzers/test_readiness.py ...                                    [ 18%]
+tests/analyzers/test_traceability.py ..                                  [ 20%]
+tests/collectors/test_confluence_collector.py ..                         [ 21%]
+tests/collectors/test_jira_collector.py ..                               [ 23%]
+tests/commands/test_jiraman_router.py ......                             [ 27%]
+tests/confluence/test_page_resolution.py ..                              [ 29%]
+tests/confluence/test_section_patch.py ...                               [ 31%]
+tests/contracts/test_mcp_contracts.py ....                               [ 34%]
+tests/evals/test_eval_runner.py ...                                      [ 36%]
+tests/executors/test_confluence_executor.py ...                          [ 38%]
+tests/executors/test_jira_executor.py ...                                [ 41%]
+tests/mcp/test_capability_profiles.py ...                                [ 43%]
+tests/mcp/test_capability_resolver.py ....                               [ 46%]
+tests/observability/test_events.py .                                     [ 47%]
+tests/observability/test_redaction.py .                                  [ 47%]
+tests/package/test_package_cli.py .                                      [ 48%]
+tests/planning/test_deliverable_candidates.py .                          [ 49%]
+tests/planning/test_recommendation.py ..                                 [ 50%]
+tests/planning/test_scenarios.py .                                       [ 51%]
+tests/refinement/test_action_group_mapping.py ..                         [ 52%]
+tests/refinement/test_deliverable_handoff.py .                           [ 53%]
+tests/refinement/test_epic_story_drafting.py ..                          [ 55%]
+tests/refinement/test_existing_work_reconciliation.py ...                [ 57%]
+tests/refinement/test_subtask_decomposition.py ..                        [ 58%]
+tests/regression/analyzers/test_invariants.py ...                        [ 61%]
+tests/regression/security/test_release_matrix.py ..                      [ 62%]
+tests/reporting/test_report_renderers.py ...                             [ 64%]
+tests/schemas/test_project_snapshot_schema.py ...                        [ 67%]
+tests/security/test_artifact_scanner.py .                                [ 67%]
+tests/security/test_scope_guards.py ....                                 [ 70%]
+tests/security/test_untrusted_content.py ...                             [ 73%]
+tests/security/test_write_boundary.py ...........                        [ 81%]
+tests/snapshot/test_diff.py ..                                           [ 82%]
+tests/snapshot/test_persistence.py ...                                   [ 85%]
+tests/specs/test_spec_parser.py ...                                      [ 87%]
+tests/templates/test_confluence_templates.py ..                          [ 88%]
+tests/workflows/test_daily_control.py ..                                 [ 90%]
+tests/workflows/test_decisions.py ..                                     [ 91%]
+tests/workflows/test_meeting_actions.py ..                               [ 93%]
+tests/workflows/test_retrospective.py .                                  [ 94%]
+tests/workflows/test_risks.py ..                                         [ 95%]
+tests/workflows/test_runway.py ..                                        [ 97%]
+tests/workflows/test_sprint_health.py ..                                 [ 98%]
+tests/workflows/test_sprint_planning.py .                                [ 99%]
+tests/workflows/test_sprint_review.py .                                  [100%]
+
+============================= 134 passed in 1.33s ==============================
+artifact safety: PASS (.test-output)
+release documentation: PASS
+package verification: PASS (/tmp/tmp.RWEnZXG3mz/jiraman-5.0.0.tar.gz)
+package verification: PASS (/tmp/tmp.RWEnZXG3mz/jiraman-5.0.0.zip)
+Jiraman release gates: PASS
+ci_exit=0

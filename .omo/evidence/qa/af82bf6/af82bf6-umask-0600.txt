@@ -1,0 +1,1 @@
+mkdir: cannot create directory ‘/tmp/jiraman-umask-af82-0600.xISdsB/.jiraman-stage.B2FLB8/new/.kilo’: Permission denied

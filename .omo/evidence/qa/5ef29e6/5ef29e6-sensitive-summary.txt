@@ -1,0 +1,1 @@
+families=13 findings_positive=13 scanner_rc=1 scanner_file_hits=18 sanitizer_rc=0 redacted_lines=15 safe_preserved=true

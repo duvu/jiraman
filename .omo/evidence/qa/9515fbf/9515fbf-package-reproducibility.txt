@@ -1,0 +1,11 @@
+TAR hashes:
+0d832839cc4886e9d66c6578eee5b687cdcf1bb2a859c88495e4f955bf5a2b10  /tmp/tmp.cqszzA2LR9/abs1/jiraman-5.0.0.tar.gz
+0d832839cc4886e9d66c6578eee5b687cdcf1bb2a859c88495e4f955bf5a2b10  /tmp/tmp.cqszzA2LR9/abs2/jiraman-5.0.0.tar.gz
+0d832839cc4886e9d66c6578eee5b687cdcf1bb2a859c88495e4f955bf5a2b10  /tmp/tmp.cqszzA2LR9/rel/jiraman-5.0.0.tar.gz
+ZIP hashes:
+49670e44825d35cf638cb30807f06300303fabf1b5e6585cb19e9143548612b1  /tmp/tmp.cqszzA2LR9/abs1/jiraman-5.0.0.zip
+49670e44825d35cf638cb30807f06300303fabf1b5e6585cb19e9143548612b1  /tmp/tmp.cqszzA2LR9/abs2/jiraman-5.0.0.zip
+49670e44825d35cf638cb30807f06300303fabf1b5e6585cb19e9143548612b1  /tmp/tmp.cqszzA2LR9/rel/jiraman-5.0.0.zip
+package verification: PASS (/tmp/tmp.cqszzA2LR9/abs1/jiraman-5.0.0.tar.gz)
+package verification: PASS (/tmp/tmp.cqszzA2LR9/abs1/jiraman-5.0.0.zip)
+cmp=PASS absolute-repeat=PASS relative-output=PASS

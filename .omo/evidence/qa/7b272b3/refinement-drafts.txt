@@ -1,0 +1,321 @@
+## draft stories from specification
+{
+  "epics": [
+    {
+      "blocking_gaps": [],
+      "disposition": "create",
+      "level": "epic",
+      "outcome": "Users with revoked credentials cannot access protected APIs.",
+      "parent_ref": null,
+      "ref": "DRAFT-EPIC-44A21405FA",
+      "title": "Users with revoked credentials cannot access protected APIs.",
+      "value": "Users with revoked credentials cannot access protected APIs."
+    }
+  ],
+  "schema_version": 1,
+  "source": "tests/fixtures/specs/complete.md",
+  "stories": [
+    {
+      "acceptance_criteria_ids": [
+        "AC-1"
+      ],
+      "blocking_gaps": [],
+      "canonical_spec": "tests/fixtures/specs/complete.md",
+      "disposition": "create",
+      "estimate_basis": "Requirement-level Story; team estimate remains a precondition.",
+      "existing_key": null,
+      "in_scope": [
+        "Revoke a token by identifier."
+      ],
+      "level": "story",
+      "out_of_scope": [
+        "Replace the identity provider."
+      ],
+      "outcome": "Store revoked token identifiers until expiry.",
+      "outcome_count": 1,
+      "parent_ref": "DRAFT-EPIC-44A21405FA",
+      "recovery": [
+        "Disable the revocation feature flag."
+      ],
+      "ref": "DRAFT-STORY-48FA7B9282",
+      "requirement_ids": [
+        "REQ-1"
+      ],
+      "rollout": [
+        "Enable for internal clients first."
+      ],
+      "sprint_fit": true,
+      "title": "Store revoked token identifiers until expiry.",
+      "validation": "Use the canonical specification validation plan."
+    },
+    {
+      "acceptance_criteria_ids": [
+        "AC-2"
+      ],
+      "blocking_gaps": [],
+      "canonical_spec": "tests/fixtures/specs/complete.md",
+      "disposition": "create",
+      "estimate_basis": "Requirement-level Story; team estimate remains a precondition.",
+      "existing_key": null,
+      "in_scope": [
+        "Revoke a token by identifier."
+      ],
+      "level": "story",
+      "out_of_scope": [
+        "Replace the identity provider."
+      ],
+      "outcome": "Reject revoked tokens on protected endpoints.",
+      "outcome_count": 1,
+      "parent_ref": "DRAFT-EPIC-44A21405FA",
+      "recovery": [
+        "Disable the revocation feature flag."
+      ],
+      "ref": "DRAFT-STORY-6FAE07FE44",
+      "requirement_ids": [
+        "REQ-2"
+      ],
+      "rollout": [
+        "Enable for internal clients first."
+      ],
+      "sprint_fit": true,
+      "title": "Reject revoked tokens on protected endpoints.",
+      "validation": "Use the canonical specification validation plan."
+    }
+  ],
+  "subtasks": [],
+  "uncovered_ids": []
+}
+## draft subtasks from story draft
+{
+  "epics": [],
+  "schema_version": 1,
+  "source": "tests/fixtures/specs/complete.md",
+  "stories": [
+    {
+      "acceptance_criteria_ids": [
+        "AC-1",
+        "AC-2"
+      ],
+      "level": "story",
+      "outcome": "Protected APIs reject revoked tokens",
+      "outcome_count": 1,
+      "parent_ref": "DRAFT-EPIC-AUTH",
+      "ref": "DRAFT-STORY-TOKEN",
+      "requirement_ids": [
+        "REQ-1",
+        "REQ-2"
+      ],
+      "schema_version": 1,
+      "source": "tests/fixtures/specs/complete.md",
+      "title": "Reject revoked tokens",
+      "work_items": [
+        {
+          "affected_modules": [
+            "jiraman/security"
+          ],
+          "dependencies": [],
+          "estimate_hours": 7,
+          "in_scope": [
+            "storage adapter"
+          ],
+          "kind": "implementation",
+          "out_of_scope": [
+            "identity provider"
+          ],
+          "outcome": "Persist and query revocations",
+          "steps": [
+            "Add adapter",
+            "Wire lookup"
+          ],
+          "title": "revocation storage",
+          "validation": "uv run pytest tests/security"
+        },
+        {
+          "affected_modules": [
+            "tests/security"
+          ],
+          "dependencies": [
+            "revocation storage"
+          ],
+          "estimate_hours": 2,
+          "in_scope": [
+            "contract tests"
+          ],
+          "kind": "test",
+          "out_of_scope": [],
+          "outcome": "Reject revoked token fixtures",
+          "steps": [
+            "Add fixtures",
+            "Assert 401"
+          ],
+          "title": "revocation contract tests",
+          "validation": "uv run pytest tests/security"
+        },
+        {
+          "affected_modules": [],
+          "dependencies": [],
+          "estimate_hours": null,
+          "in_scope": [
+            "benchmark"
+          ],
+          "kind": "investigation",
+          "out_of_scope": [
+            "implementation"
+          ],
+          "outcome": "",
+          "steps": [
+            "Reproduce load",
+            "Benchmark candidates"
+          ],
+          "title": "cache selection",
+          "validation": "test -f artifacts/cache-plan.md"
+        }
+      ]
+    }
+  ],
+  "subtasks": [
+    {
+      "acceptance_criteria_ids": [
+        "AC-1",
+        "AC-2"
+      ],
+      "affected_modules": [
+        "jiraman/security"
+      ],
+      "blocking_gaps": [],
+      "definition_of_done": "Outcome completed; validation passes; evidence attached.",
+      "dependencies": [],
+      "disposition": "create",
+      "estimate_hours": 4.0,
+      "in_scope": [
+        "storage adapter"
+      ],
+      "kind": "implementation",
+      "level": "subtask",
+      "out_of_scope": [
+        "identity provider"
+      ],
+      "outcome": "Persist and query revocations",
+      "outcome_count": 1,
+      "parent_ref": "DRAFT-STORY-TOKEN",
+      "ref": "DRAFT-SUBTASK-2871F1C684",
+      "requirement_ids": [
+        "REQ-1",
+        "REQ-2"
+      ],
+      "steps": [
+        "Add adapter",
+        "Wire lookup"
+      ],
+      "title": "Implement revocation storage part 1",
+      "validation": "uv run pytest tests/security"
+    },
+    {
+      "acceptance_criteria_ids": [
+        "AC-1",
+        "AC-2"
+      ],
+      "affected_modules": [
+        "jiraman/security"
+      ],
+      "blocking_gaps": [],
+      "definition_of_done": "Outcome completed; validation passes; evidence attached.",
+      "dependencies": [],
+      "disposition": "create",
+      "estimate_hours": 3.0,
+      "in_scope": [
+        "storage adapter"
+      ],
+      "kind": "implementation",
+      "level": "subtask",
+      "out_of_scope": [
+        "identity provider"
+      ],
+      "outcome": "Persist and query revocations",
+      "outcome_count": 1,
+      "parent_ref": "DRAFT-STORY-TOKEN",
+      "ref": "DRAFT-SUBTASK-76BE883D0A",
+      "requirement_ids": [
+        "REQ-1",
+        "REQ-2"
+      ],
+      "steps": [
+        "Add adapter",
+        "Wire lookup"
+      ],
+      "title": "Implement revocation storage part 2",
+      "validation": "uv run pytest tests/security"
+    },
+    {
+      "acceptance_criteria_ids": [
+        "AC-1",
+        "AC-2"
+      ],
+      "affected_modules": [
+        "tests/security"
+      ],
+      "blocking_gaps": [],
+      "definition_of_done": "Outcome completed; validation passes; evidence attached.",
+      "dependencies": [
+        "revocation storage"
+      ],
+      "disposition": "create",
+      "estimate_hours": 2.0,
+      "in_scope": [
+        "contract tests"
+      ],
+      "kind": "test",
+      "level": "subtask",
+      "out_of_scope": [],
+      "outcome": "Reject revoked token fixtures",
+      "outcome_count": 1,
+      "parent_ref": "DRAFT-STORY-TOKEN",
+      "ref": "DRAFT-SUBTASK-30D9786D07",
+      "requirement_ids": [
+        "REQ-1",
+        "REQ-2"
+      ],
+      "steps": [
+        "Add fixtures",
+        "Assert 401"
+      ],
+      "title": "Implement revocation contract tests",
+      "validation": "uv run pytest tests/security"
+    },
+    {
+      "acceptance_criteria_ids": [
+        "AC-1",
+        "AC-2"
+      ],
+      "affected_modules": [],
+      "blocking_gaps": [],
+      "definition_of_done": "Outcome completed; validation passes; evidence attached.",
+      "dependencies": [],
+      "disposition": "create",
+      "estimate_hours": 4.0,
+      "in_scope": [
+        "benchmark"
+      ],
+      "kind": "investigation",
+      "level": "subtask",
+      "out_of_scope": [
+        "implementation"
+      ],
+      "outcome": "Produce a bounded evidence set and implementation plan.",
+      "outcome_count": 1,
+      "parent_ref": "DRAFT-STORY-TOKEN",
+      "ref": "DRAFT-SUBTASK-8469EE9DA3",
+      "requirement_ids": [
+        "REQ-1",
+        "REQ-2"
+      ],
+      "steps": [
+        "Reproduce load",
+        "Benchmark candidates"
+      ],
+      "title": "Implement cache selection",
+      "validation": "test -f artifacts/cache-plan.md"
+    }
+  ],
+  "uncovered_ids": []
+}

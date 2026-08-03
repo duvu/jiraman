@@ -1,0 +1,48 @@
+## preflight approved expected passed
+{
+  "conflicts": [],
+  "resolved_dependencies": [
+    [
+      "PMA-20260801-02",
+      "PMA-20260801-01"
+    ],
+    [
+      "PMA-20260801-03",
+      "PMA-20260801-02"
+    ]
+  ],
+  "status": "passed"
+}
+## preflight stale expected blocked
+{
+  "conflicts": [
+    {
+      "action_id": "PMA-20260801-01",
+      "before": 1,
+      "code": "TARGET_STALE",
+      "current": 2,
+      "desired": {
+        "summary": "new"
+      },
+      "message": "Target version changed."
+    },
+    {
+      "action_id": "PMA-20260801-01",
+      "before": {
+        "summary": "old"
+      },
+      "code": "TARGET_FIELDS_CHANGED",
+      "current": {
+        "summary": "changed",
+        "token": "[redacted]",
+        "version": 2
+      },
+      "desired": {
+        "summary": "new"
+      },
+      "message": "Approved before state no longer matches."
+    }
+  ],
+  "resolved_dependencies": [],
+  "status": "blocked"
+}

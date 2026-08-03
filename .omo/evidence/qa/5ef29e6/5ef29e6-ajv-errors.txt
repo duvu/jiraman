@@ -1,0 +1,6 @@
+examples/action-group.invalid.json valid= false
+{"instancePath":"/project","keyword":"const","schemaPath":"#/properties/project/const"}
+{"instancePath":"/actions/0/approval_required","keyword":"const","schemaPath":"#/definitions/action/allOf/0/then/properties/approval_required/const"}
+{"instancePath":"/actions/0","keyword":"if","schemaPath":"#/definitions/action/allOf/0/if"}
+examples/action-group.invalid-date.json valid= false
+{"instancePath":"/created_at","keyword":"format","schemaPath":"#/properties/created_at/format"}

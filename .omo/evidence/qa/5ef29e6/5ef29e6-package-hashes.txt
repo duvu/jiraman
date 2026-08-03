@@ -1,0 +1,4 @@
+321dcbfacdfc3e64933fdc43483614d4c848a29c5d44ee15341bfeea3dc29972  /tmp/tmp.vTFPLLgYS8/a/jiraman-5.0.0.tar.gz
+321dcbfacdfc3e64933fdc43483614d4c848a29c5d44ee15341bfeea3dc29972  /tmp/tmp.vTFPLLgYS8/b/jiraman-5.0.0.tar.gz
+76d525dff4b134a5a8c00fe2ff6d1737adf087f5fb86b2d7a98d7586d1a1e08f  /tmp/tmp.vTFPLLgYS8/a/jiraman-5.0.0.zip
+76d525dff4b134a5a8c00fe2ff6d1737adf087f5fb86b2d7a98d7586d1a1e08f  /tmp/tmp.vTFPLLgYS8/b/jiraman-5.0.0.zip

@@ -1,0 +1,3 @@
+mask=000 rc=0 kilo=700 state=700 state_file=600
+mask=0600 rc=0 kilo=700 state=700 state_file=600
+mask=0700 rc=0 kilo=700 state=700 state_file=600

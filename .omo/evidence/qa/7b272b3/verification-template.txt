@@ -1,0 +1,35 @@
+OK   template/.kilo/agents/jiraman.md
+OK   template/.kilo/commands/jiraman.md
+OK   template/.kilo/config/jiraman.json
+OK   template/.kilo/config/command-router.json
+OK   template/.kilo/state/jiraman.json
+OK   template/.kilo/policies/jiraman-safety.md
+OK   docs/architecture/jiraman-v5.md
+OK   schemas/config.schema.json
+OK   schemas/state.schema.json
+OK   schemas/evaluation-case.schema.json
+OK   schemas/observability-event.schema.json
+OK   evals/cases.json
+OK   scripts/validate_examples.py
+OK   scripts/validate_skills.py
+OK   scripts/migrate_state.py
+OK   scripts/check_fixture_safety.py
+OK   scripts/scan_test_artifacts.py
+OK   scripts/summarize_run.py
+OK   scripts/parse_command.py
+OK   install.sh is executable
+OK   verify.sh is executable
+OK   tests/install/run-clean-install.sh is executable
+OK   tests/install/run-v4-upgrade.sh is executable
+OK   schemas/config.schema.json is valid JSON
+OK   schemas/state.schema.json is valid JSON
+VALID /tmp/jiraman-review-7b272b330d62-v7/template/.kilo/config/jiraman.json
+OK   project configuration matches its schema
+VALID /tmp/jiraman-review-7b272b330d62-v7/template/.kilo/state/jiraman.json
+OK   operational state matches its schema
+OK   invalid schema examples are rejected
+VALID 11 skill contracts
+OK   skill contracts and references
+OK   minimal primary agent safety invariants
+OK   primary agent delegates workflow implementations
+OK   canonical and compatibility command routing

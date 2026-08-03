@@ -1,0 +1,16 @@
+examples/action-group.invalid.json valid=false
+{"instancePath":"/project","keyword":"const","schemaPath":"#/properties/project/const"}
+{"instancePath":"/actions/0/approval_required","keyword":"const","schemaPath":"#/definitions/action/allOf/0/then/properties/approval_required/const"}
+{"instancePath":"/actions/0","keyword":"if","schemaPath":"#/definitions/action/allOf/0/if"}
+examples/action-group.invalid-date.json valid=false
+{"instancePath":"/created_at","keyword":"format","schemaPath":"#/properties/created_at/format"}
+tests/fixtures/actions/high-risk-approved-invalid.json valid=false
+{"instancePath":"/approval/group_approved_by","keyword":"type","schemaPath":"#/allOf/0/then/properties/approval/properties/group_approved_by/type"}
+{"instancePath":"/approval/approved_at","keyword":"type","schemaPath":"#/allOf/0/then/properties/approval/properties/approved_at/type"}
+{"instancePath":"/approval/payload_hash","keyword":"type","schemaPath":"#/allOf/0/then/properties/approval/properties/payload_hash/type"}
+{"instancePath":"","keyword":"if","schemaPath":"#/allOf/0/if"}
+{"instancePath":"/approval/approved_action_ids","keyword":"approvalActionIds","schemaPath":"#/x-action-group-approval/approved-action-ids"}
+tests/fixtures/actions/group-approved-invalid.json valid=false
+{"instancePath":"/approval/approved_action_ids","keyword":"approvalActionIds","schemaPath":"#/x-action-group-approval/approved-action-ids"}
+tests/fixtures/actions/approved-action-status-invalid.json valid=false
+{"instancePath":"/actions","keyword":"actionLifecycle","schemaPath":"#/x-action-group-lifecycle/status"}

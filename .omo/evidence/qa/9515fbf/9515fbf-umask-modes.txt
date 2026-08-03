@@ -1,0 +1,3 @@
+umask=000 kilo=700 state_dir=700 state_file=600
+umask=0600 kilo=700 state_dir=700 state_file=600
+umask=0700 kilo=700 state_dir=700 state_file=600

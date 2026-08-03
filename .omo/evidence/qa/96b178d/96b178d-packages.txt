@@ -1,0 +1,7 @@
+SHA=96b178d1d009ecc61c2cae343554905d215cad6c
+Built /tmp/jiraman-qa96-package-hvRcCV/a/jiraman-5.0.0.tar.gz and /tmp/jiraman-qa96-package-hvRcCV/a/jiraman-5.0.0.zip
+Built /tmp/jiraman-qa96-package-hvRcCV/b/jiraman-5.0.0.tar.gz and /tmp/jiraman-qa96-package-hvRcCV/b/jiraman-5.0.0.zip
+TAR_IDENTICAL=PASS
+ZIP_IDENTICAL=PASS
+package verification: PASS (/tmp/jiraman-qa96-package-hvRcCV/a/jiraman-5.0.0.tar.gz)
+package verification: PASS (/tmp/jiraman-qa96-package-hvRcCV/a/jiraman-5.0.0.zip)

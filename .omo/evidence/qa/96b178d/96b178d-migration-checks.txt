@@ -1,0 +1,12 @@
+SHA=96b178d1d009ecc61c2cae343554905d215cad6c
+COMMAND=./tests/install/run-v4-upgrade.sh
+RESULT=PASS (see 96b178d-migration.txt)
+upgraded-project=present
+spoofed-v5-project=present
+invalid-v5-project=present
+malformed-v5-project=present
+invalid-v5-project=no-backup
+malformed-v5-project=no-backup
+upgraded-project-MCP=PASS
+v4-state-preserved=PASS
+spoofed-v5-rejected-as-v4=PASS

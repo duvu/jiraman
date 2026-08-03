@@ -1,0 +1,6 @@
+SHA=96b178d1d009ecc61c2cae343554905d215cad6c
+valid exit=0
+wrong-map-key exit=5
+wrong-approved-id exit=5
+wrong-approval-hash exit=5
+wrong-payload-hash exit=5

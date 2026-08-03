@@ -1,0 +1,5 @@
+target=/tmp/tmp.wuti8KUhDG
+noforce_exit=1
+backup=/tmp/tmp.wuti8KUhDG/.jiraman-backup-20260802-030748.Xm3XYy
+managed_backup_byte_equal=PASS
+mcp_sentinel_byte_equal=PASS

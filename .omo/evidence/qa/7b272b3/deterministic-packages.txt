@@ -1,0 +1,13 @@
+## package one
+/tmp/tmp.enNENZArzh/jiraman-5.0.0.tar.gz
+/tmp/tmp.enNENZArzh/jiraman-5.0.0.zip
+## package two
+/tmp/tmp.Ah9AXp5DAo/jiraman-5.0.0.tar.gz
+/tmp/tmp.Ah9AXp5DAo/jiraman-5.0.0.zip
+## deterministic compare
+tar: identical
+zip: identical
+## tar verify
+package verification: PASS (/tmp/tmp.enNENZArzh/jiraman-5.0.0.tar.gz)
+## zip verify
+package verification: PASS (/tmp/tmp.enNENZArzh/jiraman-5.0.0.zip)

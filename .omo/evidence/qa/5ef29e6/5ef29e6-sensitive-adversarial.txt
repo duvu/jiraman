@@ -1,0 +1,1 @@
+aws:detected=false,redacted=false,scannerReject=false providerMultiline:detected=true,redacted=false,scannerReject=true providerQuotedMultiline:detected=false,redacted=false,scannerReject=false pem:detected=true,redacted=true,scannerReject=true

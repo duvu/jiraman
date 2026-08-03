@@ -1,0 +1,6 @@
+sanitize_exit=0
+escaped_quote_later_continuation_leaked=true
+unquoted_multi_continuation_leaked=true
+safe_diagnostic_preserved=true
+redaction_lines=5
+targeted_reproduction=FAIL_EXPECTED_SECURITY_LEAK

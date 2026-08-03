@@ -1,0 +1,18 @@
+partial_reject_group_status= rejected
+rejected_action_statuses= PMA-20260801-04:rejected,PMA-20260801-05:proposed
+unnamed_sibling_preserved= true
+reapproval_transition_allowed= false
+new_proposal_guidance=propose a new group for sibling work
+partial_high_risk_selection_allowed= false
+blocked_preflight= {"allowed":false,"violations":["status-rejected"]}
+route "propose" {"mode":"propose","skill":"jiraman-apply-actions","focus":"","mutatesState":true,"mayWriteMcp":false}
+route "reject PMA-20260801-04" {"mode":"reject","skill":"jiraman-apply-actions","focus":"PMA-20260801-04","mutatesState":true,"mayWriteMcp":false}
+route "reject PMA-20260801-04 extra" {"mode":"reject","skill":"jiraman-apply-actions","focus":"PMA-20260801-04 extra","mutatesState":false,"mayWriteMcp":false}
+route "apply PMA-20260801-04 PMA-20260801-05" {"mode":"apply","skill":"jiraman-apply-actions","focus":"PMA-20260801-04 PMA-20260801-05","mutatesState":true,"mayWriteMcp":true}
+route "create tickets" {"mode":null,"skill":null,"focus":"create tickets","mutatesState":false,"mayWriteMcp":false}
+checklist baseline []
+checklist unknown ["unknown:bogus"]
+checklist missing-smoke ["missing-check:manual-smoke:read-after-write"]
+checklist duplicate-check ["duplicate-check:architecture"]
+checklist malformed ["malformed:architecture"]
+proposal_blockers= ["invalid-hierarchy","uncovered-requirements","oversized-subtask","ambiguous-duplicate","unresolved-decision","unready-hypothesis"]

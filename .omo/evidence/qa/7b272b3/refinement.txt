@@ -1,0 +1,373 @@
+## parse complete spec
+{
+  "acceptance_criteria": [
+    {
+      "evidence": {
+        "location": "line:20",
+        "section": "acceptance_criteria",
+        "source": "tests/fixtures/specs/complete.md"
+      },
+      "item_id": "AC-1",
+      "related_ids": [
+        "REQ-1"
+      ],
+      "text": "REQ-1 must retain a revoked identifier until token expiry."
+    },
+    {
+      "evidence": {
+        "location": "line:21",
+        "section": "acceptance_criteria",
+        "source": "tests/fixtures/specs/complete.md"
+      },
+      "item_id": "AC-2",
+      "related_ids": [
+        "REQ-2"
+      ],
+      "text": "Given REQ-2, when a revoked token is used, then the API returns 401."
+    }
+  ],
+  "constraints": [
+    {
+      "evidence": {
+        "location": "line:24",
+        "section": "constraints",
+        "source": "tests/fixtures/specs/complete.md"
+      },
+      "item_id": "CON-1",
+      "related_ids": [],
+      "text": "Do not persist raw credentials."
+    }
+  ],
+  "context": "Long-lived tokens require deterministic revocation.",
+  "dependencies": [
+    {
+      "evidence": {
+        "location": "line:30",
+        "section": "dependencies",
+        "source": "tests/fixtures/specs/complete.md"
+      },
+      "item_id": "DEP-1",
+      "related_ids": [],
+      "text": "Identity service publishes token identifiers."
+    }
+  ],
+  "findings": [],
+  "gaps": [],
+  "in_scope": [
+    {
+      "evidence": {
+        "location": "line:10",
+        "section": "in_scope",
+        "source": "tests/fixtures/specs/complete.md"
+      },
+      "item_id": "SCOPE-1",
+      "related_ids": [],
+      "text": "Revoke a token by identifier."
+    }
+  ],
+  "nonfunctional_requirements": [
+    {
+      "evidence": {
+        "location": "line:27",
+        "section": "nonfunctional_requirements",
+        "source": "tests/fixtures/specs/complete.md"
+      },
+      "item_id": "NFR-1",
+      "related_ids": [],
+      "text": "Revocation lookup must complete within 20ms at p95."
+    }
+  ],
+  "open_decisions": [],
+  "out_of_scope": [
+    {
+      "evidence": {
+        "location": "line:13",
+        "section": "out_of_scope",
+        "source": "tests/fixtures/specs/complete.md"
+      },
+      "item_id": "SCOPE-2",
+      "related_ids": [],
+      "text": "Replace the identity provider."
+    }
+  ],
+  "outcome": "Users with revoked credentials cannot access protected APIs.",
+  "recovery": [
+    {
+      "evidence": {
+        "location": "line:39",
+        "section": "recovery",
+        "source": "tests/fixtures/specs/complete.md"
+      },
+      "item_id": "REC-1",
+      "related_ids": [],
+      "text": "Disable the revocation feature flag."
+    }
+  ],
+  "requirements": [
+    {
+      "evidence": {
+        "location": "line:16",
+        "section": "requirements",
+        "source": "tests/fixtures/specs/complete.md"
+      },
+      "item_id": "REQ-1",
+      "related_ids": [],
+      "text": "Store revoked token identifiers until expiry."
+    },
+    {
+      "evidence": {
+        "location": "line:17",
+        "section": "requirements",
+        "source": "tests/fixtures/specs/complete.md"
+      },
+      "item_id": "REQ-2",
+      "related_ids": [],
+      "text": "Reject revoked tokens on protected endpoints."
+    }
+  ],
+  "rollout": [
+    {
+      "evidence": {
+        "location": "line:36",
+        "section": "rollout",
+        "source": "tests/fixtures/specs/complete.md"
+      },
+      "item_id": "ROL-1",
+      "related_ids": [],
+      "text": "Enable for internal clients first."
+    }
+  ],
+  "schema_version": 1,
+  "source": "tests/fixtures/specs/complete.md",
+  "validation_plan": [
+    {
+      "evidence": {
+        "location": "line:33",
+        "section": "validation_plan",
+        "source": "tests/fixtures/specs/complete.md"
+      },
+      "item_id": "VAL-1",
+      "related_ids": [],
+      "text": "Run uv run pytest tests/security."
+    }
+  ]
+}
+## reconcile existing
+{
+  "matches": [
+    {
+      "classification": "partial_overlap",
+      "confidence": 1.0,
+      "covered_ids": [
+        "AC-1",
+        "REQ-1"
+      ],
+      "disposition": "update",
+      "evidence_date": "2026-08-01T00:00:00Z",
+      "issue_key": "AIPLATFORM-2",
+      "status": "In Progress",
+      "uncovered_ids": [
+        "AC-2",
+        "REQ-2"
+      ]
+    },
+    {
+      "classification": "partial_overlap",
+      "confidence": 1.0,
+      "covered_ids": [
+        "AC-2",
+        "REQ-2"
+      ],
+      "disposition": "update",
+      "evidence_date": "2026-08-01T01:30:00Z",
+      "issue_key": "AIPLATFORM-4",
+      "status": "Ready",
+      "uncovered_ids": [
+        "AC-1",
+        "REQ-1"
+      ]
+    }
+  ],
+  "schema_version": 1,
+  "source": "tests/fixtures/specs/complete.md"
+}
+## draft backlog
+usage: draft_backlog.py [-h] --level {story,subtask} [--output OUTPUT]
+                        inputs [inputs ...]
+draft_backlog.py: error: the following arguments are required: --level
+## propose actions
+{
+  "actions": [
+    {
+      "approval_required": "group",
+      "before_state": {
+        "existing_key": null
+      },
+      "dependencies": [],
+      "desired_state": {
+        "blocking_gaps": [],
+        "disposition": "create",
+        "level": "epic",
+        "outcome": "Revoked tokens fail",
+        "parent_ref": null,
+        "ref": "DRAFT-EPIC-AUTH",
+        "title": "Revoke tokens"
+      },
+      "evidence": [
+        "DRAFT-EPIC-AUTH"
+      ],
+      "expires_at": "2026-08-02T02:00:00Z",
+      "id": "PMA-20260801-01",
+      "operation": "issue.create",
+      "preconditions": [
+        "target remains in expected state",
+        "approval is valid"
+      ],
+      "reason": "Materialize approved epic draft DRAFT-EPIC-AUTH.",
+      "risk": "medium",
+      "rollback_guidance": "Restore captured before_state or unlink the created relationship.",
+      "status": "proposed",
+      "system": "jira",
+      "target_hash": null,
+      "target_ref": "DRAFT-EPIC-AUTH",
+      "target_version": null
+    },
+    {
+      "approval_required": "group",
+      "before_state": {
+        "existing_key": null
+      },
+      "dependencies": [
+        "PMA-20260801-01"
+      ],
+      "desired_state": {
+        "acceptance_criteria_ids": [
+          "AC-1",
+          "AC-2"
+        ],
+        "blocking_gaps": [],
+        "canonical_spec": "tests/fixtures/specs/complete.md",
+        "disposition": "create",
+        "existing_key": null,
+        "level": "story",
+        "outcome": "Protected APIs reject revoked tokens",
+        "parent_ref": "DRAFT-EPIC-AUTH",
+        "ref": "DRAFT-STORY-TOKEN",
+        "requirement_ids": [
+          "REQ-1",
+          "REQ-2"
+        ],
+        "title": "Reject revoked tokens"
+      },
+      "evidence": [
+        "tests/fixtures/specs/complete.md"
+      ],
+      "expires_at": "2026-08-02T02:00:00Z",
+      "id": "PMA-20260801-02",
+      "operation": "issue.create",
+      "preconditions": [
+        "target remains in expected state",
+        "approval is valid"
+      ],
+      "reason": "Materialize approved story draft DRAFT-STORY-TOKEN.",
+      "risk": "medium",
+      "rollback_guidance": "Restore captured before_state or unlink the created relationship.",
+      "status": "proposed",
+      "system": "jira",
+      "target_hash": null,
+      "target_ref": "DRAFT-STORY-TOKEN",
+      "target_version": null
+    },
+    {
+      "approval_required": "group",
+      "before_state": {
+        "existing_key": null
+      },
+      "dependencies": [
+        "PMA-20260801-02"
+      ],
+      "desired_state": {
+        "acceptance_criteria_ids": [
+          "AC-1"
+        ],
+        "blocking_gaps": [],
+        "disposition": "create",
+        "estimate_hours": 4,
+        "level": "subtask",
+        "outcome": "Persist revocations",
+        "parent_ref": "DRAFT-STORY-TOKEN",
+        "ref": "DRAFT-SUBTASK-STORE",
+        "requirement_ids": [
+          "REQ-1"
+        ],
+        "title": "Implement revocation storage",
+        "validation": "uv run pytest tests/security"
+      },
+      "evidence": [
+        "DRAFT-SUBTASK-STORE"
+      ],
+      "expires_at": "2026-08-02T02:00:00Z",
+      "id": "PMA-20260801-03",
+      "operation": "issue.create",
+      "preconditions": [
+        "target remains in expected state",
+        "approval is valid"
+      ],
+      "reason": "Materialize approved subtask draft DRAFT-SUBTASK-STORE.",
+      "risk": "medium",
+      "rollback_guidance": "Restore captured before_state or unlink the created relationship.",
+      "status": "proposed",
+      "system": "jira",
+      "target_hash": null,
+      "target_ref": "DRAFT-SUBTASK-STORE",
+      "target_version": null
+    },
+    {
+      "approval_required": "group",
+      "before_state": {
+        "page": null
+      },
+      "dependencies": [],
+      "desired_state": {
+        "page_type": "specification"
+      },
+      "evidence": [
+        "tests/fixtures/specs/complete.md"
+      ],
+      "expires_at": "2026-08-02T02:00:00Z",
+      "id": "PMA-20260801-04",
+      "operation": "page.create",
+      "preconditions": [
+        "canonical page does not already exist",
+        "approval is valid"
+      ],
+      "reason": "Create the missing canonical specification page.",
+      "risk": "medium",
+      "rollback_guidance": "Archive the created page after confirming no dependent links.",
+      "status": "proposed",
+      "system": "confluence",
+      "target_hash": null,
+      "target_ref": "canonical-spec",
+      "target_version": null
+    }
+  ],
+  "approval": {
+    "approved_action_ids": [],
+    "group_approved_by": null,
+    "payload_hash": "105eaff8e519f300a70605809ba8618fef8935810af197421698c7fcdf1e78ef"
+  },
+  "created_at": "2026-08-01T02:00:00Z",
+  "expires_at": "2026-08-02T02:00:00Z",
+  "id": "PMG-20260801-01",
+  "mode": "all_or_nothing",
+  "payload_hash": "105eaff8e519f300a70605809ba8618fef8935810af197421698c7fcdf1e78ef",
+  "schema_version": 1,
+  "source": "tests/fixtures/specs/complete.md",
+  "status": "proposed",
+  "summary": "Proposed backlog actions: 4 ordered operations; no writes executed."
+}
+## validate proposed actions
+VALID /tmp/tmp.dfqiRlIKhL/actions.json
+## targeted refinement tests
+.............                                                            [100%]
+13 passed in 0.09s

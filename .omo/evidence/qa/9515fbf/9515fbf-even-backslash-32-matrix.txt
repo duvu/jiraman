@@ -1,0 +1,1 @@
+{"targeted_cases":32,"detector_positive":32,"scanner_positive":32,"sanitizer_leaks":32,"leaks_by_key":{"access_token":8,"password":8,"GITHUB_TOKEN":8,"AWS_SECRET_ACCESS_KEY":8},"all_scanner_positive":true,"expected_secure_redaction":false}

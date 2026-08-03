@@ -1,0 +1,1 @@
+package verification: PASS (/tmp/tmp.vTFPLLgYS8/a/jiraman-5.0.0.zip)

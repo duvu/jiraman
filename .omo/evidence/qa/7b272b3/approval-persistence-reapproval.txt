@@ -1,0 +1,12 @@
+============================= test session starts ==============================
+platform linux -- Python 3.13.14, pytest-9.1.1, pluggy-1.6.0 -- /tmp/jiraman-review-7b272b330d62-v7/.venv/bin/python
+cachedir: .pytest_cache
+rootdir: /tmp/jiraman-review-7b272b330d62-v7
+configfile: pyproject.toml
+plugins: cov-7.1.0
+collecting ... collected 2 items
+
+tests/actions/test_apply_workflow.py::test_approved_group_applies_only_after_preflight_and_reapply_is_rejected PASSED [ 50%]
+tests/actions/test_apply_workflow.py::test_approve_and_reject_only_change_ledger_state_without_tool_call PASSED [100%]
+
+============================== 2 passed in 0.11s ===============================

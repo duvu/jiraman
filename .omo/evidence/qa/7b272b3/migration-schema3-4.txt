@@ -1,0 +1,44 @@
+Existing managed files backed up to: /tmp/jiraman-review-7b272b330d62-v7/tests/install/output/upgraded-project/.jiraman-backup-20260801-212924
+Installed Jiraman v5 into: /tmp/jiraman-review-7b272b330d62-v7/tests/install/output/upgraded-project
+Primary agent: .kilo/agents/jiraman.md
+Skills: .kilo/skills/
+Configuration: .kilo/config/jiraman.json
+Deterministic runtime: .kilo/jiraman/ and .kilo/scripts/
+Operational state: .kilo/state/jiraman.json
+MCP configuration was not changed.
+Run: /tmp/jiraman-review-7b272b330d62-v7/verify.sh "/tmp/jiraman-review-7b272b330d62-v7/tests/install/output/upgraded-project"
+OK   .kilo/agents/jiraman.md
+OK   .kilo/commands/jiraman.md
+OK   .kilo/config/jiraman.json
+OK   .kilo/config/command-router.json
+OK   .kilo/state/jiraman.json
+OK   .kilo/policies/jiraman-safety.md
+OK   .kilo/schemas/config.schema.json
+OK   .kilo/schemas/state.schema.json
+OK   .kilo/scripts/parse_command.py
+OK   .kilo/schemas/action-group.schema.json
+OK   .kilo/schemas/project-snapshot.schema.json
+OK   .kilo/jiraman/actions/preflight.py
+OK   .kilo/jiraman/observability.py
+OK   .kilo/scripts/run_workflow.py
+OK   .kilo/scripts/preflight_action_group.py
+OK   docs/project-management/templates/epic-spec.md
+OK   docs/project-management/templates/story-spec.md
+OK   docs/project-management/templates/subtask-spec.md
+OK   docs/project-management/templates/hierarchy-policy.md
+OK   docs/project-management/templates/two-week-deliverable-plan.md
+OK   .kilo/scripts/parse_command.py is executable
+OK   .kilo/state/ is gitignored
+OK   .kilo/logs/ is gitignored
+OK   .jiraman-backup-*/ is gitignored
+OK   .kilo/schemas/config.schema.json is valid JSON
+OK   .kilo/schemas/state.schema.json is valid JSON
+VALID /tmp/jiraman-review-7b272b330d62-v7/tests/install/output/upgraded-project/.kilo/config/jiraman.json
+OK   project configuration matches its schema
+VALID /tmp/jiraman-review-7b272b330d62-v7/tests/install/output/upgraded-project/.kilo/state/jiraman.json
+OK   operational state matches its schema
+VALID 11 skill contracts
+OK   skill contracts and references
+OK   minimal primary agent safety invariants
+OK   primary agent delegates workflow implementations
+OK   canonical and compatibility command routing

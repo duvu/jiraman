@@ -1,0 +1,71 @@
+
+> jiraman@5.0.0 typecheck
+> tsc -p tsconfig.json --noEmit
+
+
+> jiraman@5.0.0 test
+> vitest run
+
+
+ RUN  v4.1.10 /tmp/jiraman-review-af82-qa
+
+
+ Test Files  9 passed (9)
+      Tests  18 passed (18)
+   Start at  01:46:24
+   Duration  1.91s (transform 579ms, setup 0ms, import 1.95s, tests 2.47s, environment 2ms)
+
+
+> jiraman@5.0.0 validate
+> npm run build --silent && node dist/src/validate.js all
+
+VALID all
+
+> jiraman@5.0.0 scan:secrets
+> npm run build --silent && node dist/src/scan-secrets.js
+
+secret scan: PASS
+OK   .kilo/agents/jiraman.md
+OK   .kilo/commands/jiraman.md
+OK   .kilo/config/command-router.json
+OK   .kilo/config/jiraman.json
+OK   .kilo/config/mcp-atlassian.json
+OK   .kilo/policies/jiraman-safety.md
+OK   .kilo/skills/index.json
+OK   .kilo/skills/jiraman-apply-actions/SKILL.md
+OK   .kilo/skills/jiraman-confluence-publish/SKILL.md
+OK   .kilo/skills/jiraman-confluence-reporting/SKILL.md
+OK   .kilo/skills/jiraman-daily/SKILL.md
+OK   .kilo/skills/jiraman-decision-management/SKILL.md
+OK   .kilo/skills/jiraman-meeting-actions/SKILL.md
+OK   .kilo/skills/jiraman-next-two-weeks/SKILL.md
+OK   .kilo/skills/jiraman-refinement/SKILL.md
+OK   .kilo/skills/jiraman-risk-management/SKILL.md
+OK   .kilo/skills/jiraman-sprint-cadence/SKILL.md
+OK   .kilo/skills/jiraman-sprint-health/SKILL.md
+OK   .kilo/state/jiraman.json
+OK   docs/project-management/templates/confluence/architecture-decision.md
+OK   docs/project-management/templates/confluence/epic-brief.md
+OK   docs/project-management/templates/confluence/goals-roadmap.md
+OK   docs/project-management/templates/confluence/index.json
+OK   docs/project-management/templates/confluence/meeting-notes.md
+OK   docs/project-management/templates/confluence/next-two-week-plan.md
+OK   docs/project-management/templates/confluence/project-home.md
+OK   docs/project-management/templates/confluence/retrospective.md
+OK   docs/project-management/templates/confluence/risk.md
+OK   docs/project-management/templates/confluence/sprint-planning.md
+OK   docs/project-management/templates/confluence/sprint-review.md
+OK   docs/project-management/templates/confluence/story-specification.md
+OK   docs/project-management/templates/confluence/weekly-status.md
+OK   canonical agent routing
+OK   primary safety metadata
+OK   JSON contracts
+OK   state schema contract
+OK   skill references
+Jiraman verification: PASS
+clean install: PASS
+v4 upgrade: PASS
+package verification: PASS (/tmp/tmp.TAAlfTClXk/a/jiraman-5.0.0.tar.gz)
+package verification: PASS (/tmp/tmp.TAAlfTClXk/a/jiraman-5.0.0.zip)
+Jiraman release gates: PASS
+RC=0

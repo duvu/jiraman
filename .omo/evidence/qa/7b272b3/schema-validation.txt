@@ -1,0 +1,16 @@
+## config valid
+VALID examples/config.valid.json
+## config invalid
+EXPECTED INVALID examples/config.invalid.json: $.runtime: required field is missing
+## state valid
+VALID examples/state.valid.json
+## state invalid
+EXPECTED INVALID examples/state.invalid.json: $.runtime: required field is missing
+## action-group valid
+VALID examples/action-group.valid.json
+## action-group invalid
+UNEXPECTED VALID examples/action-group.invalid.json
+## project snapshot valid
+VALID examples/project-snapshot.valid.json
+## project snapshot invalid
+EXPECTED INVALID examples/project-snapshot.invalid.json: $.collected_at: required field is missing

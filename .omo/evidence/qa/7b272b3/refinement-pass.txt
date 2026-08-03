@@ -1,0 +1,14 @@
+## parse_spec
+PASS
+## reconcile_spec
+PASS
+## draft_backlog story
+PASS
+## draft_backlog subtask
+PASS
+## propose_backlog_actions
+VALID /tmp/tmp.CenAEi8cD6/actions.json
+PASS
+## refinement tests
+.............                                                            [100%]
+13 passed in 0.09s

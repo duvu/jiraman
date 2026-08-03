@@ -1,0 +1,6 @@
+Scenario: hostile umask installer modes
+Surface: /tmp/jiraman-review-af82-qa/install.sh
+Invocation: (umask 0700; install.sh TARGET), (umask 0600; install.sh TARGET)
+Observed: both invocations exit 1 before installation.
+Evidence: umask-0700.txt and umask-0600.txt contain only non-sensitive mkdir permission errors; targets contain no .kilo install.
+Verdict: FAIL

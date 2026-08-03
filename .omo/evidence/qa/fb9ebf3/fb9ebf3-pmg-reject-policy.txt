@@ -1,0 +1,8 @@
+policy_terminal_pmg_line_number=35
+policy_terminal_pmg_line_present=true
+pmg_reject_group_status=rejected
+pmg_reject_all_action_statuses=true
+payload_hash_preserved=true
+action_group_schema_valid=true
+state_verifier_exit=0
+pmg_reject_policy_alignment=PASS

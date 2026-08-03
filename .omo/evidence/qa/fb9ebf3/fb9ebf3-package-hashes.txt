@@ -1,0 +1,6 @@
+9169206b97f5a5ac2c88327bf8257703597046afdbfafbcdb6dca334ee33f293  /tmp/tmp.5rcbp4WNc3/abs-a/jiraman-5.0.0.tar.gz
+9169206b97f5a5ac2c88327bf8257703597046afdbfafbcdb6dca334ee33f293  /tmp/tmp.5rcbp4WNc3/abs-b/jiraman-5.0.0.tar.gz
+9169206b97f5a5ac2c88327bf8257703597046afdbfafbcdb6dca334ee33f293  /tmp/tmp.AlDkKCchvc/relative/jiraman-5.0.0.tar.gz
+3ea903dbad119e5081acbc84a637a5f1cf818ebc60d49cb9799efdcf0698bdac  /tmp/tmp.5rcbp4WNc3/abs-a/jiraman-5.0.0.zip
+3ea903dbad119e5081acbc84a637a5f1cf818ebc60d49cb9799efdcf0698bdac  /tmp/tmp.5rcbp4WNc3/abs-b/jiraman-5.0.0.zip
+3ea903dbad119e5081acbc84a637a5f1cf818ebc60d49cb9799efdcf0698bdac  /tmp/tmp.AlDkKCchvc/relative/jiraman-5.0.0.zip
