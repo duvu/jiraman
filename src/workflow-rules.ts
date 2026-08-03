@@ -2,7 +2,7 @@ import { acceptanceCriteriaIds, goalAcceptanceCriterionErrors, localAcceptanceCr
 import { asArray, asObject, asString, invariant, validDate, type JsonObject, type JsonValue } from "./contracts.js";
 import { internalDependencyGraphValid } from "./dependency-rules.js";
 
-const VISIBLE_TEXT = /[^\p{White_Space}\p{Default_Ignorable_Code_Point}\p{Cc}]/u;
+const ACTIONABLE_TEXT = /^(?![\s\S]*[\p{Default_Ignorable_Code_Point}\p{Cc}])(?=[\s\S]*[\p{L}\p{N}])/u;
 const JIRA_ISSUE_KEY = /^AIPLATFORM-[0-9]+$/;
 
 function objectValue(value: JsonValue | undefined): JsonObject | null {
@@ -10,19 +10,19 @@ function objectValue(value: JsonValue | undefined): JsonObject | null {
 }
 
 function stringIds(value: JsonValue | undefined): readonly string[] | null {
-  if (!Array.isArray(value) || value.length === 0 || value.some((item) => typeof item !== "string" || !VISIBLE_TEXT.test(item))) return null;
+  if (!Array.isArray(value) || value.length === 0 || value.some((item) => typeof item !== "string" || !ACTIONABLE_TEXT.test(item))) return null;
   const ids = value.filter((item): item is string => typeof item === "string");
   return new Set(ids).size === ids.length ? ids : null;
 }
 
 function stringList(value: JsonValue | undefined): readonly string[] | null {
-  if (!Array.isArray(value) || value.some((item) => typeof item !== "string" || !VISIBLE_TEXT.test(item))) return null;
+  if (!Array.isArray(value) || value.some((item) => typeof item !== "string" || !ACTIONABLE_TEXT.test(item))) return null;
   const items = value.filter((item): item is string => typeof item === "string");
   return new Set(items).size === items.length ? items : null;
 }
 
 function stringArrayValid(value: JsonValue | undefined, minimumItems: number): boolean {
-  return Array.isArray(value) && value.length >= minimumItems && value.every((item) => typeof item === "string" && VISIBLE_TEXT.test(item));
+  return Array.isArray(value) && value.length >= minimumItems && value.every((item) => typeof item === "string" && ACTIONABLE_TEXT.test(item));
 }
 
 function childRelations(subtasks: JsonValue | undefined, field: "requirements" | "parent_acceptance_criteria_refs"): ReadonlyMap<string, ReadonlySet<string>> {
@@ -67,10 +67,10 @@ function goalChildTraceabilityValid(goal: JsonObject, requirementIds: readonly s
     const criteria = stringIds(subtask?.parent_acceptance_criteria_refs);
     const dependencies = stringList(subtask?.dependencies);
     if (subtask === null || typeof subtask.ref !== "string" || !JIRA_ISSUE_KEY.test(subtask.ref) || subtaskRefs.has(subtask.ref) || requirements === null || criteria === null || dependencies === null ||
-      requirements.some((id) => !declaredRequirements.has(id)) || criteria.some((id) => !declaredCriteria.has(id)) || typeof subtask.summary !== "string" || !VISIBLE_TEXT.test(subtask.summary) ||
-      typeof subtask.outcome !== "string" || !VISIBLE_TEXT.test(subtask.outcome) || !stringArrayValid(subtask.in_scope, 1) || !stringArrayValid(subtask.out_of_scope, 0) ||
-      !stringArrayValid(subtask.steps, 1) || !stringArrayValid(subtask.affected_files, 0) || typeof subtask.validation !== "string" || !VISIBLE_TEXT.test(subtask.validation) ||
-      typeof subtask.definition_of_done !== "string" || !VISIBLE_TEXT.test(subtask.definition_of_done) ||
+      requirements.some((id) => !declaredRequirements.has(id)) || criteria.some((id) => !declaredCriteria.has(id)) || typeof subtask.summary !== "string" || !ACTIONABLE_TEXT.test(subtask.summary) ||
+      typeof subtask.outcome !== "string" || !ACTIONABLE_TEXT.test(subtask.outcome) || !stringArrayValid(subtask.in_scope, 1) || !stringArrayValid(subtask.out_of_scope, 0) ||
+      !stringArrayValid(subtask.steps, 1) || !stringArrayValid(subtask.affected_files, 0) || typeof subtask.validation !== "string" || !ACTIONABLE_TEXT.test(subtask.validation) ||
+      typeof subtask.definition_of_done !== "string" || !ACTIONABLE_TEXT.test(subtask.definition_of_done) ||
       typeof subtask.estimate_hours !== "number" || subtask.estimate_hours <= 0 || subtask.estimate_hours > 4 ||
       subtask.content_language !== "vi-VN" || subtask.acceptance_criteria_storage !== "managed-description-section" || acceptanceCriteriaIds(subtask.acceptance_criteria) === null ||
       localAcceptanceCriterionErrors(subtask.acceptance_criteria, "").length > 0) return false;
@@ -125,9 +125,9 @@ export function candidateCanCommit(candidate: JsonObject): boolean {
   const sprintEnd = candidate.target_sprint_end;
   return candidate.goals.every((value) => {
     if (value === null || typeof value !== "object" || Array.isArray(value)) return false;
-    if (typeof value.goal_name !== "string" || !VISIBLE_TEXT.test(value.goal_name) || typeof value.target_completion_date !== "string" || !validDate(value.target_completion_date)) return false;
+    if (typeof value.goal_name !== "string" || !ACTIONABLE_TEXT.test(value.goal_name) || typeof value.target_completion_date !== "string" || !validDate(value.target_completion_date)) return false;
     const deadlineEvidence = objectValue(value.target_completion_date_evidence);
-    if (deadlineEvidence === null || !["sprint-end", "milestone", "specification", "explicit-user-decision"].includes(String(deadlineEvidence.source)) || typeof deadlineEvidence.reference !== "string" || !VISIBLE_TEXT.test(deadlineEvidence.reference) || deadlineEvidence.verified !== true) return false;
+    if (deadlineEvidence === null || !["sprint-end", "milestone", "specification", "explicit-user-decision"].includes(String(deadlineEvidence.source)) || typeof deadlineEvidence.reference !== "string" || !ACTIONABLE_TEXT.test(deadlineEvidence.reference) || deadlineEvidence.verified !== true) return false;
     const deadlineFits = value.target_completion_date <= sprintEnd || value.deadline_exception_approved === true;
     const subtaskRefs = new Set<string>();
     const subtasksValid = Array.isArray(value.subtasks) && value.subtasks.length >= 2 && value.subtasks.every((subtask) => {
@@ -149,7 +149,7 @@ export function candidateCanCommit(candidate: JsonObject): boolean {
       traceabilityMapValid(traceability.acceptance_criteria, acceptanceCriteria, subtaskRefs, acceptanceRelations) &&
       traceabilityMapValid(traceability.goal_definition_of_done, dodIds, subtaskRefs);
     const childTraceabilityValid = requirements !== null && acceptanceCriteria !== null && goalChildTraceabilityValid(value, requirements, acceptanceCriteria);
-    return deadlineFits && typeof value.story_ref === "string" && JIRA_ISSUE_KEY.test(value.story_ref) && typeof value.canonical_spec === "string" && VISIBLE_TEXT.test(value.canonical_spec) && typeof value.epic_parent === "string" && JIRA_ISSUE_KEY.test(value.epic_parent) && value.traceability_complete === true && traceabilityValid && childTraceabilityValid && value.readiness === "ready" && subtasksValid;
+    return deadlineFits && typeof value.story_ref === "string" && JIRA_ISSUE_KEY.test(value.story_ref) && typeof value.canonical_spec === "string" && ACTIONABLE_TEXT.test(value.canonical_spec) && typeof value.epic_parent === "string" && JIRA_ISSUE_KEY.test(value.epic_parent) && value.traceability_complete === true && traceabilityValid && childTraceabilityValid && value.readiness === "ready" && subtasksValid;
   });
 }
 
@@ -173,7 +173,7 @@ export function goalHealthState(goal: JsonObject): GoalHealthState {
 
 export function goalReadinessViolations(goal: JsonObject): string[] {
   const violations: string[] = [];
-  if (typeof goal.goal_name !== "string" || !VISIBLE_TEXT.test(goal.goal_name)) violations.push("missing-goal-name");
+  if (typeof goal.goal_name !== "string" || !ACTIONABLE_TEXT.test(goal.goal_name)) violations.push("missing-goal-name");
   if (typeof goal.target_completion_date !== "string" || !validDate(goal.target_completion_date) || goal.deadline_evidence_verified !== true) violations.push("unverified-goal-deadline");
   if (stringIds(goal.definition_of_done) === null) violations.push("missing-goal-dod");
   const requirementIds = stringIds(goal.requirements);

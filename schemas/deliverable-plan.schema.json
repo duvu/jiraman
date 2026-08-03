@@ -81,8 +81,8 @@
                 "deadline_exception_approved"
               ],
               "properties": {
-                "story_ref": {"type": "string", "minLength": 1, "pattern": "[^\\p{White_Space}\\p{Default_Ignorable_Code_Point}\\p{Cc}]"},
-                "goal_name": {"type": "string", "minLength": 1, "pattern": "[^\\p{White_Space}\\p{Default_Ignorable_Code_Point}\\p{Cc}]"},
+                "story_ref": {"type": "string", "minLength": 1, "pattern": "^(?![\\s\\S]*[\\p{Default_Ignorable_Code_Point}\\p{Cc}])(?=[\\s\\S]*[\\p{L}\\p{N}])"},
+                "goal_name": {"type": "string", "minLength": 1, "pattern": "^(?![\\s\\S]*[\\p{Default_Ignorable_Code_Point}\\p{Cc}])(?=[\\s\\S]*[\\p{L}\\p{N}])"},
                 "target_completion_date": {"type": ["string", "null"], "format": "date"},
                 "target_completion_date_evidence": {
                   "type": "object",
@@ -90,15 +90,15 @@
                   "required": ["source", "reference", "verified"],
                   "properties": {
                     "source": {"enum": ["sprint-end", "milestone", "specification", "explicit-user-decision"]},
-                    "reference": {"type": "string", "minLength": 1, "pattern": "[^\\p{White_Space}\\p{Default_Ignorable_Code_Point}\\p{Cc}]"},
+                    "reference": {"type": "string", "minLength": 1, "pattern": "^(?![\\s\\S]*[\\p{Default_Ignorable_Code_Point}\\p{Cc}])(?=[\\s\\S]*[\\p{L}\\p{N}])"},
                     "verified": {"const": true}
                   }
                 },
                 "definition_of_done": {
                   "type": "array",
-                  "items": {"type": "string", "minLength": 1, "pattern": "[^\\p{White_Space}\\p{Default_Ignorable_Code_Point}\\p{Cc}]"}
+                  "items": {"type": "string", "minLength": 1, "pattern": "^(?![\\s\\S]*[\\p{Default_Ignorable_Code_Point}\\p{Cc}])(?=[\\s\\S]*[\\p{L}\\p{N}])"}
                 },
-                "canonical_spec": {"type": "string", "minLength": 1, "pattern": "[^\\p{White_Space}\\p{Default_Ignorable_Code_Point}\\p{Cc}]"},
+                "canonical_spec": {"type": "string", "minLength": 1, "pattern": "^(?![\\s\\S]*[\\p{Default_Ignorable_Code_Point}\\p{Cc}])(?=[\\s\\S]*[\\p{L}\\p{N}])"},
                 "requirements": {
                   "type": "array",
                   "minItems": 1,
@@ -110,8 +110,8 @@
                   "minItems": 1,
                   "items": {"$ref": "https://duvu.github.io/jiraman/schemas/acceptance-criterion.schema.json#/definitions/goal-criterion"}
                 },
-                "epic_parent": {"type": "string", "minLength": 1, "pattern": "[^\\p{White_Space}\\p{Default_Ignorable_Code_Point}\\p{Cc}]"},
-                "readiness": {"type": "string", "minLength": 1, "pattern": "[^\\p{White_Space}\\p{Default_Ignorable_Code_Point}\\p{Cc}]"},
+                "epic_parent": {"type": "string", "minLength": 1, "pattern": "^(?![\\s\\S]*[\\p{Default_Ignorable_Code_Point}\\p{Cc}])(?=[\\s\\S]*[\\p{L}\\p{N}])"},
+                "readiness": {"type": "string", "minLength": 1, "pattern": "^(?![\\s\\S]*[\\p{Default_Ignorable_Code_Point}\\p{Cc}])(?=[\\s\\S]*[\\p{L}\\p{N}])"},
                 "subtasks": {
                   "type": "array",
                   "items": {
@@ -120,18 +120,18 @@
                     "required": ["ref", "estimate_hours"],
                     "properties": {
                       "ref": {"type": "string", "minLength": 1},
-                      "summary": {"type": "string", "minLength": 1, "pattern": "[^\\p{White_Space}\\p{Default_Ignorable_Code_Point}\\p{Cc}]"},
-                      "outcome": {"type": "string", "minLength": 1, "pattern": "[^\\p{White_Space}\\p{Default_Ignorable_Code_Point}\\p{Cc}]"},
-                      "in_scope": {"type": "array", "minItems": 1, "items": {"type": "string", "minLength": 1, "pattern": "[^\\p{White_Space}\\p{Default_Ignorable_Code_Point}\\p{Cc}]"}},
-                      "out_of_scope": {"type": "array", "items": {"type": "string", "minLength": 1, "pattern": "[^\\p{White_Space}\\p{Default_Ignorable_Code_Point}\\p{Cc}]"}},
-                      "steps": {"type": "array", "minItems": 1, "items": {"type": "string", "minLength": 1, "pattern": "[^\\p{White_Space}\\p{Default_Ignorable_Code_Point}\\p{Cc}]"}},
-                      "affected_files": {"type": "array", "items": {"type": "string", "minLength": 1, "pattern": "[^\\p{White_Space}\\p{Default_Ignorable_Code_Point}\\p{Cc}]"}},
-                      "validation": {"type": "string", "minLength": 1, "pattern": "[^\\p{White_Space}\\p{Default_Ignorable_Code_Point}\\p{Cc}]"},
-                      "definition_of_done": {"type": "string", "minLength": 1, "pattern": "[^\\p{White_Space}\\p{Default_Ignorable_Code_Point}\\p{Cc}]"},
+                      "summary": {"type": "string", "minLength": 1, "pattern": "^(?![\\s\\S]*[\\p{Default_Ignorable_Code_Point}\\p{Cc}])(?=[\\s\\S]*[\\p{L}\\p{N}])"},
+                      "outcome": {"type": "string", "minLength": 1, "pattern": "^(?![\\s\\S]*[\\p{Default_Ignorable_Code_Point}\\p{Cc}])(?=[\\s\\S]*[\\p{L}\\p{N}])"},
+                      "in_scope": {"type": "array", "minItems": 1, "items": {"type": "string", "minLength": 1, "pattern": "^(?![\\s\\S]*[\\p{Default_Ignorable_Code_Point}\\p{Cc}])(?=[\\s\\S]*[\\p{L}\\p{N}])"}},
+                      "out_of_scope": {"type": "array", "items": {"type": "string", "minLength": 1, "pattern": "^(?![\\s\\S]*[\\p{Default_Ignorable_Code_Point}\\p{Cc}])(?=[\\s\\S]*[\\p{L}\\p{N}])"}},
+                      "steps": {"type": "array", "minItems": 1, "items": {"type": "string", "minLength": 1, "pattern": "^(?![\\s\\S]*[\\p{Default_Ignorable_Code_Point}\\p{Cc}])(?=[\\s\\S]*[\\p{L}\\p{N}])"}},
+                      "affected_files": {"type": "array", "items": {"type": "string", "minLength": 1, "pattern": "^(?![\\s\\S]*[\\p{Default_Ignorable_Code_Point}\\p{Cc}])(?=[\\s\\S]*[\\p{L}\\p{N}])"}},
+                      "validation": {"type": "string", "minLength": 1, "pattern": "^(?![\\s\\S]*[\\p{Default_Ignorable_Code_Point}\\p{Cc}])(?=[\\s\\S]*[\\p{L}\\p{N}])"},
+                      "definition_of_done": {"type": "string", "minLength": 1, "pattern": "^(?![\\s\\S]*[\\p{Default_Ignorable_Code_Point}\\p{Cc}])(?=[\\s\\S]*[\\p{L}\\p{N}])"},
                       "dependencies": {
                         "type": "array",
                         "uniqueItems": true,
-                        "items": {"type": "string", "minLength": 1, "pattern": "[^\\p{White_Space}\\p{Default_Ignorable_Code_Point}\\p{Cc}]"}
+                        "items": {"type": "string", "minLength": 1, "pattern": "^(?![\\s\\S]*[\\p{Default_Ignorable_Code_Point}\\p{Cc}])(?=[\\s\\S]*[\\p{L}\\p{N}])"}
                       },
                       "estimate_hours": {"type": "number", "exclusiveMinimum": 0, "maximum": 4},
                       "requirements": {

@@ -26,13 +26,13 @@
         "acceptance_criteria"
       ],
       "properties": {
-        "goal_name": {"type": "string", "minLength": 1, "pattern": "[^\\p{White_Space}\\p{Default_Ignorable_Code_Point}\\p{Cc}]"},
+        "goal_name": {"type": "string", "minLength": 1, "pattern": "^(?![\\s\\S]*[\\p{Default_Ignorable_Code_Point}\\p{Cc}])(?=[\\s\\S]*[\\p{L}\\p{N}])"},
         "target_completion_date": {"type": "string", "format": "date"},
         "definition_of_done": {
           "type": "array",
           "minItems": 1,
           "uniqueItems": true,
-          "items": {"type": "string", "minLength": 1, "pattern": "[^\\p{White_Space}\\p{Default_Ignorable_Code_Point}\\p{Cc}]"}
+          "items": {"type": "string", "minLength": 1, "pattern": "^(?![\\s\\S]*[\\p{Default_Ignorable_Code_Point}\\p{Cc}])(?=[\\s\\S]*[\\p{L}\\p{N}])"}
         },
         "requirements": {
           "type": "array",
@@ -73,50 +73,50 @@
           "draft_ref": {
             "type": "string",
             "minLength": 1,
-            "pattern": "[^\\p{White_Space}\\p{Default_Ignorable_Code_Point}\\p{Cc}]"
+            "pattern": "^(?![\\s\\S]*[\\p{Default_Ignorable_Code_Point}\\p{Cc}])(?=[\\s\\S]*[\\p{L}\\p{N}])"
           },
           "title": {
             "type": "string",
             "minLength": 1,
-            "pattern": "[^\\p{White_Space}\\p{Default_Ignorable_Code_Point}\\p{Cc}]"
+            "pattern": "^(?![\\s\\S]*[\\p{Default_Ignorable_Code_Point}\\p{Cc}])(?=[\\s\\S]*[\\p{L}\\p{N}])"
           },
           "outcome": {
             "type": "string",
             "minLength": 1,
-            "pattern": "[^\\p{White_Space}\\p{Default_Ignorable_Code_Point}\\p{Cc}]"
+            "pattern": "^(?![\\s\\S]*[\\p{Default_Ignorable_Code_Point}\\p{Cc}])(?=[\\s\\S]*[\\p{L}\\p{N}])"
           },
           "in_scope": {
             "type": "array",
             "minItems": 1,
-            "items": {"type": "string", "minLength": 1, "pattern": "[^\\p{White_Space}\\p{Default_Ignorable_Code_Point}\\p{Cc}]"}
+            "items": {"type": "string", "minLength": 1, "pattern": "^(?![\\s\\S]*[\\p{Default_Ignorable_Code_Point}\\p{Cc}])(?=[\\s\\S]*[\\p{L}\\p{N}])"}
           },
           "out_of_scope": {
             "type": "array",
-            "items": {"type": "string", "minLength": 1, "pattern": "[^\\p{White_Space}\\p{Default_Ignorable_Code_Point}\\p{Cc}]"}
+            "items": {"type": "string", "minLength": 1, "pattern": "^(?![\\s\\S]*[\\p{Default_Ignorable_Code_Point}\\p{Cc}])(?=[\\s\\S]*[\\p{L}\\p{N}])"}
           },
           "steps": {
             "type": "array",
             "minItems": 1,
-            "items": {"type": "string", "minLength": 1, "pattern": "[^\\p{White_Space}\\p{Default_Ignorable_Code_Point}\\p{Cc}]"}
+            "items": {"type": "string", "minLength": 1, "pattern": "^(?![\\s\\S]*[\\p{Default_Ignorable_Code_Point}\\p{Cc}])(?=[\\s\\S]*[\\p{L}\\p{N}])"}
           },
           "affected_files": {
             "type": "array",
-            "items": {"type": "string", "minLength": 1, "pattern": "[^\\p{White_Space}\\p{Default_Ignorable_Code_Point}\\p{Cc}]"}
+            "items": {"type": "string", "minLength": 1, "pattern": "^(?![\\s\\S]*[\\p{Default_Ignorable_Code_Point}\\p{Cc}])(?=[\\s\\S]*[\\p{L}\\p{N}])"}
           },
           "dependencies": {
             "type": "array",
             "uniqueItems": true,
-            "items": {"type": "string", "minLength": 1, "pattern": "[^\\p{White_Space}\\p{Default_Ignorable_Code_Point}\\p{Cc}]"}
+            "items": {"type": "string", "minLength": 1, "pattern": "^(?![\\s\\S]*[\\p{Default_Ignorable_Code_Point}\\p{Cc}])(?=[\\s\\S]*[\\p{L}\\p{N}])"}
           },
           "validation": {
             "type": "string",
             "minLength": 1,
-            "pattern": "[^\\p{White_Space}\\p{Default_Ignorable_Code_Point}\\p{Cc}]"
+            "pattern": "^(?![\\s\\S]*[\\p{Default_Ignorable_Code_Point}\\p{Cc}])(?=[\\s\\S]*[\\p{L}\\p{N}])"
           },
           "definition_of_done": {
             "type": "string",
             "minLength": 1,
-            "pattern": "[^\\p{White_Space}\\p{Default_Ignorable_Code_Point}\\p{Cc}]"
+            "pattern": "^(?![\\s\\S]*[\\p{Default_Ignorable_Code_Point}\\p{Cc}])(?=[\\s\\S]*[\\p{L}\\p{N}])"
           },
           "estimate_hours": {
             "type": "number",

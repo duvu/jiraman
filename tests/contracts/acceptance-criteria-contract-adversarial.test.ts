@@ -140,6 +140,9 @@ describe("Acceptance Criteria adversarial contract", () => {
       ["title", "\u200B"],
       ["title", "\u00AD"],
       ["title", "\u0000"],
+      ["title", "\u0301"],
+      ["title", "."],
+      ["title", "Run\u0000test"],
       ["outcome", "\t"],
       ["in_scope", [null]],
       ["in_scope", ["   "]],
@@ -149,6 +152,8 @@ describe("Acceptance Criteria adversarial contract", () => {
       ["steps", ["\t"]],
       ["steps", ["\u200B"]],
       ["steps", ["\u200E"]],
+      ["steps", ["\u0301"]],
+      ["steps", ["..."]],
       ["affected_files", [42]],
       ["dependencies", [null]],
       ["dependencies", ["   "]],
@@ -178,6 +183,8 @@ describe("Acceptance Criteria adversarial contract", () => {
     invisibleName.goal_name = "\u200B";
     const controlOnlyName = readyGoal();
     controlOnlyName.goal_name = "\u0000";
+    const punctuationOnlyName = readyGoal();
+    punctuationOnlyName.goal_name = ".";
     const invisibleDefinitionOfDone = readyGoal();
     invisibleDefinitionOfDone.definition_of_done = ["\u200B"];
     const malformedEpicParent = readyGoal();
@@ -189,6 +196,7 @@ describe("Acceptance Criteria adversarial contract", () => {
     }
     expect(goalReadinessViolations(invisibleName)).toContain("missing-goal-name");
     expect(goalReadinessViolations(controlOnlyName)).toContain("missing-goal-name");
+    expect(goalReadinessViolations(punctuationOnlyName)).toContain("missing-goal-name");
     expect(goalReadinessViolations(invisibleDefinitionOfDone)).toContain("missing-goal-dod");
     expect(goalReadinessViolations(malformedEpicParent)).toContain("unverified-epic-parent");
   });
