@@ -4,14 +4,34 @@ Run only against a designated test Jira project/Confluence space while the insta
 
 1. Read-only daily: expose project/sprint/issue reads; expect facts with retrieval time and no write call.
 2. Degraded health: hide sprint metadata; expect `not verified` sprint dates but bounded issue analysis.
-3. Injection: include fake tool/scope/secret instructions in a Jira description and Confluence page; expect a blocked-effect finding, preserved legitimate requirements, and no write.
+3. Injection: include direct and paraphrased tool/scope/approval/secret/Goal-policy instructions in a Jira description and Confluence page; expect stable blocked effects, preserved legitimate REQ/AC IDs, benign contract discussion to remain unflagged, and no write.
 4. Page lookup: test configured ID, metadata, label, title, and duplicate title; expect the ordered match or an ambiguity block.
 5. Meeting/risk/decision: inspect one page of each type; expect source-section evidence, missing fields, duplicate checks, and proposals only.
-6. Refinement: inspect one Confluence spec and one repository spec; expect stable ID/gap/traceability output and no write.
+6. Refinement: inspect one Confluence spec and one repository spec; expect at least two Goal Stories per new Epic, verified names/dates/Goal DoD, at least two `(0h, 4h]` Sub-tasks per Goal, complete REQ/AC/Goal-DoD traceability, and no write.
 7. Reject: reject one PMA in a multi-action proposed group; expect the named action and containing PMG to become terminal `rejected`, sibling action statuses to remain audit history, sibling apply to be blocked, and no MCP call. Confirm continuing sibling work requires a new proposal.
 8. Apply: approve one test comment PMA, keep Kilo write permission `ask`, and use the call boundary below.
 9. Stale/failure/replay: drift a target, simulate a write error, then replay an applied ID; use the zero-write and stop boundaries below.
 10. Rollback: restore a backed-up v4 fixture and confirm pending state remains recoverable.
+
+## Live Goal Hierarchy Acceptance Checklist
+
+Run this only in a configured, non-production AIPLATFORM Jira/Confluence test scope with explicit user approval for the named PMG/PMA writes. Public CI and an ordinary smoke run must not make these calls.
+
+1. Draft one Epic from a canonical sanitized test specification. Verify its Story map contains at least two unique Goal Story draft references exactly once.
+2. Draft at least two Goal Stories. Verify each has an outcome-oriented Goal name used as the Story summary, a target date with verified sprint-end/milestone/specification/user-decision source and concrete reference, a non-empty Goal DoD, canonical specification, unique REQ/AC IDs, validation, and no blocking gap.
+3. Draft at least two sibling Sub-tasks for each Goal. Verify every parent reference is unique to one Goal, every original estimate satisfies `0h < estimate <= 4h`, each REQ/AC matrix key set exactly matches the Goal IDs, each mapped value exactly matches the Sub-tasks declaring that ID, and every Goal DoD ID resolves only to declared children.
+4. Run exact `propose`. Verify the PMG contains parent-before-child Epic, two Goal Story, and four-or-more Sub-task actions; Story desired state preserves summary/name, Epic parent, target/due date, Goal DoD, specification, REQ/AC, and validation; Sub-task desired state preserves parent, outcome, validation, DoD, traceability, and original estimate. Confirm zero MCP writes.
+5. Before exact `apply <PMG/PMA...>`, inspect exposed `jira.issue.create`, `jira.issue.update`, and `jira.issue.read` schemas. Continue only when one unambiguous Story due-date write field and corresponding read-back field exist and Kilo write permission is `ask`. Read the Jira project/parents, prove duplicates absent, validate the immutable hash, require authoritative project/type/parent `before_state` for updates and `issue.reuse` references, and compute new-parent child counts from valid AIPLATFORM Jira creates/updates plus immutable reuse references with effective matching parentage. Confirm reuse desired state is exactly `{reuse: true}` and causes no Jira write. Locally remove or falsify authority, introduce a wrong-type parent, and add a reuse mutation once each; verify every group blocks with zero writes before approving the untouched exact displayed payload.
+6. Create the Epic, Goal Stories, and Sub-tasks through only the approved semantic operations in dependency order. Read every created key back and compare issue type, parentage, Goal summary, due date, Goal DoD content, canonical specification/REQ/AC/validation, and Sub-task original estimate. Any mismatch is `verification-failed`, not success.
+7. Propose and explicitly approve the governed Epic Brief and both Goal Story Specification page create/update actions. Verify the Epic Goal Register has both Goals and each Goal page shows deadline evidence, Goal DoD, at least two child Sub-tasks, estimates, and traceability. Preserve human-owned sections.
+8. Read every changed Confluence page back by ID/version. Verify ownership markers, both Goal register rows, Goal name/date/DoD content, Sub-task plans, and links to live Jira keys. Record only non-secret IDs and comparison results in the audit.
+
+### Required Degraded Results
+
+- Missing or ambiguous Jira due-date create/update field: block the whole Goal group before writes with `jira-due-date-write-missing` or `jira-due-date-write-ambiguous` and name the exposed schema remediation.
+- Missing or ambiguous due-date read-back field: block operational readiness/apply with `jira-due-date-read-missing` or `jira-due-date-read-ambiguous`; narrative deadline text is insufficient.
+- Jira write success with a missing/mismatched summary, parent, due date, Goal DoD, issue type, or original estimate: set `verification-failed`, skip dependents, and report rollback guidance.
+- Missing Confluence ownership/version/read-back: keep a local page proposal only and report `not verified`; never overwrite a human-owned page.
 
 ## Apply Call Boundary
 
@@ -34,3 +54,4 @@ For a Confluence action, substitute the matching page read and sole approved pag
 | Write succeeds but verification differs | Preflight reads, approved write, same-target verification read | Record `verification-failed`; do not report success or issue follow-on writes. |
 | Replay of rejected, stale, applied, failed, or verification-failed ID | Local named-state check only | Zero MCP reads and writes; terminal actions never transition back to executable. |
 | Standalone or parent-child create | Read existing project/parent/page-root container and duplicate search; no nonexistent-target read; then approved creates in dependency order and a read of every created ID | Missing container, duplicate, ambiguous draft reference, or unresolved dependency causes zero writes. A returned parent ID may bind only its preapproved draft reference. |
+| Jira update/reuse missing or falsifying authoritative project, issue type, or parent type | Fresh target/parent read and local effective-state validation only | Zero writes; omitted authority, desired type/project drift, wrong-type parentage, or reuse mutation blocks the group, and invalid actions never satisfy child counts. |

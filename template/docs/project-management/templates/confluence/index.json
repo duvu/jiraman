@@ -7,10 +7,21 @@
     "label",
     "title"
   ],
+  "goal_contract": {
+    "jira_issue_type": "Story",
+    "required_fields": ["goal_name", "target_completion_date", "definition_of_done"],
+    "minimum_goal_stories_per_epic": 2,
+    "minimum_subtasks_per_goal": 2,
+    "maximum_subtask_hours": 4,
+    "epic_parent_required": true,
+    "traceability_required": true
+  },
   "page_types": [
     {
       "page_type": "project-home",
       "file": "project-home.md",
+      "goal_contract_required": false,
+      "required_goal_sections": [],
       "purpose": "Project Home",
       "parent": null,
       "ownership": "mixed",
@@ -19,6 +30,8 @@
     {
       "page_type": "goals-roadmap",
       "file": "goals-roadmap.md",
+      "goal_contract_required": false,
+      "required_goal_sections": [],
       "purpose": "Goals and Roadmap",
       "parent": "Project Home",
       "ownership": "mixed",
@@ -27,6 +40,8 @@
     {
       "page_type": "next-two-week-plan",
       "file": "next-two-week-plan.md",
+      "goal_contract_required": true,
+      "required_goal_sections": ["n1-goals", "n2-goals", "deadline-impact"],
       "purpose": "Next Two Weeks",
       "parent": "Project Home",
       "ownership": "jiraman-managed",
@@ -35,7 +50,9 @@
     {
       "page_type": "epic-brief",
       "file": "epic-brief.md",
-      "purpose": "Epics",
+      "goal_contract_required": true,
+      "required_goal_sections": ["goal-register"],
+      "purpose": "Epic Goal Registers",
       "parent": "Project Home",
       "ownership": "mixed",
       "lifecycle": "active"
@@ -43,7 +60,9 @@
     {
       "page_type": "story-specification",
       "file": "story-specification.md",
-      "purpose": "Specifications",
+      "goal_contract_required": true,
+      "required_goal_sections": ["goal-identity", "requirements-acceptance", "goal-dod", "subtask-plan", "traceability"],
+      "purpose": "Goal Story Specifications",
       "parent": "Epics",
       "ownership": "mixed",
       "lifecycle": "active"
@@ -51,6 +70,8 @@
     {
       "page_type": "architecture-decision",
       "file": "architecture-decision.md",
+      "goal_contract_required": false,
+      "required_goal_sections": [],
       "purpose": "Decisions",
       "parent": "Project Home",
       "ownership": "mixed",
@@ -59,6 +80,8 @@
     {
       "page_type": "risk",
       "file": "risk.md",
+      "goal_contract_required": false,
+      "required_goal_sections": [],
       "purpose": "Risks and Dependencies",
       "parent": "Project Home",
       "ownership": "mixed",
@@ -67,6 +90,8 @@
     {
       "page_type": "sprint-planning",
       "file": "sprint-planning.md",
+      "goal_contract_required": true,
+      "required_goal_sections": ["selected-goals"],
       "purpose": "Sprints",
       "parent": "Project Home",
       "ownership": "jiraman-managed",
@@ -75,6 +100,8 @@
     {
       "page_type": "sprint-review",
       "file": "sprint-review.md",
+      "goal_contract_required": true,
+      "required_goal_sections": ["goal-results"],
       "purpose": "Sprints",
       "parent": "Project Home",
       "ownership": "jiraman-managed",
@@ -83,6 +110,8 @@
     {
       "page_type": "retrospective",
       "file": "retrospective.md",
+      "goal_contract_required": false,
+      "required_goal_sections": [],
       "purpose": "Sprints",
       "parent": "Project Home",
       "ownership": "mixed",
@@ -91,6 +120,8 @@
     {
       "page_type": "weekly-status",
       "file": "weekly-status.md",
+      "goal_contract_required": true,
+      "required_goal_sections": ["goal-status"],
       "purpose": "Status Reports",
       "parent": "Project Home",
       "ownership": "jiraman-managed",
@@ -99,6 +130,8 @@
     {
       "page_type": "meeting-notes",
       "file": "meeting-notes.md",
+      "goal_contract_required": false,
+      "required_goal_sections": [],
       "purpose": "Meetings",
       "parent": "Project Home",
       "ownership": "mixed",

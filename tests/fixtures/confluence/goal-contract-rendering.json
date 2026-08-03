@@ -1,0 +1,58 @@
+{
+  "fixture_version": 1,
+  "kind": "confluence-goal-contract-rendering",
+  "metadata": {
+    "source": "synthetic-sanitized",
+    "version": "5.0",
+    "sanitized": true,
+    "semantic_capability": "confluence.goal-reporting"
+  },
+  "expected": {
+    "valid_goal_count": 2,
+    "invalid_cases_rejected": 2
+  },
+  "data": {
+    "valid": {
+      "goal_register": [
+        {
+          "story_ref": "AIPLATFORM-101",
+          "goal_name": "Restore backups safely",
+          "target_completion_date": "2026-08-07",
+          "definition_of_done": ["Restore evidence is accepted"],
+          "readiness": "ready",
+          "subtasks": [
+            {"ref": "AIPLATFORM-102", "estimate_hours": 3},
+            {"ref": "AIPLATFORM-103", "estimate_hours": 2}
+          ]
+        },
+        {
+          "story_ref": "AIPLATFORM-104",
+          "goal_name": "Verify rollback guidance",
+          "target_completion_date": "2026-08-07",
+          "definition_of_done": ["Guide walkthrough evidence is accepted"],
+          "readiness": "ready",
+          "subtasks": [
+            {"ref": "AIPLATFORM-105", "estimate_hours": 2},
+            {"ref": "AIPLATFORM-106", "estimate_hours": 4}
+          ]
+        }
+      ]
+    },
+    "invalid": [
+      {
+        "case": "missing-deadline",
+        "goal_register": [
+          {"story_ref": "AIPLATFORM-101", "goal_name": "Restore backups safely", "definition_of_done": ["Evidence accepted"], "readiness": "not verified", "subtasks": [{"ref": "AIPLATFORM-102", "estimate_hours": 3}, {"ref": "AIPLATFORM-103", "estimate_hours": 2}]},
+          {"story_ref": "AIPLATFORM-104", "goal_name": "Verify guide", "target_completion_date": "2026-08-07", "definition_of_done": ["Walkthrough accepted"], "readiness": "ready", "subtasks": [{"ref": "AIPLATFORM-105", "estimate_hours": 2}, {"ref": "AIPLATFORM-106", "estimate_hours": 4}]}
+        ]
+      },
+      {
+        "case": "missing-goal-dod",
+        "goal_register": [
+          {"story_ref": "AIPLATFORM-101", "goal_name": "Restore backups safely", "target_completion_date": "2026-08-07", "definition_of_done": [], "readiness": "not verified", "subtasks": [{"ref": "AIPLATFORM-102", "estimate_hours": 3}, {"ref": "AIPLATFORM-103", "estimate_hours": 2}]},
+          {"story_ref": "AIPLATFORM-104", "goal_name": "Verify guide", "target_completion_date": "2026-08-07", "definition_of_done": ["Walkthrough accepted"], "readiness": "ready", "subtasks": [{"ref": "AIPLATFORM-105", "estimate_hours": 2}, {"ref": "AIPLATFORM-106", "estimate_hours": 4}]}
+        ]
+      }
+    ]
+  }
+}

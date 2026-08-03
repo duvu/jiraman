@@ -1,5 +1,6 @@
 import { describe, expect, test } from "vitest";
-import { asArray, asObject, asString, readJson, requireInvalid, requireValid } from "../../src/contracts.js";
+import { asArray, asObject, asString, invariant, readJson, readText, requireInvalid, requireValid } from "../../src/contracts.js";
+import { goalTemplateSectionViolations, type IndexedGoalTemplate } from "../../src/goal-contract-metadata-rules.js";
 import { freshnessStatus, pageProposalViolations } from "../../src/security-rules.js";
 
 describe("confluence-metadata and confluence-templates", () => {
@@ -8,6 +9,33 @@ describe("confluence-metadata and confluence-templates", () => {
     requireInvalid("confluence-page-metadata.schema.json", "examples/confluence-page-metadata.invalid.json");
     requireInvalid("confluence-page-metadata.schema.json", "examples/confluence-page-metadata.invalid-date.json");
     expect(asArray(asObject(readJson("template/docs/project-management/templates/confluence/index.json"), "index").page_types, "pages")).toHaveLength(12);
+  });
+
+  test("indexed Goal templates require non-empty structural section regions", () => {
+    // Given
+    const index = asObject(readJson("template/docs/project-management/templates/confluence/index.json"), "index");
+    const templates = asArray(index.page_types, "pages").map((value): IndexedGoalTemplate => {
+      const page = asObject(value, "page");
+      const path = `template/docs/project-management/templates/confluence/${asString(page.file, "template file")}`;
+      return {path, goalContractRequired: page.goal_contract_required, requiredGoalSections: page.required_goal_sections, text: readText(path)};
+    });
+    const required = templates.find((template) => Array.isArray(template.requiredGoalSections) && template.requiredGoalSections.length > 0);
+    invariant(required !== undefined, "a Goal-aware template is required");
+    const section = asString(asArray(required.requiredGoalSections, "required sections")[0], "required section");
+    const begin = `<!-- JIRAMAN:GOAL-SECTION:${section}:BEGIN -->`;
+    const end = `<!-- JIRAMAN:GOAL-SECTION:${section}:END -->`;
+    const start = required.text.indexOf(begin);
+    const finish = required.text.indexOf(end);
+    invariant(start >= 0 && finish > start, "Goal section markers are required");
+    const missingMarker = templates.map((template) => template === required ? {...template, text: template.text.replace(begin, "")} : template);
+    const emptySection = templates.map((template) => template === required ? {...template, text: template.text.slice(0, start + begin.length) + "\n\n" + template.text.slice(finish)} : template);
+    const missingInventory = templates.map((template) => template === required ? {...template, requiredGoalSections: undefined} : template);
+
+    // When / Then
+    expect(goalTemplateSectionViolations(templates)).toEqual([]);
+    expect(goalTemplateSectionViolations(missingMarker)).toContain(`${required.path}:${section}:markers`);
+    expect(goalTemplateSectionViolations(emptySection)).toContain(`${required.path}:${section}:content`);
+    expect(goalTemplateSectionViolations(missingInventory)).toContain(`${required.path}:required-goal-sections`);
   });
 });
 describe("confluence-page-proposals knowledge-audit confluence-reporting", () => {
@@ -24,5 +52,22 @@ describe("confluence-page-proposals knowledge-audit confluence-reporting", () =>
     const report = asObject(asObject(readJson("tests/fixtures/confluence/report-contract.json"), "report").data ?? null, "data");
     expect(report.history).toBe("not verified");
     expect(asArray(report.sources, "sources").length).toBeGreaterThan(0);
+  });
+
+  test("Goal-aware page proposals preserve every required structural section", () => {
+    const content = readText("template/docs/project-management/templates/confluence/story-specification.md");
+    const proposal = {
+      ownership: "jiraman-managed",
+      current_version: 4,
+      operation: "page.update",
+      desired_content: content,
+      page_type: "story-specification",
+      preconditions: ["version remains current"],
+      rollback_source: "version-4",
+    };
+
+    expect(pageProposalViolations(proposal)).toEqual([]);
+    expect(pageProposalViolations({...proposal, desired_content: "replacement without Goal regions"}))
+      .toContain("proposal:story-specification:goal-identity:markers");
   });
 });

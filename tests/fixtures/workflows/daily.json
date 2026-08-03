@@ -31,11 +31,17 @@
     "commitments": [
       {
         "story": "AIPLATFORM-101",
+        "parent_goal": "AIPLATFORM-101",
+        "goal_name": "Restore v5 upgrades safely",
+        "goal_deadline": "2026-08-07",
+        "goal_dod_condition": "Rollback drill evidence is accepted",
         "subtask": "AIPLATFORM-102",
+        "subtask_outcome": "Migration is verified",
         "outcome": "Migration verified",
         "validation": "upgrade test",
         "owner": "not verified",
-        "estimate": 3
+        "estimate": 3,
+        "estimate_hours": 3
       }
     ],
     "outlook": {

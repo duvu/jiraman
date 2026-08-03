@@ -21,7 +21,9 @@
           "outcome",
           "primary_epic",
           "stories",
+          "goals",
           "target_sprint",
+          "target_sprint_end",
           "week_1_outcome",
           "week_2_outcome",
           "acceptance_signal",
@@ -61,11 +63,92 @@
             "type": "array",
             "minItems": 1
           },
+          "goals": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "story_ref",
+                "goal_name",
+                "target_completion_date",
+                "definition_of_done",
+                "epic_parent",
+                "readiness",
+                "subtasks",
+                "traceability_complete",
+                "deadline_exception_approved"
+              ],
+              "properties": {
+                "story_ref": {"type": "string", "minLength": 1},
+                "goal_name": {"type": "string", "minLength": 1},
+                "target_completion_date": {"type": ["string", "null"], "format": "date"},
+                "target_completion_date_evidence": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": ["source", "reference", "verified"],
+                  "properties": {
+                    "source": {"enum": ["sprint-end", "milestone", "specification", "explicit-user-decision"]},
+                    "reference": {"type": "string", "minLength": 1},
+                    "verified": {"const": true}
+                  }
+                },
+                "definition_of_done": {
+                  "type": "array",
+                  "items": {"type": "string", "minLength": 1}
+                },
+                "canonical_spec": {"type": "string", "minLength": 1},
+                "requirements": {
+                  "type": "array",
+                  "minItems": 1,
+                  "uniqueItems": true,
+                  "items": {"type": "string", "pattern": "^REQ-[0-9]+$"}
+                },
+                "acceptance_criteria": {
+                  "type": "array",
+                  "minItems": 1,
+                  "uniqueItems": true,
+                  "items": {"type": "string", "pattern": "^AC-[0-9]+$"}
+                },
+                "epic_parent": {"type": "string", "minLength": 1},
+                "readiness": {"type": "string", "minLength": 1},
+                "subtasks": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": ["ref", "estimate_hours"],
+                    "properties": {
+                      "ref": {"type": "string", "minLength": 1},
+                      "estimate_hours": {"type": "number", "exclusiveMinimum": 0, "maximum": 4}
+                    }
+                  }
+                },
+                "traceability": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": ["requirements", "acceptance_criteria", "goal_definition_of_done"],
+                  "properties": {
+                    "requirements": {"$ref": "#/definitions/traceability-map"},
+                    "acceptance_criteria": {"$ref": "#/definitions/traceability-map"},
+                    "goal_definition_of_done": {"$ref": "#/definitions/traceability-map"}
+                  }
+                },
+                "traceability_complete": {"type": "boolean"},
+                "deadline_exception_approved": {"type": "boolean"}
+              }
+            }
+          },
           "target_sprint": {
             "enum": [
               "N+1",
               "N+2"
             ]
+          },
+          "target_sprint_end": {
+            "type": "string",
+            "format": "date"
           },
           "week_1_outcome": {
             "type": "string",
@@ -115,7 +198,45 @@
               "not verified"
             ]
           }
-        }
+        },
+        "allOf": [
+          {
+            "if": {
+              "properties": {"class": {"const": "Ready-backed"}},
+              "required": ["class"]
+            },
+            "then": {
+              "properties": {
+                "readiness": {"const": "ready"},
+                "capacity_fit": {"const": "verified"},
+                "goals": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "target_completion_date": {"type": "string", "format": "date"},
+                      "target_completion_date_evidence": true,
+                      "definition_of_done": {"type": "array", "minItems": 1, "uniqueItems": true},
+                      "canonical_spec": true,
+                      "requirements": true,
+                      "acceptance_criteria": true,
+                      "subtasks": {"type": "array", "minItems": 2},
+                      "traceability": true,
+                      "traceability_complete": {"const": true}
+                    },
+                    "required": [
+                      "target_completion_date_evidence",
+                      "canonical_spec",
+                      "requirements",
+                      "acceptance_criteria",
+                      "traceability"
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        ]
       }
     },
     "scenarios": {
@@ -128,7 +249,8 @@
           "name",
           "selected",
           "displaced_work",
-          "trade_off"
+          "trade_off",
+          "deadline_impact"
         ],
         "properties": {
           "name": {
@@ -152,6 +274,10 @@
             }
           },
           "trade_off": {
+            "type": "string",
+            "minLength": 1
+          },
+          "deadline_impact": {
             "type": "string",
             "minLength": 1
           }
@@ -198,6 +324,18 @@
             "no-action"
           ]
         }
+      }
+    }
+  },
+  "definitions": {
+    "traceability-map": {
+      "type": "object",
+      "minProperties": 1,
+      "additionalProperties": {
+        "type": "array",
+        "minItems": 1,
+        "uniqueItems": true,
+        "items": {"type": "string", "minLength": 1}
       }
     }
   }

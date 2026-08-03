@@ -13,19 +13,35 @@
   "data": {
     "planning": {
       "goal": "Operators can restore upgrades",
+      "goal_name": "Restore v5 upgrades safely",
+      "target_completion_date": "2026-08-07",
+      "definition_of_done": ["Rollback drill evidence is accepted"],
       "selected_stories": [
         "AIPLATFORM-101"
       ],
+      "subtask_plan": ["AIPLATFORM-102", "AIPLATFORM-103"],
       "capacity_verified": true,
       "coherent": true
     },
     "review": {
       "jira_status": "Done",
+      "goal_name": "Restore v5 upgrades safely",
+      "target_completion_date": "2026-08-07",
+      "deadline_status": "completed",
       "accepted_outcome": false,
       "validation_evidence": "missing",
+      "acceptance_criteria_satisfied": false,
+      "subtasks_satisfied": true,
+      "goal_definition_of_done_evidence": [
+        {"condition": "DOD-1", "satisfied": false, "evidence": "not verified"}
+      ],
       "carry_over_reason": "acceptance not demonstrated"
     },
     "retrospective": {
+      "goal_deadline_misses": [],
+      "goal_dod_failures": ["AIPLATFORM-101 DOD-1 not verified"],
+      "oversized_decomposition_attempts": [],
+      "subtask_carry_over": ["AIPLATFORM-102"],
       "experiments": [
         {
           "experiment": "Require restore evidence",

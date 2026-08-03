@@ -13,6 +13,14 @@
   },
   "data": {
     "story_ref": "story-1",
+    "goal": {
+      "goal_name": "Restore v4 backups safely",
+      "target_completion_date": "2026-08-07",
+      "definition_of_done": [
+        "A clean v5 installation is restored byte-for-byte from the v4 backup",
+        "The rollback drill evidence is attached to the Goal Story"
+      ]
+    },
     "subtasks": [
       {
         "draft_ref": "subtask-1",
@@ -41,15 +49,49 @@
         "acceptance_criteria": [
           "AC-1"
         ]
+      },
+      {
+        "draft_ref": "subtask-2",
+        "title": "Attach rollback verification evidence",
+        "outcome": "The Goal Story contains the reviewed rollback evidence",
+        "in_scope": [
+          "synthetic verification report"
+        ],
+        "out_of_scope": [
+          "live project"
+        ],
+        "steps": [
+          "review the comparison output",
+          "attach the sanitized evidence reference"
+        ],
+        "affected_files": [
+          "docs/manual-smoke-tests.md"
+        ],
+        "dependencies": [
+          "subtask-1"
+        ],
+        "validation": "./verify.sh --source-tree",
+        "definition_of_done": "The sanitized evidence reference resolves and the source contract passes",
+        "estimate_hours": 2,
+        "requirements": [
+          "REQ-1"
+        ],
+        "acceptance_criteria": [
+          "AC-1"
+        ]
       }
     ],
     "traceability": {
-      "REQ-1": [
-        "subtask-1"
-      ],
-      "AC-1": [
-        "subtask-1"
-      ]
+      "requirements": {
+        "REQ-1": ["subtask-1", "subtask-2"]
+      },
+      "acceptance_criteria": {
+        "AC-1": ["subtask-1", "subtask-2"]
+      },
+      "goal_definition_of_done": {
+        "DOD-1": ["subtask-1"],
+        "DOD-2": ["subtask-2"]
+      }
     }
   }
 }

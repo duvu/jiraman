@@ -13,20 +13,36 @@ deliverable_id: null
 confidentiality: internal
 managed_by: jiraman
 ownership: mixed
+goal_contract: goal-name,target-completion-date,goal-dod,epic-parent,min-two-subtasks,max-four-hours,traceability
 parent: Project Home
 ---
 
-# Epics
+# Epic Brief
 
 <!-- JIRAMAN:BEGIN summary -->
 ## Verified Facts
 
 - Source and retrieval time: [SOURCE]
+- Epic: [AIPLATFORM-KEY OR DRAFT-REF]
+- Epic outcome: [OUTCOME]
 
-## Outcomes and Evidence
+<!-- JIRAMAN:GOAL-SECTION:goal-register:BEGIN -->
+## Goal Register
 
-- Outcome: [OUTCOME]
-- Acceptance/validation signal: [SIGNAL]
+Cardinality: [VERIFIED: AT LEAST TWO GOALS | VIOLATION: FEWER THAN TWO | NOT VERIFIED]
+
+| Story / draft ref | Goal name | Target completion date | Deadline evidence | Goal DoD summary / link | Readiness / status | Valid Sub-tasks | Dependencies / risks |
+| --- | --- | --- | --- | --- | --- | ---: | --- |
+| [AIPLATFORM-KEY] | [GOAL NAME] | [YYYY-MM-DD] | [SOURCE / NOT VERIFIED] | [DOD] | [STATE] | [COUNT >= 2] | [SUMMARY] |
+| [AIPLATFORM-KEY] | [GOAL NAME] | [YYYY-MM-DD] | [SOURCE / NOT VERIFIED] | [DOD] | [STATE] | [COUNT >= 2] | [SUMMARY] |
+
+Every Goal is a Jira Story. Missing name, deadline, Goal DoD, or two valid Sub-tasks is visible as a contract violation and never Ready.
+<!-- JIRAMAN:GOAL-SECTION:goal-register:END -->
+
+## Epic Exit Evidence
+
+- Success measures: [MEASURES]
+- Exit criteria and evidence: [EVIDENCE]
 
 ## Risks, Dependencies, and Decisions Required
 

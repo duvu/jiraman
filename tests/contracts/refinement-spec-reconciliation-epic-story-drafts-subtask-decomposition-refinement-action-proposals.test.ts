@@ -23,7 +23,7 @@ describe("epic-story-drafts subtask-decomposition refinement-action-proposals", 
   test("drafts are traceable, bounded, and produce schema-valid proposals", () => {
     const matrix = asArray(asObject(asObject(readJson("tests/fixtures/drafts/backlog-matrix.json"), "matrix").data ?? null, "data").cases, "cases").map((value) => asObject(value, "case"));
     expect(matrix.map((item) => item.case)).toEqual(["one-story", "multi-story", "existing-epic", "update-existing-story", "unresolved-decision", "determinism-a", "determinism-b"]);
-    for (const item of matrix) expect(validateJson("backlog-draft.schema.json", item.draft ?? null).valid).toBe(true);
+    for (const item of matrix) expect(validateJson("backlog-draft.schema.json", item.draft ?? null).valid, String(item.case)).toBe(item.expected_valid === true);
     const deterministic = matrix.filter((item) => item.evidence_id === "evidence-deterministic");
     expect(deterministic).toHaveLength(2);
     expect(semanticallyEqual(deterministic[0]?.draft ?? null, deterministic[1]?.draft ?? null)).toBe(true);

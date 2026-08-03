@@ -1,5 +1,5 @@
 import { describe, expect, test } from "vitest";
-import { capabilityHealth, missingCapabilityCoverage, resolveCapability, responseFixtureViolations } from "../../src/capability-rules.js";
+import { capabilityHealth, goalSchemaExpectationViolations, missingCapabilityCoverage, resolveCapability, responseFixtureViolations } from "../../src/capability-rules.js";
 import { asArray, asObject, asString, readJson } from "../../src/contracts.js";
 import { evaluateScope, inspectUntrustedContent } from "../../src/security-rules.js";
 
@@ -14,6 +14,7 @@ describe("mcp-contract and mcp-profiles", () => {
     expect(resolveCapability("jira.issue.search", "read", malformed, "fallback").verdict).toBe("malformed");
     expect(resolveCapability("jira.issue.update", "write", permission, "fallback").verdict).toBe("permission-blocked");
     const contract = asObject(readJson("template/.kilo/config/mcp-atlassian.json"), "contract");
+    expect(goalSchemaExpectationViolations(contract)).toEqual([]);
     for (const item of asArray(contract.capabilities, "capabilities").map((value) => asObject(value, "capability")).filter((value) => value.access === "write")) expect(item.permission).toBe("ask");
     const coverage = asObject(readJson("tests/fixtures/mcp/capability_coverage.json"), "coverage");
     expect(missingCapabilityCoverage(contract, coverage.data ?? null)).toEqual([]);
@@ -39,7 +40,26 @@ describe("scope-guards and untrusted-content", () => {
     const injection = asObject(asObject(readJson("tests/fixtures/security/untrusted-content.json"), "injection").data ?? null, "data");
     const finding = inspectUntrustedContent(asString(injection.source, "source"), asString(injection.content, "content"));
     expect(finding?.preservedEvidenceIds).toEqual(["REQ-1"]);
-    expect(finding?.blockedEffect).toEqual(["scope change", "tool selection", "write approval", "secret disclosure"]);
-    expect(inspectUntrustedContent(asString(injection.source, "source"), asString(injection.baseline_content, "baseline"))).toBeNull();
+    expect(finding?.blockedEffect).toEqual(["scope change", "tool selection", "write approval", "secret disclosure", "goal policy override"]);
+    const baseline = inspectUntrustedContent(asString(injection.source, "source"), asString(injection.baseline_content, "baseline"));
+    expect(baseline.blockedEffect).toEqual([]);
+    expect(baseline.effectAuthorizationAllowed).toBe(false);
+    expect(baseline.preservedEvidenceIds).toEqual(["REQ-1"]);
+  });
+
+  test("blocks paraphrased cardinality hours Goal DoD deadline tool scope and approval overrides", () => {
+    const injection = asObject(asObject(readJson("tests/fixtures/security/untrusted-content.json"), "injection").data ?? null, "data");
+    const hostileCases = asArray(injection.hostile_cases, "hostile cases").map((value) => asObject(value, "hostile case"));
+    for (const item of hostileCases) {
+      const hostile = inspectUntrustedContent(asString(injection.source, "source"), asString(item.content, "hostile content"));
+      expect(hostile?.blockedEffect, asString(item.content, "hostile content")).toEqual(asArray(item.effects, "effects"));
+      expect(hostile?.preservedEvidenceIds, asString(item.content, "hostile content")).toEqual(asArray(item.evidence_ids, "evidence IDs"));
+    }
+    for (const item of asArray(injection.benign_cases, "benign cases")) {
+      const content = asString(item, "benign content");
+      const benign = inspectUntrustedContent(asString(injection.source, "source"), content);
+      expect(benign.blockedEffect, content).toEqual([]);
+      expect(benign.effectAuthorizationAllowed, content).toBe(false);
+    }
   });
 });

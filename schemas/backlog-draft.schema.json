@@ -45,20 +45,29 @@
         "constraints": {"type": "array"},
         "dependencies": {"type": "array"},
         "risks": {"type": "array"},
-        "story_map": {"type": "array", "minItems": 1},
+        "story_map": {
+          "type": "array",
+          "minItems": 2,
+          "uniqueItems": true,
+          "items": {"type": "string", "minLength": 1}
+        },
         "exit_criteria": {"type": "array", "minItems": 1},
         "blocking_gaps": {"type": "array"}
       }
     },
     "stories": {
       "type": "array",
-      "minItems": 1,
+      "minItems": 2,
       "items": {
         "type": "object",
         "additionalProperties": false,
         "required": [
           "draft_ref",
           "disposition",
+          "goal_name",
+          "target_completion_date",
+          "target_completion_date_evidence",
+          "definition_of_done",
           "outcome",
           "canonical_spec",
           "context",
@@ -81,6 +90,32 @@
           },
           "disposition": {"enum": ["create", "update", "reuse"]},
           "existing_key": {"type": "string", "pattern": "^AIPLATFORM-[0-9]+$"},
+          "goal_name": {
+            "type": "string",
+            "minLength": 1
+          },
+          "target_completion_date": {
+            "type": "string",
+            "format": "date"
+          },
+          "target_completion_date_evidence": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["source", "reference", "verified"],
+            "properties": {
+              "source": {
+                "enum": ["sprint-end", "milestone", "specification", "explicit-user-decision"]
+              },
+              "reference": {"type": "string", "minLength": 1},
+              "verified": {"const": true}
+            }
+          },
+          "definition_of_done": {
+            "type": "array",
+            "minItems": 1,
+            "uniqueItems": true,
+            "items": {"type": "string", "minLength": 1}
+          },
           "outcome": {
             "type": "string",
             "minLength": 1

@@ -75,6 +75,11 @@
       "additionalProperties": false,
       "required": [
         "hierarchy",
+        "story_semantics",
+        "minimum_goal_stories_per_epic",
+        "minimum_subtasks_per_goal",
+        "required_goal_fields",
+        "goal_deadline_sources",
         "maximum_subtask_hours",
         "active_story_limit",
         "per_assignee_active_story_limit",
@@ -90,6 +95,30 @@
             "Epic",
             "Story",
             "Sub-task"
+          ]
+        },
+        "story_semantics": {
+          "const": "goal"
+        },
+        "minimum_goal_stories_per_epic": {
+          "const": 2
+        },
+        "minimum_subtasks_per_goal": {
+          "const": 2
+        },
+        "required_goal_fields": {
+          "const": [
+            "goal_name",
+            "target_completion_date",
+            "definition_of_done"
+          ]
+        },
+        "goal_deadline_sources": {
+          "const": [
+            "sprint-end",
+            "milestone",
+            "specification",
+            "explicit-user-decision"
           ]
         },
         "maximum_subtask_hours": {
