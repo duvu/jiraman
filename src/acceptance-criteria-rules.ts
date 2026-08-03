@@ -14,8 +14,6 @@ const TECHNICAL_VERIFICATION = /(?:^|[^\p{L}\p{N}])(?:https?:\/\/[a-z0-9](?:[a-z
 
 const INCOMPLETE_TECHNICAL_LOCATOR = /(?:https?:\/\/(?=$|[^\p{L}\p{N}])|(?:^|[^\p{L}\p{N}:\/])\.{0,2}\/(?=$|[^\p{L}\p{N}]))/u;
 
-const BRACKETED_SEGMENT = /\[[^\]\r\n]*\](?:\(([^()\s]*)\))?/gu;
-
 const PLACEHOLDER_MARKER = /\b(?:placeholder|tbc|tbd|todo)\b/u;
 
 const IMPLEMENTATION_PREFIXES = [
@@ -50,11 +48,33 @@ function hasSpecificContentBeyondMethod(value: string): boolean {
   return /[\p{L}\p{N}]/u.test(remainder);
 }
 
+function markdownLinksValid(value: string): boolean {
+  let index = 0;
+  while (index < value.length) {
+    if (value[index] === "]") return false;
+    if (value[index] !== "[") {
+      index += 1;
+      continue;
+    }
+    const labelEnd = value.indexOf("]", index + 1);
+    if (labelEnd < 0 || labelEnd === index + 1 || value.slice(index + 1, labelEnd).includes("[") || value[labelEnd + 1] !== "(") return false;
+    let destinationEnd = labelEnd + 2;
+    let depth = 1;
+    while (destinationEnd < value.length && depth > 0) {
+      if (value[destinationEnd] === "(") depth += 1;
+      if (value[destinationEnd] === ")") depth -= 1;
+      destinationEnd += 1;
+    }
+    if (depth !== 0) return false;
+    const destination = value.slice(labelEnd + 2, destinationEnd - 1);
+    if (!COMPLETE_LOCATOR.test(destination)) return false;
+    index = destinationEnd;
+  }
+  return true;
+}
+
 function hasUnresolvedPlaceholder(value: string): boolean {
-  if (PLACEHOLDER_MARKER.test(value)) return true;
-  const segments = [...value.matchAll(BRACKETED_SEGMENT)];
-  if (segments.some((match) => match[1] === undefined || !COMPLETE_LOCATOR.test(match[1]))) return true;
-  return /[\[\]]/u.test(value.replace(BRACKETED_SEGMENT, ""));
+  return PLACEHOLDER_MARKER.test(value) || !markdownLinksValid(value);
 }
 
 function isConcreteStatement(value: string): boolean {

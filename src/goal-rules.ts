@@ -9,6 +9,7 @@ import {
   sourceAcceptanceCriterionErrors,
 } from "./acceptance-criteria-rules.js";
 import { validDate, type JsonObject, type JsonValue } from "./contracts.js";
+import { internalDependencyGraphValid } from "./dependency-rules.js";
 
 function objectValue(value: JsonValue | undefined): JsonObject | null {
   return value !== null && typeof value === "object" && !Array.isArray(value) ? value : null;
@@ -71,6 +72,16 @@ function subtaskErrors(value: JsonValue): ErrorObject[] {
     .filter((ref): ref is string => typeof ref === "string");
   const errors: ErrorObject[] = [];
   if (new Set(refs).size !== refs.length) errors.push(semanticError("/subtasks", "uniqueSubtaskRefs", "must contain unique Sub-task draft_ref values"));
+  const dependencyGraph = new Map<string, readonly string[]>();
+  for (const value of packageValue.subtasks) {
+    const subtask = objectValue(value);
+    if (typeof subtask?.draft_ref !== "string" || !Array.isArray(subtask.dependencies) || subtask.dependencies.some((dependency) => typeof dependency !== "string" || dependency.trim().length === 0)) continue;
+    dependencyGraph.set(subtask.draft_ref, subtask.dependencies.filter((dependency): dependency is string => typeof dependency === "string"));
+  }
+  const refSet = new Set(refs);
+  if (refSet.size === refs.length && (dependencyGraph.size !== refs.length || !internalDependencyGraphValid(dependencyGraph, refSet))) {
+    errors.push(semanticError("/subtasks", "resolvedSubtaskDependencies", "Sub-task dependencies must form an acyclic graph of declared sibling draft_ref values"));
+  }
   const goal = objectValue(packageValue.goal);
   if (goal !== null) errors.push(...goalAcceptanceCriterionErrors(goal.requirements, goal.acceptance_criteria, "/goal/acceptance_criteria"));
   const parentRequirementIds = new Set(Array.isArray(goal?.requirements) ? goal.requirements.filter((ref): ref is string => typeof ref === "string") : []);

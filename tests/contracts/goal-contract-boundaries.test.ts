@@ -69,6 +69,16 @@ describe("Goal contract boundaries", () => {
         case "duplicate-subtask-ref":
           asObject(subtasks[1] ?? null, "second Sub-task").draft_ref = "subtask-1";
           break;
+        case "self-subtask-dependency":
+          if (subtask !== null) subtask.dependencies = ["subtask-1"];
+          break;
+        case "missing-subtask-dependency":
+          if (subtask !== null) subtask.dependencies = ["subtask-missing"];
+          break;
+        case "cyclic-subtask-dependency":
+          if (subtask !== null) subtask.dependencies = ["subtask-2"];
+          asObject(subtasks[1] ?? null, "second Sub-task").dependencies = ["subtask-1"];
+          break;
         case "zero-estimate":
           if (subtask !== null) subtask.estimate_hours = 0;
           break;

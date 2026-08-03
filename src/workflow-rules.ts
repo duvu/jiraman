@@ -1,5 +1,6 @@
 import { acceptanceCriteriaIds, goalAcceptanceCriterionErrors, localAcceptanceCriterionErrors } from "./acceptance-criteria-rules.js";
 import { asArray, asObject, asString, invariant, validDate, type JsonObject, type JsonValue } from "./contracts.js";
+import { internalDependencyGraphValid } from "./dependency-rules.js";
 
 function objectValue(value: JsonValue | undefined): JsonObject | null {
   return value !== null && typeof value === "object" && !Array.isArray(value) ? value : null;
@@ -12,13 +13,13 @@ function stringIds(value: JsonValue | undefined): readonly string[] | null {
 }
 
 function stringList(value: JsonValue | undefined): readonly string[] | null {
-  if (!Array.isArray(value) || value.some((item) => typeof item !== "string" || item.length === 0)) return null;
+  if (!Array.isArray(value) || value.some((item) => typeof item !== "string" || item.trim().length === 0)) return null;
   const items = value.filter((item): item is string => typeof item === "string");
   return new Set(items).size === items.length ? items : null;
 }
 
 function stringArrayValid(value: JsonValue | undefined, minimumItems: number): boolean {
-  return Array.isArray(value) && value.length >= minimumItems && value.every((item) => typeof item === "string" && item.length > 0);
+  return Array.isArray(value) && value.length >= minimumItems && value.every((item) => typeof item === "string" && item.trim().length > 0);
 }
 
 function traceabilityMapValid(value: JsonValue | undefined, expectedIds: readonly string[], subtaskRefs: ReadonlySet<string>): boolean {
@@ -28,19 +29,6 @@ function traceabilityMapValid(value: JsonValue | undefined, expectedIds: readonl
     const ids = stringIds(refs);
     return ids !== null && ids.every((ref) => subtaskRefs.has(ref));
   });
-}
-
-function dependencyGraphValid(graph: ReadonlyMap<string, readonly string[]>, subtaskRefs: ReadonlySet<string>): boolean {
-  for (const [ref, dependencies] of graph) {
-    if (dependencies.some((dependency) => dependency === ref || !subtaskRefs.has(dependency))) return false;
-  }
-  const remaining = new Set(subtaskRefs);
-  while (remaining.size > 0) {
-    const ready = [...remaining].filter((ref) => graph.get(ref)?.every((dependency) => !remaining.has(dependency)) === true);
-    if (ready.length === 0) return false;
-    for (const ref of ready) remaining.delete(ref);
-  }
-  return true;
 }
 
 function goalChildTraceabilityValid(goal: JsonObject, requirementIds: readonly string[], criterionIds: readonly string[]): boolean {
@@ -57,10 +45,10 @@ function goalChildTraceabilityValid(goal: JsonObject, requirementIds: readonly s
     const criteria = stringIds(subtask?.parent_acceptance_criteria_refs);
     const dependencies = stringList(subtask?.dependencies);
     if (subtask === null || typeof subtask.ref !== "string" || !/^AIPLATFORM-[0-9]+$/.test(subtask.ref) || subtaskRefs.has(subtask.ref) || requirements === null || criteria === null || dependencies === null ||
-      requirements.some((id) => !declaredRequirements.has(id)) || criteria.some((id) => !declaredCriteria.has(id)) || typeof subtask.summary !== "string" || subtask.summary.length === 0 ||
-      typeof subtask.outcome !== "string" || subtask.outcome.length === 0 || !stringArrayValid(subtask.in_scope, 1) || !stringArrayValid(subtask.out_of_scope, 0) ||
-      !stringArrayValid(subtask.steps, 1) || !stringArrayValid(subtask.affected_files, 0) || typeof subtask.validation !== "string" || subtask.validation.length === 0 ||
-      typeof subtask.definition_of_done !== "string" || subtask.definition_of_done.length === 0 ||
+      requirements.some((id) => !declaredRequirements.has(id)) || criteria.some((id) => !declaredCriteria.has(id)) || typeof subtask.summary !== "string" || subtask.summary.trim().length === 0 ||
+      typeof subtask.outcome !== "string" || subtask.outcome.trim().length === 0 || !stringArrayValid(subtask.in_scope, 1) || !stringArrayValid(subtask.out_of_scope, 0) ||
+      !stringArrayValid(subtask.steps, 1) || !stringArrayValid(subtask.affected_files, 0) || typeof subtask.validation !== "string" || subtask.validation.trim().length === 0 ||
+      typeof subtask.definition_of_done !== "string" || subtask.definition_of_done.trim().length === 0 ||
       typeof subtask.estimate_hours !== "number" || subtask.estimate_hours <= 0 || subtask.estimate_hours > 4 ||
       subtask.content_language !== "vi-VN" || subtask.acceptance_criteria_storage !== "managed-description-section" || acceptanceCriteriaIds(subtask.acceptance_criteria) === null ||
       localAcceptanceCriterionErrors(subtask.acceptance_criteria, "").length > 0) return false;
@@ -69,7 +57,7 @@ function goalChildTraceabilityValid(goal: JsonObject, requirementIds: readonly s
     for (const id of requirements) coveredRequirements.add(id);
     for (const id of criteria) coveredCriteria.add(id);
   }
-  return dependencyGraphValid(dependencyGraph, subtaskRefs) && requirementIds.every((id) => coveredRequirements.has(id)) && criterionIds.every((id) => coveredCriteria.has(id));
+  return internalDependencyGraphValid(dependencyGraph, subtaskRefs) && requirementIds.every((id) => coveredRequirements.has(id)) && criterionIds.every((id) => coveredCriteria.has(id));
 }
 
 export function sprintHealth(input: JsonObject): "Green" | "Amber" | "Red" | "Not verified" {
