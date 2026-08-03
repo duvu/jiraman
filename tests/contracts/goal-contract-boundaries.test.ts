@@ -39,6 +39,27 @@ describe("Goal contract boundaries", () => {
         case "empty-goal-dod":
           if (story !== null) story.definition_of_done = [];
           break;
+        case "missing-epic-acceptance":
+          delete asObject(value.epic ?? null, "Epic").acceptance_criteria;
+          break;
+        case "duplicate-goal-acceptance":
+          if (story !== null) {
+            const criteria = asArray(story.acceptance_criteria, "Goal Acceptance Criteria");
+            criteria.push(structuredClone(criteria[0] ?? null));
+          }
+          break;
+        case "vague-goal-acceptance":
+          if (story !== null) {
+            const criterion = asObject(asArray(story.acceptance_criteria, "Goal Acceptance Criteria")[0] ?? null, "Goal Acceptance Criterion");
+            criterion.verification = "đã kiểm tra";
+          }
+          break;
+        case "uncovered-requirement":
+          if (story !== null) {
+            const criterion = asObject(asArray(story.acceptance_criteria, "Goal Acceptance Criteria")[0] ?? null, "Goal Acceptance Criterion");
+            criterion.requirement_refs = ["REQ-999"];
+          }
+          break;
         case "duplicate-goal-ref":
           asObject(stories[1] ?? null, "second Goal").draft_ref = "story-1";
           break;
@@ -54,9 +75,33 @@ describe("Goal contract boundaries", () => {
         case "oversized-estimate":
           if (subtask !== null) subtask.estimate_hours = 5;
           break;
+        case "invalid-parent-acceptance":
+          if (subtask !== null) subtask.parent_acceptance_criteria_refs = ["AC-999"];
+          break;
+        case "unimplemented-goal-acceptance": {
+          const goal = asObject(value.goal ?? null, "Goal");
+          const criteria = asArray(goal.acceptance_criteria, "Goal Acceptance Criteria");
+          const unimplemented = structuredClone(asObject(criteria[0] ?? null, "Goal Acceptance Criterion"));
+          unimplemented.id = "AC-2";
+          unimplemented.statement = "Bằng chứng khôi phục được lưu trong hồ sơ nghiệm thu";
+          criteria.push(unimplemented);
+          break;
+        }
+        case "missing-local-verification":
+          if (subtask !== null) {
+            const criterion = asObject(asArray(subtask.acceptance_criteria, "local Acceptance Criteria")[0] ?? null, "local Acceptance Criterion");
+            delete criterion.verification;
+          }
+          break;
+        case "duplicate-local-acceptance":
+          if (subtask !== null) {
+            const criteria = asArray(subtask.acceptance_criteria, "local Acceptance Criteria");
+            criteria.push(structuredClone(criteria[0] ?? null));
+          }
+          break;
         case "uncovered-acceptance":
-          asObject(asObject(value.traceability ?? null, "traceability").acceptance_criteria ?? null, "acceptance traceability");
-          asObject(value.traceability ?? null, "traceability").acceptance_criteria = {"AC-9": ["subtask-1"]};
+          asObject(asObject(value.traceability ?? null, "traceability").parent_acceptance_criteria ?? null, "acceptance traceability");
+          asObject(value.traceability ?? null, "traceability").parent_acceptance_criteria = {"AC-9": ["subtask-1"]};
           break;
         default:
           invariant(false, `unknown Goal boundary case: ${caseName}`);
@@ -130,8 +175,8 @@ describe("Goal contract boundaries", () => {
     asObject(requirementDrift.traceability ?? null, "requirement traceability").requirements = {"REQ-999": requirementSubtasks.map((subtask) => asString(subtask.draft_ref, "Sub-task ref"))};
     const acceptanceDrift: JsonObject = structuredClone(first);
     const acceptanceSubtasks = asArray(acceptanceDrift.subtasks, "acceptance Sub-tasks").map((value) => asObject(value, "acceptance Sub-task"));
-    for (const subtask of acceptanceSubtasks) subtask.acceptance_criteria = ["AC-999"];
-    asObject(acceptanceDrift.traceability ?? null, "acceptance traceability").acceptance_criteria = {"AC-999": acceptanceSubtasks.map((subtask) => asString(subtask.draft_ref, "Sub-task ref"))};
+    for (const subtask of acceptanceSubtasks) subtask.parent_acceptance_criteria_refs = ["AC-999"];
+    asObject(acceptanceDrift.traceability ?? null, "acceptance traceability").parent_acceptance_criteria = {"AC-999": acceptanceSubtasks.map((subtask) => asString(subtask.draft_ref, "Sub-task ref"))};
 
     // When
     const requirementViolations = goalPackageSetViolations(backlog, [requirementDrift, second]);

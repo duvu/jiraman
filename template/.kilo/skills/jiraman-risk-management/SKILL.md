@@ -4,6 +4,7 @@ description: "Validate and reconcile governed risk records without writes."
 version: 5
 side_effects: none
 policy: .kilo/policies/jiraman-safety.md
+jira_ticket_contract: docs/project-management/templates/jira/index.json
 ---
 
 # jiraman-risk-management
@@ -22,7 +23,7 @@ In-scope risk pages, source sections, related Jira work, decisions, duplicates, 
 
 ## Output Contract
 
-Risk records/findings with owner, likelihood, impact, mitigation, trigger, status, review date, evidence, duplicate disposition, and page/PMA proposals.
+Risk records/findings with owner, likelihood, impact, mitigation, trigger, status, review date, evidence, duplicate disposition, and page/PMA proposals. Any Jira proposal uses the canonical Vietnamese ticket template and complete structured ACs or remains non-executable.
 
 ## Semantic Capabilities
 
@@ -32,8 +33,8 @@ Risk records/findings with owner, likelihood, impact, mitigation, trigger, statu
 
 1. Validate every required risk field.
 2. Search before proposing new records; update/link existing records.
-3. Connect risk effects to dependencies/readiness when evidenced.
-4. Never call a write tool.
+3. Connect risk effects to dependencies/readiness when evidenced. Do not turn a mitigation into executable Jira work without source-backed AC statements and verification.
+4. Render any complete Jira proposal through `docs/project-management/templates/jira/index.json`, preserve technical literals, and never call a write tool.
 
 ## Side Effects
 

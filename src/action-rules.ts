@@ -1,5 +1,6 @@
 import { createHash } from "node:crypto";
 
+import { acceptanceCriterionSnapshots } from "./acceptance-criteria-rules.js";
 import { type JsonValue } from "./contracts.js";
 
 export interface PreflightInput {
@@ -28,8 +29,10 @@ export interface GoalPreflightInput {
   readonly dueDateWrite: "resolved" | "missing" | "ambiguous";
   readonly dueDateRead: "resolved" | "missing" | "ambiguous";
   readonly estimatesValid: boolean;
+  readonly acceptanceCriteriaComplete: boolean;
   readonly duplicatesAbsent: boolean;
   readonly payloadUnchanged: boolean;
+  readonly acceptanceCriteriaReadBackMatches: boolean;
   readonly readBackMatches: boolean;
 }
 
@@ -41,8 +44,10 @@ export function goalPreflightBlockers(input: GoalPreflightInput): string[] {
   if (input.dueDateWrite !== "resolved") blockers.push(`jira-due-date-write-${input.dueDateWrite}`);
   if (input.dueDateRead !== "resolved") blockers.push(`jira-due-date-read-${input.dueDateRead}`);
   if (!input.estimatesValid) blockers.push("invalid-subtask-estimate");
+  if (!input.acceptanceCriteriaComplete) blockers.push("incomplete-acceptance-criteria");
   if (!input.duplicatesAbsent) blockers.push("duplicate-target");
   if (!input.payloadUnchanged) blockers.push("modified");
+  if (!input.acceptanceCriteriaReadBackMatches) blockers.push("acceptance-criteria-read-back-mismatch");
   if (!input.readBackMatches) blockers.push("goal-read-after-write-mismatch");
   return blockers;
 }
@@ -78,6 +83,20 @@ export function dependentWritesAllowed(preflightAllowed: boolean, priorWriteResu
 export function verificationOutcome(writeResult: "success" | "failure", readAfterWriteMatches: boolean): "applied" | "failed" | "verification-failed" {
   if (writeResult === "failure") return "failed";
   return readAfterWriteMatches ? "applied" : "verification-failed";
+}
+
+export function acceptanceCriteriaReadBackMatches(approved: JsonValue, readBack: JsonValue): boolean {
+  const approvedCriteria = acceptanceCriterionSnapshots(approved);
+  const readBackCriteria = acceptanceCriterionSnapshots(readBack);
+  if (approvedCriteria === null || readBackCriteria === null || approvedCriteria.length !== readBackCriteria.length) return false;
+  const normalized = (criteria: typeof approvedCriteria): JsonValue => criteria
+    .map((criterion) => ({
+      id: criterion.id,
+      statement: criterion.statement.replace(/\r\n/g, "\n"),
+      verification: criterion.verification.replace(/\r\n/g, "\n"),
+    }))
+    .sort((left, right) => left.id.localeCompare(right.id));
+  return JSON.stringify(normalized(approvedCriteria)) === JSON.stringify(normalized(readBackCriteria));
 }
 
 export interface TargetPreflightInput {

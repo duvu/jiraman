@@ -15,28 +15,33 @@
     "cases": [
       {
         "case": "complete",
-        "input": {"goalFieldsPresent": true, "parentageVerified": true, "minimumChildrenPresent": true, "dueDateWrite": "resolved", "dueDateRead": "resolved", "estimatesValid": true, "duplicatesAbsent": true, "payloadUnchanged": true, "readBackMatches": true},
+        "input": {"goalFieldsPresent": true, "parentageVerified": true, "minimumChildrenPresent": true, "dueDateWrite": "resolved", "dueDateRead": "resolved", "estimatesValid": true, "acceptanceCriteriaComplete": true, "duplicatesAbsent": true, "payloadUnchanged": true, "acceptanceCriteriaReadBackMatches": true, "readBackMatches": true},
         "expected_blockers": []
       },
       {
         "case": "missing-due-date-write-schema",
-        "input": {"goalFieldsPresent": true, "parentageVerified": true, "minimumChildrenPresent": true, "dueDateWrite": "missing", "dueDateRead": "resolved", "estimatesValid": true, "duplicatesAbsent": true, "payloadUnchanged": true, "readBackMatches": true},
+        "input": {"goalFieldsPresent": true, "parentageVerified": true, "minimumChildrenPresent": true, "dueDateWrite": "missing", "dueDateRead": "resolved", "estimatesValid": true, "acceptanceCriteriaComplete": true, "duplicatesAbsent": true, "payloadUnchanged": true, "acceptanceCriteriaReadBackMatches": true, "readBackMatches": true},
         "expected_blockers": ["jira-due-date-write-missing"]
       },
       {
         "case": "ambiguous-due-date-read-schema",
-        "input": {"goalFieldsPresent": true, "parentageVerified": true, "minimumChildrenPresent": true, "dueDateWrite": "resolved", "dueDateRead": "ambiguous", "estimatesValid": true, "duplicatesAbsent": true, "payloadUnchanged": true, "readBackMatches": true},
+        "input": {"goalFieldsPresent": true, "parentageVerified": true, "minimumChildrenPresent": true, "dueDateWrite": "resolved", "dueDateRead": "ambiguous", "estimatesValid": true, "acceptanceCriteriaComplete": true, "duplicatesAbsent": true, "payloadUnchanged": true, "acceptanceCriteriaReadBackMatches": true, "readBackMatches": true},
         "expected_blockers": ["jira-due-date-read-ambiguous"]
       },
       {
         "case": "missing-goal-contract",
-        "input": {"goalFieldsPresent": false, "parentageVerified": false, "minimumChildrenPresent": false, "dueDateWrite": "resolved", "dueDateRead": "resolved", "estimatesValid": false, "duplicatesAbsent": true, "payloadUnchanged": true, "readBackMatches": true},
-        "expected_blockers": ["missing-goal-fields", "unverified-goal-parentage", "insufficient-goal-decomposition", "invalid-subtask-estimate"]
+        "input": {"goalFieldsPresent": false, "parentageVerified": false, "minimumChildrenPresent": false, "dueDateWrite": "resolved", "dueDateRead": "resolved", "estimatesValid": false, "acceptanceCriteriaComplete": false, "duplicatesAbsent": true, "payloadUnchanged": true, "acceptanceCriteriaReadBackMatches": true, "readBackMatches": true},
+        "expected_blockers": ["missing-goal-fields", "unverified-goal-parentage", "insufficient-goal-decomposition", "invalid-subtask-estimate", "incomplete-acceptance-criteria"]
       },
       {
         "case": "read-after-write-mismatch",
-        "input": {"goalFieldsPresent": true, "parentageVerified": true, "minimumChildrenPresent": true, "dueDateWrite": "resolved", "dueDateRead": "resolved", "estimatesValid": true, "duplicatesAbsent": true, "payloadUnchanged": true, "readBackMatches": false},
+        "input": {"goalFieldsPresent": true, "parentageVerified": true, "minimumChildrenPresent": true, "dueDateWrite": "resolved", "dueDateRead": "resolved", "estimatesValid": true, "acceptanceCriteriaComplete": true, "duplicatesAbsent": true, "payloadUnchanged": true, "acceptanceCriteriaReadBackMatches": true, "readBackMatches": false},
         "expected_blockers": ["goal-read-after-write-mismatch"]
+      },
+      {
+        "case": "acceptance-read-after-write-mismatch",
+        "input": {"goalFieldsPresent": true, "parentageVerified": true, "minimumChildrenPresent": true, "dueDateWrite": "resolved", "dueDateRead": "resolved", "estimatesValid": true, "acceptanceCriteriaComplete": true, "duplicatesAbsent": true, "payloadUnchanged": true, "acceptanceCriteriaReadBackMatches": false, "readBackMatches": true},
+        "expected_blockers": ["acceptance-criteria-read-back-mismatch"]
       }
     ]
   }

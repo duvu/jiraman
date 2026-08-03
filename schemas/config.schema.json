@@ -110,6 +110,7 @@
           "const": [
             "goal_name",
             "target_completion_date",
+            "acceptance_criteria",
             "definition_of_done"
           ]
         },

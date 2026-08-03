@@ -5,7 +5,7 @@
       "name": "jiraman-apply-actions",
       "path": ".kilo/skills/jiraman-apply-actions/SKILL.md",
       "goal_contract_required": true,
-      "description": "Apply only named approved PMG/PMA actions after Goal hierarchy, due-date, child, estimate, and read-back preflight."
+      "description": "Apply only named approved PMG/PMA actions after Goal hierarchy, structured AC, due-date, child, estimate, and exact read-back preflight."
     },
     {
       "name": "jiraman-confluence-publish",
@@ -23,49 +23,49 @@
       "name": "jiraman-daily",
       "path": ".kilo/skills/jiraman-daily/SKILL.md",
       "goal_contract_required": true,
-      "description": "Reconcile yesterday and propose deadline-bound Goal/Sub-task daily commitments without writes."
+      "description": "Reconcile yesterday and propose deadline-bound Goal/Sub-task daily commitments with complete structured AC without writes."
     },
     {
       "name": "jiraman-decision-management",
       "path": ".kilo/skills/jiraman-decision-management/SKILL.md",
       "goal_contract_required": false,
-      "description": "Validate and reconcile governed decision records without writes."
+      "description": "Validate decisions and emit only complete vi-VN structured-AC Jira proposals without writes."
     },
     {
       "name": "jiraman-meeting-actions",
       "path": ".kilo/skills/jiraman-meeting-actions/SKILL.md",
       "goal_contract_required": false,
-      "description": "Extract governed meeting outcomes and reconciled action proposals without writes."
+      "description": "Extract meeting outcomes and emit only complete vi-VN structured-AC Jira proposals without writes."
     },
     {
       "name": "jiraman-next-two-weeks",
       "path": ".kilo/skills/jiraman-next-two-weeks/SKILL.md",
       "goal_contract_required": true,
-      "description": "Build independent N+1/N+2 scenarios from deadline-bound Ready Goal Stories without writes."
+      "description": "Build independent N+1/N+2 scenarios from deadline-bound Ready Goal Stories with complete structured AC without writes."
     },
     {
       "name": "jiraman-refinement",
       "path": ".kilo/skills/jiraman-refinement/SKILL.md",
       "goal_contract_required": true,
-      "description": "Draft traceable Epics with deadline-bound Goal Stories and bounded child Sub-tasks."
+      "description": "Draft vi-VN Epics, deadline-bound Goal Stories, and bounded Sub-tasks with complete structured AC."
     },
     {
       "name": "jiraman-risk-management",
       "path": ".kilo/skills/jiraman-risk-management/SKILL.md",
       "goal_contract_required": false,
-      "description": "Validate and reconcile governed risk records without writes."
+      "description": "Validate risks and emit only complete vi-VN structured-AC Jira proposals without writes."
     },
     {
       "name": "jiraman-sprint-cadence",
       "path": ".kilo/skills/jiraman-sprint-cadence/SKILL.md",
       "goal_contract_required": true,
-      "description": "Plan and review Goal Stories using deadline, DoD, acceptance, and child evidence without writes."
+      "description": "Plan and review Goal Stories using deadline, DoD, structured AC, and child evidence without writes."
     },
     {
       "name": "jiraman-sprint-health",
       "path": ".kilo/skills/jiraman-sprint-health/SKILL.md",
       "goal_contract_required": true,
-      "description": "Diagnose Goal deadline/DoD health, flow bottlenecks, and independent N+1/N+2 Ready runway."
+      "description": "Diagnose Goal deadline/DoD/structured-AC health, flow bottlenecks, and independent N+1/N+2 Ready runway."
     }
   ]
 }

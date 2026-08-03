@@ -31,7 +31,9 @@
     "acceptance_criteria": [
       {
         "id": "AC-1",
-        "text": "A byte comparison confirms the backup",
+        "statement": "Phép so sánh byte xác nhận bản sao lưu nguyên vẹn",
+        "verification": "./tests/install/run-v4-upgrade.sh",
+        "requirement_refs": ["REQ-1"],
         "source_section": "Acceptance"
       }
     ],

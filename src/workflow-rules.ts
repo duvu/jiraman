@@ -1,3 +1,4 @@
+import { acceptanceCriteriaIds, goalAcceptanceCriterionErrors } from "./acceptance-criteria-rules.js";
 import { asArray, asObject, asString, invariant, validDate, type JsonObject, type JsonValue } from "./contracts.js";
 
 function objectValue(value: JsonValue | undefined): JsonObject | null {
@@ -74,11 +75,12 @@ export function candidateCanCommit(candidate: JsonObject): boolean {
       return typeof subtask.estimate_hours === "number" && subtask.estimate_hours > 0 && subtask.estimate_hours <= 4;
     });
     const requirements = stringIds(value.requirements);
-    const acceptanceCriteria = stringIds(value.acceptance_criteria);
+    const acceptanceCriteria = acceptanceCriteriaIds(value.acceptance_criteria);
     const definitionOfDone = stringIds(value.definition_of_done);
     const traceability = objectValue(value.traceability);
     const dodIds = definitionOfDone?.map((_, index) => `DOD-${index + 1}`) ?? [];
     const traceabilityValid = requirements !== null && acceptanceCriteria !== null && definitionOfDone !== null && traceability !== null &&
+      goalAcceptanceCriterionErrors(value.requirements, value.acceptance_criteria, "/acceptance_criteria").length === 0 &&
       traceabilityMapValid(traceability.requirements, requirements, subtaskRefs) &&
       traceabilityMapValid(traceability.acceptance_criteria, acceptanceCriteria, subtaskRefs) &&
       traceabilityMapValid(traceability.goal_definition_of_done, dodIds, subtaskRefs);
@@ -109,6 +111,7 @@ export function goalReadinessViolations(goal: JsonObject): string[] {
   if (typeof goal.goal_name !== "string" || goal.goal_name.length === 0) violations.push("missing-goal-name");
   if (typeof goal.target_completion_date !== "string" || !validDate(goal.target_completion_date) || goal.deadline_evidence_verified !== true) violations.push("unverified-goal-deadline");
   if (!Array.isArray(goal.definition_of_done) || goal.definition_of_done.length === 0) violations.push("missing-goal-dod");
+  if (goalAcceptanceCriterionErrors(goal.requirements, goal.acceptance_criteria, "/acceptance_criteria").length > 0) violations.push("incomplete-acceptance-criteria");
   if (typeof goal.epic_parent !== "string" || !goal.epic_parent.startsWith("AIPLATFORM-")) violations.push("unverified-epic-parent");
   if (!Array.isArray(goal.subtasks) || goal.subtasks.length < 2) violations.push("insufficient-subtasks");
   if (Array.isArray(goal.subtasks) && goal.subtasks.some((value) => value === null || typeof value !== "object" || Array.isArray(value) || typeof value.estimate_hours !== "number" || value.estimate_hours <= 0 || value.estimate_hours > 4)) violations.push("invalid-subtask-estimate");

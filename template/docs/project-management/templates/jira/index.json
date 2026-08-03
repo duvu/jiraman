@@ -1,0 +1,26 @@
+{
+  "schema_version": 5,
+  "content_language": "vi-VN",
+  "acceptance_criteria_storage": "managed-description-section",
+  "acceptance_criteria_heading": "## Tiêu chí nghiệm thu",
+  "acceptance_criterion_fields": ["id", "statement", "verification"],
+  "templates": [
+    {
+      "issue_type": "Epic",
+      "file": "epic.md",
+      "required_sections": ["outcome", "value", "scope", "success-measures", "constraints-dependencies", "risks", "goal-stories", "acceptance-criteria", "completion"]
+    },
+    {
+      "issue_type": "Story",
+      "semantic_role": "Goal",
+      "file": "goal-story.md",
+      "required_sections": ["goal-identity", "outcome-context", "scope", "requirements", "acceptance-criteria", "goal-dod", "validation", "dependencies", "subtask-plan", "rollout-recovery", "blocking-gaps"]
+    },
+    {
+      "issue_type": "Sub-task",
+      "file": "sub-task.md",
+      "required_sections": ["outcome", "parent-traceability", "scope", "steps", "affected-files", "dependencies", "validation", "acceptance-criteria", "subtask-dod", "estimate"]
+    }
+  ],
+  "preserve_literals": ["jira-key", "req-id", "ac-id", "code", "path", "command", "url", "issue-type", "status"]
+}

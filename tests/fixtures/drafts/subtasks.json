@@ -12,6 +12,7 @@
     "oversized_rejected": true
   },
   "data": {
+    "content_language": "vi-VN",
     "story_ref": "story-1",
     "goal": {
       "goal_name": "Restore v4 backups safely",
@@ -19,6 +20,15 @@
       "definition_of_done": [
         "A clean v5 installation is restored byte-for-byte from the v4 backup",
         "The rollback drill evidence is attached to the Goal Story"
+      ],
+      "requirements": ["REQ-1"],
+      "acceptance_criteria": [
+        {
+          "id": "AC-1",
+          "statement": "Bản sao lưu v4 được khôi phục nguyên vẹn trong dự án kiểm thử",
+          "verification": "./tests/install/run-v4-upgrade.sh",
+          "requirement_refs": ["REQ-1"]
+        }
       ]
     },
     "subtasks": [
@@ -46,8 +56,15 @@
         "requirements": [
           "REQ-1"
         ],
+        "parent_acceptance_criteria_refs": ["AC-1"],
         "acceptance_criteria": [
-          "AC-1"
+          {
+            "id": "AC-1",
+            "statement": "Phép so sánh byte xác nhận bản sao được khôi phục nguyên vẹn",
+            "verification": "./tests/install/run-v4-upgrade.sh",
+            "validation_ref": "VAL-1",
+            "definition_of_done_ref": "DOD-1"
+          }
         ]
       },
       {
@@ -76,8 +93,15 @@
         "requirements": [
           "REQ-1"
         ],
+        "parent_acceptance_criteria_refs": ["AC-1"],
         "acceptance_criteria": [
-          "AC-1"
+          {
+            "id": "AC-1",
+            "statement": "Goal Story chứa liên kết bằng chứng rollback đã được review",
+            "verification": "./verify.sh --source-tree",
+            "validation_ref": "VAL-1",
+            "definition_of_done_ref": "DOD-1"
+          }
         ]
       }
     ],
@@ -85,7 +109,7 @@
       "requirements": {
         "REQ-1": ["subtask-1", "subtask-2"]
       },
-      "acceptance_criteria": {
+      "parent_acceptance_criteria": {
         "AC-1": ["subtask-1", "subtask-2"]
       },
       "goal_definition_of_done": {

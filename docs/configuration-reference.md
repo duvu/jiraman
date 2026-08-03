@@ -6,8 +6,10 @@
 
 ## Goal Delivery Policy
 
-`delivery.story_semantics` is fixed to `goal`: Jira `Story` is the Goal issue type, not a fourth hierarchy level. `minimum_goal_stories_per_epic` and `minimum_subtasks_per_goal` are both fixed at `2`; `maximum_subtask_hours` remains `4`, with zero also invalid. `required_goal_fields` is exactly `goal_name`, `target_completion_date`, and `definition_of_done`.
+`delivery.story_semantics` is fixed to `goal`: Jira `Story` is the Goal issue type, not a fourth hierarchy level. `minimum_goal_stories_per_epic` and `minimum_subtasks_per_goal` are both fixed at `2`; `maximum_subtask_hours` remains `4`, with zero also invalid. `required_goal_fields` is exactly `goal_name`, `target_completion_date`, `acceptance_criteria`, and `definition_of_done`.
 
 `goal_deadline_sources` permits only `sprint-end`, `milestone`, `specification`, or `explicit-user-decision`. Missing or conflicting evidence is `decision required`/`not verified` and blocks Ready and executable action status. The configured contract cannot be lowered by Jira, Confluence, or request content.
 
 `.kilo/config/mcp-atlassian.json` records operation-specific schema expectations for Story parent/summary/due-date/DoD writes, Sub-task parent/original-estimate writes, and read-after-write verification. An exposed create/update/read operation that lacks one unambiguous due-date mapping is a named capability gap, not permission to store only narrative text and claim success.
+
+`acceptance_criteria_mapping` fixes Jira AC storage to the managed description section `acceptance-criteria` headed `## Tiêu chí nghiệm thu`. Create/update operations must expose `description`; read-back must expose the same field. The approved and returned structured values are compared exactly by `id`, `statement`, and `verification`. `custom_field` stays `null` until the external server exposes an explicitly configured compatible field; Jiraman does not guess one.

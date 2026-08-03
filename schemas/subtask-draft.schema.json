@@ -3,12 +3,14 @@
   "type": "object",
   "additionalProperties": false,
   "required": [
+    "content_language",
     "story_ref",
     "goal",
     "subtasks",
     "traceability"
   ],
   "properties": {
+    "content_language": {"const": "vi-VN"},
     "story_ref": {
       "type": "string",
       "minLength": 1
@@ -19,7 +21,9 @@
       "required": [
         "goal_name",
         "target_completion_date",
-        "definition_of_done"
+        "definition_of_done",
+        "requirements",
+        "acceptance_criteria"
       ],
       "properties": {
         "goal_name": {"type": "string", "minLength": 1},
@@ -29,6 +33,17 @@
           "minItems": 1,
           "uniqueItems": true,
           "items": {"type": "string", "minLength": 1}
+        },
+        "requirements": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {"type": "string", "pattern": "^REQ-[0-9]+$"}
+        },
+        "acceptance_criteria": {
+          "type": "array",
+          "minItems": 1,
+          "items": {"$ref": "https://duvu.github.io/jiraman/schemas/acceptance-criterion.schema.json#/definitions/goal-criterion"}
         }
       }
     },
@@ -51,6 +66,7 @@
           "definition_of_done",
           "estimate_hours",
           "requirements",
+          "parent_acceptance_criteria_refs",
           "acceptance_criteria"
         ],
         "properties": {
@@ -99,18 +115,22 @@
           "requirements": {
             "type": "array",
             "minItems": 1,
+            "uniqueItems": true,
             "items": {
               "pattern": "^REQ-[0-9]+$",
               "type": "string"
             }
           },
+          "parent_acceptance_criteria_refs": {
+            "type": "array",
+            "minItems": 1,
+            "uniqueItems": true,
+            "items": {"type": "string", "pattern": "^AC-[0-9]+$"}
+          },
           "acceptance_criteria": {
             "type": "array",
             "minItems": 1,
-            "items": {
-              "pattern": "^AC-[0-9]+$",
-              "type": "string"
-            }
+            "items": {"$ref": "https://duvu.github.io/jiraman/schemas/acceptance-criterion.schema.json#/definitions/subtask-criterion"}
           }
         }
       }
@@ -120,12 +140,12 @@
       "additionalProperties": false,
       "required": [
         "requirements",
-        "acceptance_criteria",
+        "parent_acceptance_criteria",
         "goal_definition_of_done"
       ],
       "properties": {
         "requirements": {"$ref": "#/definitions/traceability-map"},
-        "acceptance_criteria": {"$ref": "#/definitions/traceability-map"},
+        "parent_acceptance_criteria": {"$ref": "#/definitions/traceability-map"},
         "goal_definition_of_done": {"$ref": "#/definitions/traceability-map"}
       }
     }

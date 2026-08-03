@@ -74,29 +74,7 @@
     "acceptance_criteria": {
       "type": "array",
       "minItems": 1,
-      "items": {
-        "type": "object",
-        "additionalProperties": false,
-        "required": [
-          "id",
-          "text",
-          "source_section"
-        ],
-        "properties": {
-          "id": {
-            "type": "string",
-            "pattern": "^AC-[0-9]+$"
-          },
-          "text": {
-            "type": "string",
-            "minLength": 1
-          },
-          "source_section": {
-            "type": "string",
-            "minLength": 1
-          }
-        }
-      }
+      "items": {"$ref": "https://duvu.github.io/jiraman/schemas/acceptance-criterion.schema.json#/definitions/source-criterion"}
     },
     "constraints": {
       "type": "array",

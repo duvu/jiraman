@@ -4,7 +4,8 @@ description: "Reconcile yesterday and propose deadline-bound Goal/Sub-task daily
 version: 5
 side_effects: none
 policy: .kilo/policies/jiraman-safety.md
-goal_contract: goal-name,target-completion-date,goal-dod,epic-parent,min-two-subtasks,max-four-hours,traceability
+jira_ticket_contract: docs/project-management/templates/jira/index.json
+goal_contract: goal-name,target-completion-date,structured-ac,goal-dod,epic-parent,min-two-subtasks,max-four-hours,traceability
 ---
 
 # jiraman-daily
@@ -23,7 +24,7 @@ Current capability health; active sprint and Goal Stories when available; each G
 
 ## Output Contract
 
-Capability health; evidence window; previous commitments classified `done`, `partial`, `not started`, `blocked`, or `not verified`; overdue/near-deadline and incomplete-DoD Goal risks; flow constraints; at most one primary and one fallback Sub-task per verified assignee, each naming parent Goal, Goal deadline, relevant Goal DoD condition, outcome, estimate, and validation; N+1/N+2 outlook; decisions required; PMG/PMA proposals; facts, assumptions, recommendations, and confidence.
+Capability health; evidence window; previous commitments classified `done`, `partial`, `not started`, `blocked`, or `not verified`; overdue/near-deadline and incomplete-DoD Goal risks; flow constraints; at most one primary and one fallback Sub-task per verified assignee, each naming parent Goal, Goal deadline, relevant parent and local ACs, Goal DoD condition, outcome, estimate, and validation; N+1/N+2 outlook; decisions required; PMG/PMA proposals rendered through the canonical Vietnamese Jira contract; facts, assumptions, recommendations, and confidence.
 
 ## Semantic Capabilities
 
@@ -37,7 +38,7 @@ Capability health; evidence window; previous commitments classified `done`, `par
 4. Identify overdue and near-deadline Goals, then preserve the priority order: incidents/security, unblock work, clear review/validation queues, finish active work, protect the sprint Goal, restore runway, then consider new work.
 5. Every commitment names its parent Goal, verified target date, relevant Goal DoD condition, Sub-task outcome, `0h < estimate <= 4h`, and exact validation. Do not infer a deadline or completion from status.
 6. Enforce configured Story and per-assignee Sub-task WIP. Unknown capacity or ownership remains unknown.
-7. Use only transparent counts/arithmetic from returned data and never call a write tool.
+7. Any Jira update/comment proposal preserves the complete structured AC section or proposes only the missing managed section/comment; missing AC content blocks executable output. Render through `docs/project-management/templates/jira/index.json`, use only transparent counts/arithmetic from returned data, and never call a write tool.
 
 ## Side Effects
 

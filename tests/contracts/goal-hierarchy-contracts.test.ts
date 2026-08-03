@@ -25,7 +25,7 @@ describe("goal hierarchy contracts", () => {
     expect(delivery.story_semantics).toBe("goal");
     expect(delivery.minimum_goal_stories_per_epic).toBe(2);
     expect(delivery.minimum_subtasks_per_goal).toBe(2);
-    expect(delivery.required_goal_fields).toEqual(["goal_name", "target_completion_date", "definition_of_done"]);
+    expect(delivery.required_goal_fields).toEqual(["goal_name", "target_completion_date", "acceptance_criteria", "definition_of_done"]);
     expect(goalPolicyMetadataValid(parseFrontmatter(readText("template/.kilo/policies/jiraman-safety.md")))).toBe(true);
     expect(backlogResult.valid).toBe(true);
     expect(asArray(backlog.stories, "Goal Stories")).toHaveLength(2);

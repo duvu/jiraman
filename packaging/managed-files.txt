@@ -30,3 +30,7 @@ docs/project-management/templates/confluence/sprint-planning.md
 docs/project-management/templates/confluence/sprint-review.md
 docs/project-management/templates/confluence/story-specification.md
 docs/project-management/templates/confluence/weekly-status.md
+docs/project-management/templates/jira/index.json
+docs/project-management/templates/jira/epic.md
+docs/project-management/templates/jira/goal-story.md
+docs/project-management/templates/jira/sub-task.md

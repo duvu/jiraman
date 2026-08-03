@@ -4,7 +4,8 @@ description: "Diagnose Goal deadline/DoD health, flow bottlenecks, and independe
 version: 5
 side_effects: none
 policy: .kilo/policies/jiraman-safety.md
-goal_contract: goal-name,target-completion-date,goal-dod,epic-parent,min-two-subtasks,max-four-hours,traceability
+jira_ticket_contract: docs/project-management/templates/jira/index.json
+goal_contract: goal-name,target-completion-date,structured-ac,goal-dod,epic-parent,min-two-subtasks,max-four-hours,traceability
 ---
 
 # jiraman-sprint-health
@@ -23,7 +24,7 @@ Capability health; active sprint/Goal; bounded AIPLATFORM Goal Stories with name
 
 ## Output Contract
 
-For health: Green, Amber, Red, or Not verified plus per-Goal `on track`, `at risk`, `overdue`, `DoD incomplete`, `completed with evidence`, or `not verified`; cardinality, WIP/aging/queue/blocker/dependency findings; and smallest corrective actions. For runway: independent N+1/N+2 Goal coverage, reserve, gaps, unready potential, exact readiness recovery, deadlines/DoD/child coverage, and outcome-coherence risk.
+For health: Green, Amber, Red, or Not verified plus per-Goal `on track`, `at risk`, `overdue`, `DoD incomplete`, `completed with evidence`, or `not verified`; structured AC completeness, cardinality, WIP/aging/queue/blocker/dependency findings; and smallest corrective actions. For runway: independent N+1/N+2 Goal coverage, reserve, gaps, unready potential, exact readiness recovery, deadlines/AC/DoD/child coverage, outcome-coherence risk, and canonical Vietnamese Jira proposals when needed.
 
 ## Semantic Capabilities
 
@@ -33,11 +34,11 @@ For health: Green, Amber, Red, or Not verified plus per-Goal `on track`, `at ris
 
 1. Detect WIP breaches, stale work, review/validation congestion, blockers, unassigned active Sub-tasks, and explicit dependency risks from returned fields.
 2. Classify each Goal from verified deadline and DoD evidence as `on track`, `at risk`, `overdue`, `DoD incomplete`, `completed with evidence`, or `not verified`. Jira Done alone never proves completion.
-3. Flag every Epic with fewer than two Goals and every Goal with fewer than two valid Sub-tasks, missing Goal fields, incomplete traceability, or an estimate outside `(0h, 4h]`.
+3. Flag every ticket missing structured ACs, every Epic with fewer than two Goals, and every Goal with uncovered REQs, unresolved parent AC refs, fewer than two valid Sub-tasks, missing Goal fields, incomplete traceability, or an estimate outside `(0h, 4h]`.
 4. A blocked Sprint Goal may be Red even when most issues are Done; issue counts are not value. Count a Goal Story once, never add its estimate to child estimates, and never count an Epic.
 5. Only Goal Stories satisfying the full shared contract, sprint deadline fit, and resolved dependencies count as Ready. Evaluate N+1 and N+2 separately; excess N+1 cannot compensate for empty N+2.
 6. Unready estimates are potential only. Green volume can still have incoherent outcomes or deadline/DoD risk.
-7. Recommend finish/unblock/refine before start and never call a write tool.
+7. Recommend finish/unblock/refine before start. Render any Jira corrective-action proposal through `docs/project-management/templates/jira/index.json`; missing ACs permit only a managed-section/comment proposal. Never call a write tool.
 
 ## Side Effects
 

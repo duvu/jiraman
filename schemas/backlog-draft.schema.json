@@ -3,10 +3,12 @@
   "type": "object",
   "additionalProperties": false,
   "required": [
+    "content_language",
     "epic",
     "stories"
   ],
   "properties": {
+    "content_language": {"const": "vi-VN"},
     "epic": {
       "type": "object",
       "required": [
@@ -20,6 +22,7 @@
         "dependencies",
         "risks",
         "story_map",
+        "acceptance_criteria",
         "exit_criteria",
         "blocking_gaps"
       ],
@@ -50,6 +53,11 @@
           "minItems": 2,
           "uniqueItems": true,
           "items": {"type": "string", "minLength": 1}
+        },
+        "acceptance_criteria": {
+          "type": "array",
+          "minItems": 1,
+          "items": {"$ref": "https://duvu.github.io/jiraman/schemas/acceptance-criterion.schema.json#/definitions/criterion"}
         },
         "exit_criteria": {"type": "array", "minItems": 1},
         "blocking_gaps": {"type": "array"}
@@ -132,6 +140,7 @@
           "requirements": {
             "type": "array",
             "minItems": 1,
+            "uniqueItems": true,
             "items": {
               "pattern": "^REQ-[0-9]+$",
               "type": "string"
@@ -140,10 +149,7 @@
           "acceptance_criteria": {
             "type": "array",
             "minItems": 1,
-            "items": {
-              "pattern": "^AC-[0-9]+$",
-              "type": "string"
-            }
+            "items": {"$ref": "https://duvu.github.io/jiraman/schemas/acceptance-criterion.schema.json#/definitions/goal-criterion"}
           },
           "constraints": {
             "type": "array"

@@ -11,6 +11,7 @@
     "complete": true
   },
   "data": {
+    "content_language": "vi-VN",
     "epic": {
       "disposition": "reuse",
       "key": "AIPLATFORM-100",
@@ -23,6 +24,13 @@
       "dependencies": [],
       "risks": ["backup drift"],
       "story_map": ["story-1", "story-2"],
+      "acceptance_criteria": [
+        {
+          "id": "AC-1",
+          "statement": "Tất cả Goal Stories được nghiệm thu và bằng chứng khôi phục đạt thước đo thành công",
+          "verification": "Đối chiếu trạng thái nghiệm thu của Story map và chạy ./tests/install/run-v4-upgrade.sh"
+        }
+      ],
       "exit_criteria": ["rollback evidence accepted"],
       "blocking_gaps": []
     },
@@ -54,7 +62,12 @@
           "REQ-1"
         ],
         "acceptance_criteria": [
-          "AC-1"
+          {
+            "id": "AC-1",
+            "statement": "Bản sao lưu v4 được khôi phục nguyên vẹn trong dự án kiểm thử",
+            "verification": "./tests/install/run-v4-upgrade.sh",
+            "requirement_refs": ["REQ-1"]
+          }
         ],
         "constraints": [
           "one sprint"
@@ -95,7 +108,12 @@
           "REQ-2"
         ],
         "acceptance_criteria": [
-          "AC-2"
+          {
+            "id": "AC-2",
+            "statement": "Maintainer hoàn tất hướng dẫn rollback mà không gặp bước chưa được mô tả",
+            "verification": "Thực hiện walkthrough trong dự án tạm và ghi nhận không còn bước chưa xác định",
+            "requirement_refs": ["REQ-2"]
+          }
         ],
         "constraints": [
           "one sprint"

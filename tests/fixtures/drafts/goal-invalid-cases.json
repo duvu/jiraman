@@ -17,11 +17,19 @@
       {"case": "missing-deadline", "schema": "backlog-draft.schema.json", "expected_keyword": "required"},
       {"case": "malformed-deadline", "schema": "backlog-draft.schema.json", "expected_keyword": "format"},
       {"case": "empty-goal-dod", "schema": "backlog-draft.schema.json", "expected_keyword": "minItems"},
+      {"case": "missing-epic-acceptance", "schema": "backlog-draft.schema.json", "expected_keyword": "required"},
+      {"case": "duplicate-goal-acceptance", "schema": "backlog-draft.schema.json", "expected_keyword": "uniqueAcceptanceCriterionIds"},
+      {"case": "vague-goal-acceptance", "schema": "backlog-draft.schema.json", "expected_keyword": "testableAcceptanceCriterion"},
+      {"case": "uncovered-requirement", "schema": "backlog-draft.schema.json", "expected_keyword": "requirementAcceptanceCoverage"},
       {"case": "duplicate-goal-ref", "schema": "backlog-draft.schema.json", "expected_keyword": "uniqueGoalRefs"},
       {"case": "one-subtask", "schema": "subtask-draft.schema.json", "expected_keyword": "minItems"},
       {"case": "duplicate-subtask-ref", "schema": "subtask-draft.schema.json", "expected_keyword": "uniqueSubtaskRefs"},
       {"case": "zero-estimate", "schema": "subtask-draft.schema.json", "expected_keyword": "exclusiveMinimum"},
       {"case": "oversized-estimate", "schema": "subtask-draft.schema.json", "expected_keyword": "maximum"},
+      {"case": "invalid-parent-acceptance", "schema": "subtask-draft.schema.json", "expected_keyword": "resolvedParentAcceptanceReference"},
+      {"case": "unimplemented-goal-acceptance", "schema": "subtask-draft.schema.json", "expected_keyword": "goalAcceptanceSubtaskCoverage"},
+      {"case": "missing-local-verification", "schema": "subtask-draft.schema.json", "expected_keyword": "required"},
+      {"case": "duplicate-local-acceptance", "schema": "subtask-draft.schema.json", "expected_keyword": "uniqueAcceptanceCriterionIds"},
       {"case": "uncovered-acceptance", "schema": "subtask-draft.schema.json", "expected_keyword": "completeTraceability"}
     ]
   }

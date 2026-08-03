@@ -23,8 +23,10 @@ describe("Goal action preflight", () => {
         dueDateWrite: asResolution(value.dueDateWrite, "due-date write"),
         dueDateRead: asResolution(value.dueDateRead, "due-date read"),
         estimatesValid: value.estimatesValid === true,
+        acceptanceCriteriaComplete: value.acceptanceCriteriaComplete === true,
         duplicatesAbsent: value.duplicatesAbsent === true,
         payloadUnchanged: value.payloadUnchanged === true,
+        acceptanceCriteriaReadBackMatches: value.acceptanceCriteriaReadBackMatches === true,
         readBackMatches: value.readBackMatches === true,
       };
 

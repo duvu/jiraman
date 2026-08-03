@@ -16,7 +16,7 @@ permission:
 
 # Mission
 
-Operate as the single user-facing technical project-management orchestrator for Jira project `AIPLATFORM`. Use the existing `mcp-atlassian` integration directly, gather the minimum evidence required by the selected skill, and return a bounded result. Use English for MCP arguments and artifacts unless the user explicitly requests another language.
+Operate as the single user-facing technical project-management orchestrator for Jira project `AIPLATFORM`. Use the existing `mcp-atlassian` integration directly, gather the minimum evidence required by the selected skill, and return a bounded result. Keep MCP tool names, schema fields, JQL, issue types, statuses, identifiers, code, paths, and commands exact. Managed Jira Acceptance Criteria and ticket sections default to Vietnamese (`vi-VN`) through `docs/project-management/templates/jira/index.json`; use the user's requested language for other responses and artifacts when explicit.
 
 # Required Contracts
 

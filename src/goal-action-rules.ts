@@ -1,5 +1,11 @@
 import type { ErrorObject } from "ajv";
 
+import {
+  acceptanceCriteriaIds,
+  acceptanceCriterionSemanticErrors,
+  goalAcceptanceCriterionErrors,
+  localAcceptanceCriterionErrors,
+} from "./acceptance-criteria-rules.js";
 import { validDate, type JsonObject, type JsonValue } from "./contracts.js";
 
 function objectValue(value: JsonValue | undefined): JsonObject | null {
@@ -34,6 +40,7 @@ interface ValidHierarchyAction {
   readonly parentRef: string | null;
   readonly parentIssueType: JsonValue | undefined;
   readonly parentProject: JsonValue | undefined;
+  readonly state: JsonObject;
 }
 
 function hierarchyIssueType(value: JsonValue | undefined): HierarchyIssueType | null {
@@ -44,7 +51,8 @@ function hierarchyIssueType(value: JsonValue | undefined): HierarchyIssueType | 
 function hierarchyFieldsValid(issueType: HierarchyIssueType, state: JsonObject, ref: string | null): boolean {
   switch (issueType) {
     case "Epic":
-      return ref !== null && typeof state.summary === "string" && state.summary.length > 0;
+      return ref !== null && typeof state.summary === "string" && state.summary.length > 0 && state.content_language === "vi-VN" &&
+        state.acceptance_criteria_storage === "managed-description-section" && acceptanceCriterionSemanticErrors(state.acceptance_criteria, "").length === 0 && acceptanceCriteriaIds(state.acceptance_criteria) !== null;
     case "Story": {
       const deadlineEvidence = objectValue(state.target_completion_date_evidence);
       return typeof state.parent_ref === "string" && state.parent_ref.length > 0 &&
@@ -52,15 +60,31 @@ function hierarchyFieldsValid(issueType: HierarchyIssueType, state: JsonObject, 
         typeof state.target_completion_date === "string" && validDate(state.target_completion_date) && state.due_date === state.target_completion_date &&
         deadlineEvidence !== null && ["sprint-end", "milestone", "specification", "explicit-user-decision"].includes(String(deadlineEvidence.source)) && typeof deadlineEvidence.reference === "string" && deadlineEvidence.reference.length > 0 && deadlineEvidence.verified === true &&
         nonEmptyStrings(state.definition_of_done) && typeof state.canonical_spec === "string" && state.canonical_spec.length > 0 &&
-        nonEmptyStrings(state.requirements) && nonEmptyStrings(state.acceptance_criteria) && nonEmptyStrings(state.validation);
+        nonEmptyStrings(state.requirements) && acceptanceCriteriaIds(state.acceptance_criteria) !== null && goalAcceptanceCriterionErrors(state.requirements, state.acceptance_criteria, "").length === 0 &&
+        state.content_language === "vi-VN" && state.acceptance_criteria_storage === "managed-description-section" && nonEmptyStrings(state.validation);
     }
     case "Sub-task":
       return typeof state.parent_ref === "string" && state.parent_ref.length > 0 &&
         typeof state.summary === "string" && state.summary.length > 0 && typeof state.outcome === "string" && state.outcome.length > 0 &&
         typeof state.validation === "string" && state.validation.length > 0 && typeof state.definition_of_done === "string" && state.definition_of_done.length > 0 &&
         typeof state.original_estimate_hours === "number" && state.original_estimate_hours > 0 && state.original_estimate_hours <= 4 &&
-        nonEmptyStrings(state.requirements) && nonEmptyStrings(state.acceptance_criteria);
+        nonEmptyStrings(state.requirements) && nonEmptyStrings(state.parent_acceptance_criteria_refs) &&
+        state.content_language === "vi-VN" && state.acceptance_criteria_storage === "managed-description-section" &&
+        localAcceptanceCriterionErrors(state.acceptance_criteria, "").length === 0 && acceptanceCriteriaIds(state.acceptance_criteria) !== null;
   }
+}
+
+function hierarchyAcceptanceErrors(issueType: HierarchyIssueType, state: JsonObject): ErrorObject[] {
+  switch (issueType) {
+    case "Epic": return acceptanceCriterionSemanticErrors(state.acceptance_criteria, "");
+    case "Story": return goalAcceptanceCriterionErrors(state.requirements, state.acceptance_criteria, "");
+    case "Sub-task": return localAcceptanceCriterionErrors(state.acceptance_criteria, "");
+  }
+}
+
+function acceptanceUpdateModeValid(operation: JsonValue | undefined, desired: JsonObject): boolean {
+  if (operation !== "issue.update" || desired.acceptance_criteria === undefined) return true;
+  return desired.description_update_mode === "managed-section" && desired.managed_section === "acceptance-criteria" && desired.description === undefined;
 }
 
 export function goalActionSemanticErrors(value: JsonValue): ErrorObject[] {
@@ -71,7 +95,18 @@ export function goalActionSemanticErrors(value: JsonValue): ErrorObject[] {
   const refs: string[] = [];
   const validActions: ValidHierarchyAction[] = [];
   for (const [index, action] of actions.entries()) {
-    if (action === null || !isJiraHierarchyAction(action)) continue;
+    if (action === null) continue;
+    if (action.system === "jira" && action.operation === "issue.comment") {
+      const comment = objectValue(action.desired_state);
+      if (comment?.purpose === "acceptance-criteria-gap") {
+        const commentErrors = acceptanceCriterionSemanticErrors(comment.acceptance_criteria, "");
+        if (comment.content_language !== "vi-VN" || comment.managed_content_only !== true || acceptanceCriteriaIds(comment.acceptance_criteria) === null || commentErrors.length > 0) {
+          errors.push(semanticError(index, "acceptanceCriteriaComment", "Acceptance Criteria gap comments require complete approved Vietnamese managed content"));
+        }
+      }
+      continue;
+    }
+    if (!isJiraHierarchyAction(action)) continue;
     const desired = objectValue(action.desired_state);
     if (desired === null) {
       errors.push(semanticError(index, "issueType", "Jira hierarchy actions require an authoritative Epic, Story, or Sub-task type"));
@@ -104,6 +139,12 @@ export function goalActionSemanticErrors(value: JsonValue): ErrorObject[] {
     const projectValid = authoritativeProject === "AIPLATFORM";
     if (!projectValid) errors.push(semanticError(index, "project", "must target authoritative AIPLATFORM state"));
     const ref = typeof effective.draft_ref === "string" ? effective.draft_ref : typeof action.target_ref === "string" ? action.target_ref : null;
+    const acceptanceErrors = hierarchyAcceptanceErrors(issueType, effective);
+    for (const error of acceptanceErrors) errors.push(semanticError(index, error.keyword, error.message ?? "invalid Acceptance Criteria"));
+    if (!acceptanceUpdateModeValid(action.operation, desired)) {
+      errors.push(semanticError(index, "managedAcceptanceSection", "existing Jira content may update only the approved Acceptance Criteria managed section"));
+      authorityValid = false;
+    }
     const fieldsValid = hierarchyFieldsValid(issueType, effective, ref);
     if (!fieldsValid) {
       const keyword = issueType === "Epic" ? "epicFields" : issueType === "Story" ? "goalFields" : "subtaskFields";
@@ -119,6 +160,7 @@ export function goalActionSemanticErrors(value: JsonValue): ErrorObject[] {
         parentRef: typeof effective.parent_ref === "string" ? effective.parent_ref : null,
         parentIssueType: effective.parent_issue_type,
         parentProject: effective.parent_project,
+        state: effective,
       });
     }
   }
@@ -143,8 +185,23 @@ export function goalActionSemanticErrors(value: JsonValue): ErrorObject[] {
       if (goalCount < 2) errors.push(semanticError(parent.index, "minimumGoals", "an Epic create group requires at least two valid Goal Story writes"));
     }
     if (parent.issueType === "Story") {
-      const subtaskCount = countable.filter((candidate) => candidate.issueType === "Sub-task" && candidate.parentRef === parent.ref).length;
+      const children = countable.filter((candidate) => candidate.issueType === "Sub-task" && candidate.parentRef === parent.ref);
+      const subtaskCount = children.length;
       if (subtaskCount < 2) errors.push(semanticError(parent.index, "minimumSubtasks", "a Goal Story create group requires at least two valid Sub-task writes"));
+      const goalCriterionIds = new Set(acceptanceCriteriaIds(parent.state.acceptance_criteria) ?? []);
+      const implemented = new Set<string>();
+      for (const child of children) {
+        const parentRefs = Array.isArray(child.state.parent_acceptance_criteria_refs)
+          ? child.state.parent_acceptance_criteria_refs.filter((ref): ref is string => typeof ref === "string")
+          : [];
+        if (parentRefs.some((ref) => !goalCriterionIds.has(ref))) {
+          errors.push(semanticError(child.index, "resolvedParentAcceptanceReference", "Sub-task parent Acceptance Criteria references must resolve to its Goal Story"));
+        }
+        for (const ref of parentRefs) implemented.add(ref);
+      }
+      if ([...goalCriterionIds].some((id) => !implemented.has(id))) {
+        errors.push(semanticError(parent.index, "goalAcceptanceSubtaskCoverage", "every Goal Acceptance Criterion must be implemented or verified by at least one Sub-task"));
+      }
     }
   }
   return errors;

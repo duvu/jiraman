@@ -34,6 +34,8 @@ docs/project-management/templates/
 
 Jiraman keeps Jira's native `Epic -> Story -> Sub-task` hierarchy and treats each `Story` as one delivery Goal. Every Epic must map at least two Goal Stories, and every Goal must have an outcome-oriented name, a verified `YYYY-MM-DD` target completion date with source reference, a testable Goal Definition of Done, a canonical specification with stable REQ/AC IDs, exact bidirectional REQ/AC-to-Sub-task traceability, and at least two actionable Sub-tasks. Every Sub-task has a verified original estimate in `(0h, 4h]`.
 
+Every Epic, Goal Story, and Sub-task carries structured Acceptance Criteria with a unique `id`, an observable `statement`, and a concrete `verification`. Goal criteria reference and cover every declared REQ. Sub-tasks keep parent Goal AC references separate from their local criteria, and each local criterion traces to `VAL-1` and `DOD-1`. Jira ticket text defaults to Vietnamese while Jira keys, REQ/AC IDs, commands, code, paths, URLs, issue types, and statuses stay literal. Existing Jira descriptions are never replaced wholesale for an AC change: Jiraman updates only the approved managed `## Tiêu chí nghiệm thu` section, or proposes a managed comment when that section is absent, then reads back and exactly compares every AC ID, statement, and verification value.
+
 Deadlines come only from a verified sprint end, milestone, specification, or explicit user decision. Jiraman never guesses one. A missing, conflicting, unwritable, or unreadable Jira due date blocks Ready/executable status. Jira updates also require authoritative current project/type state; omitted authority, drift, or non-Jira actions cannot satisfy hierarchy counts. Jira `Done` does not complete a Goal unless all Goal DoD, acceptance, and required child evidence is satisfied.
 
 ## Commands
@@ -66,4 +68,4 @@ npm run ci
 
 For release artifacts, `./scripts/package.sh --output <directory>` accepts paths relative to the current directory or absolute paths.
 
-The release gate runs TypeScript type checking, Vitest/Ajv Goal hierarchy invariants, static skill/template/action/MCP contract validation, security/secret scans, clean install, v4 migration, reproducible packaging, and package verification. See [architecture](docs/architecture/jiraman-v5.md), [configuration](docs/configuration-reference.md), [security](docs/security-model.md), and [manual smoke tests](docs/manual-smoke-tests.md).
+The release gate runs TypeScript type checking, Vitest/Ajv Goal hierarchy and Acceptance Criteria invariants, static skill/Jira-template/action/MCP contract validation, security/secret scans, clean install, v4 migration, reproducible packaging, and package verification. See [architecture](docs/architecture/jiraman-v5.md), [configuration](docs/configuration-reference.md), [security](docs/security-model.md), and [manual smoke tests](docs/manual-smoke-tests.md).

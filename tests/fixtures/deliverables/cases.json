@@ -33,7 +33,14 @@
             "definition_of_done": ["Rollback drill evidence is accepted"],
             "canonical_spec": "Confluence page-200",
             "requirements": ["REQ-1"],
-            "acceptance_criteria": ["AC-1"],
+            "acceptance_criteria": [
+              {
+                "id": "AC-1",
+                "statement": "Bản nâng cấp v5 được khôi phục an toàn trong rollback drill",
+                "verification": "rollback drill passes",
+                "requirement_refs": ["REQ-1"]
+              }
+            ],
             "epic_parent": "AIPLATFORM-100",
             "readiness": "ready",
             "subtasks": [

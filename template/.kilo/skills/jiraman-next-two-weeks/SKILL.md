@@ -4,7 +4,8 @@ description: "Build independent N+1/N+2 scenarios from deadline-bound Ready Goal
 version: 5
 side_effects: none
 policy: .kilo/policies/jiraman-safety.md
-goal_contract: goal-name,target-completion-date,goal-dod,epic-parent,min-two-subtasks,max-four-hours,traceability
+jira_ticket_contract: docs/project-management/templates/jira/index.json
+goal_contract: goal-name,target-completion-date,structured-ac,goal-dod,epic-parent,min-two-subtasks,max-four-hours,traceability
 ---
 
 # jiraman-next-two-weeks
@@ -23,7 +24,7 @@ Verified Epic alignment/value/urgency/dependencies/risks; Goal Story name, deadl
 
 ## Output Contract
 
-Stable DLV candidates listing each supporting Goal's name, deadline, DoD/acceptance signal, readiness, and child coverage; distinct scenarios with protected/moved/at-risk deadlines; evidence-based recommendation or `No evidence-based recommendation`; separate N+1/N+2 outcomes and displaced work; and a governed Confluence page proposal.
+Stable DLV candidates listing each supporting Goal's name, deadline, structured ACs, DoD/acceptance signal, readiness, and child coverage; distinct scenarios with protected/moved/at-risk deadlines; evidence-based recommendation or `No evidence-based recommendation`; separate N+1/N+2 outcomes and displaced work; and governed Confluence/Jira proposals. Any Jira proposal uses the canonical Vietnamese ticket contract.
 
 ## Semantic Capabilities
 
@@ -32,14 +33,14 @@ Stable DLV candidates listing each supporting Goal's name, deadline, DoD/accepta
 ## Workflow
 
 1. Assign stable `DLV-YYYYMMDD-NN` IDs with outcome, primary Epic, supporting Goal Stories, each Goal name/deadline/DoD/readiness/Sub-task coverage, target sprint and verified end date, acceptance signal, rationale, evidence, assumptions, hypotheses, capacity/dependency/WIP fit, risk, and confidence.
-2. Classify each candidate Ready-backed, Refinement candidate, New hypothesis, or Excluded. Ready-backed requires a verified allowed deadline source with a concrete reference, canonical specification, non-empty unique REQ/AC/Goal-DoD IDs, at least two uniquely referenced Sub-tasks in `(0h, 4h]`, exact traceability maps that use only those child references, and dependencies resolved for the target sprint. Missing/malformed/conflicting evidence is Refinement, and hypotheses or undecomposed work never count toward runway or commitments.
+2. Classify each candidate Ready-backed, Refinement candidate, New hypothesis, or Excluded. Ready-backed requires a verified allowed deadline source with a concrete reference, canonical specification, non-empty unique REQ/Goal-DoD IDs, complete structured AC statements/verification covering every REQ, at least two uniquely referenced Sub-tasks in `(0h, 4h]`, exact parent-AC/requirement/DoD traceability maps that use only those child references, and dependencies resolved for the target sprint. Missing/malformed/conflicting evidence is Refinement, and hypotheses or undecomposed work never count toward runway or commitments.
 3. Evaluate N+1 and N+2 independently; excess N+1 cannot fill an empty/unready N+2. A committed Goal date must be on or before its verified sprint end unless an explicit approved exception is recorded.
 4. Create materially different Flow-first, Risk-reduction, and Value-first scenarios with displaced work, separate demonstrable Week 1/Week 2 outcomes, and exact Goal deadlines protected, moved, or put at risk.
 5. Compare qualitative alignment, value, urgency, leverage, risk reduction, Goal readiness, deadline fit, capacity, validation, dependencies, and WIP. Recommend only Ready-backed feasible scenarios; insufficient deadline/capacity/dependency/DoD evidence returns `No evidence-based recommendation`.
 6. Sprint planning defines the Sprint Goal/deliverables before coherent supporting Goal Stories and rejects unverified, deadline-misaligned, or over-capacity scope.
 7. Sprint review distinguishes Jira Done from Goal DoD/acceptance evidence and preserves carry-over reasons.
 8. Each of at most three retrospective experiments has owner role, expected signal, review date, and stop/rollback condition. Never rank individual performance.
-9. Route page proposals through `jiraman-confluence-publish`; never execute them.
+9. Route page proposals through `jiraman-confluence-publish`. Render any Jira PMA proposal through `docs/project-management/templates/jira/index.json`, preserve structured ACs and technical literals, and never execute it.
 
 ## Side Effects
 
