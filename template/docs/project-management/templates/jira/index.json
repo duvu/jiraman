@@ -19,16 +19,16 @@
     "validation_context": "separate-from-draft-and-action",
     "remote_content_allowed": false
   },
-  "proposal_workflows": [
-    {"name": "jiraman-refinement", "default_content_language": "vi-VN", "source_language_mode": "translate-user-facing-content", "literal_mode": "preserve-exact", "existing_issue_match": "evidence-not-language", "ambiguity_mode": "vi-VN-with-assumption", "writes_allowed": false},
-    {"name": "jiraman-meeting-actions", "default_content_language": "vi-VN", "source_language_mode": "translate-user-facing-content", "literal_mode": "preserve-exact", "existing_issue_match": "evidence-not-language", "ambiguity_mode": "vi-VN-with-assumption", "writes_allowed": false},
-    {"name": "jiraman-risk-management", "default_content_language": "vi-VN", "source_language_mode": "translate-user-facing-content", "literal_mode": "preserve-exact", "existing_issue_match": "evidence-not-language", "ambiguity_mode": "vi-VN-with-assumption", "writes_allowed": false},
-    {"name": "jiraman-decision-management", "default_content_language": "vi-VN", "source_language_mode": "translate-user-facing-content", "literal_mode": "preserve-exact", "existing_issue_match": "evidence-not-language", "ambiguity_mode": "vi-VN-with-assumption", "writes_allowed": false},
-    {"name": "jiraman-next-two-weeks", "default_content_language": "vi-VN", "source_language_mode": "translate-user-facing-content", "literal_mode": "preserve-exact", "existing_issue_match": "evidence-not-language", "ambiguity_mode": "vi-VN-with-assumption", "writes_allowed": false},
-    {"name": "jiraman-sprint-cadence", "default_content_language": "vi-VN", "source_language_mode": "translate-user-facing-content", "literal_mode": "preserve-exact", "existing_issue_match": "evidence-not-language", "ambiguity_mode": "vi-VN-with-assumption", "writes_allowed": false},
-    {"name": "jiraman-daily", "default_content_language": "vi-VN", "source_language_mode": "translate-user-facing-content", "literal_mode": "preserve-exact", "existing_issue_match": "evidence-not-language", "ambiguity_mode": "vi-VN-with-assumption", "writes_allowed": false},
-    {"name": "jiraman-sprint-health", "default_content_language": "vi-VN", "source_language_mode": "translate-user-facing-content", "literal_mode": "preserve-exact", "existing_issue_match": "evidence-not-language", "ambiguity_mode": "vi-VN-with-assumption", "writes_allowed": false}
-  ],
+  "proposal_workflows": {
+    "jiraman-refinement": {"name": "jiraman-refinement", "default_content_language": "vi-VN", "source_language_mode": "translate-user-facing-content", "literal_mode": "preserve-exact", "existing_issue_match": "evidence-not-language", "ambiguity_mode": "vi-VN-with-assumption", "writes_allowed": false},
+    "jiraman-meeting-actions": {"name": "jiraman-meeting-actions", "default_content_language": "vi-VN", "source_language_mode": "translate-user-facing-content", "literal_mode": "preserve-exact", "existing_issue_match": "evidence-not-language", "ambiguity_mode": "vi-VN-with-assumption", "writes_allowed": false},
+    "jiraman-risk-management": {"name": "jiraman-risk-management", "default_content_language": "vi-VN", "source_language_mode": "translate-user-facing-content", "literal_mode": "preserve-exact", "existing_issue_match": "evidence-not-language", "ambiguity_mode": "vi-VN-with-assumption", "writes_allowed": false},
+    "jiraman-decision-management": {"name": "jiraman-decision-management", "default_content_language": "vi-VN", "source_language_mode": "translate-user-facing-content", "literal_mode": "preserve-exact", "existing_issue_match": "evidence-not-language", "ambiguity_mode": "vi-VN-with-assumption", "writes_allowed": false},
+    "jiraman-next-two-weeks": {"name": "jiraman-next-two-weeks", "default_content_language": "vi-VN", "source_language_mode": "translate-user-facing-content", "literal_mode": "preserve-exact", "existing_issue_match": "evidence-not-language", "ambiguity_mode": "vi-VN-with-assumption", "writes_allowed": false},
+    "jiraman-sprint-cadence": {"name": "jiraman-sprint-cadence", "default_content_language": "vi-VN", "source_language_mode": "translate-user-facing-content", "literal_mode": "preserve-exact", "existing_issue_match": "evidence-not-language", "ambiguity_mode": "vi-VN-with-assumption", "writes_allowed": false},
+    "jiraman-daily": {"name": "jiraman-daily", "default_content_language": "vi-VN", "source_language_mode": "translate-user-facing-content", "literal_mode": "preserve-exact", "existing_issue_match": "evidence-not-language", "ambiguity_mode": "vi-VN-with-assumption", "writes_allowed": false},
+    "jiraman-sprint-health": {"name": "jiraman-sprint-health", "default_content_language": "vi-VN", "source_language_mode": "translate-user-facing-content", "literal_mode": "preserve-exact", "existing_issue_match": "evidence-not-language", "ambiguity_mode": "vi-VN-with-assumption", "writes_allowed": false}
+  },
   "apply_workflow": {
     "name": "jiraman-apply-actions",
     "operations": ["issue.create", "issue.update", "issue.comment"],

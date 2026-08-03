@@ -278,6 +278,29 @@ describe("action-preflight approved-actions security", () => {
       writeFileSync(statePath, JSON.stringify(translationState));
       const installedTranslationValidation = spawnSync("./verify.sh", ["--validate-state-file", statePath], {encoding: "utf8"});
       expect(installedTranslationValidation.status, installedTranslationValidation.stderr).toBe(5);
+
+      const vagueAcceptanceGroup = goalHierarchyGroup();
+      const vagueAcceptanceAction = asObject(asArray(vagueAcceptanceGroup.actions, "vague Acceptance Criteria actions")[0] ?? null, "vague Acceptance Criteria action");
+      vagueAcceptanceAction.operation = "issue.comment";
+      vagueAcceptanceAction.target_ref = "AIPLATFORM-101";
+      vagueAcceptanceAction.target_version = "2026-08-01T00:00:00Z";
+      vagueAcceptanceAction.before_state = {issue_key: "AIPLATFORM-101", project: "AIPLATFORM", issue_type: "Epic", human_content_language: "vi-VN"};
+      vagueAcceptanceAction.desired_state = {
+        purpose: "acceptance-criteria-gap",
+        content_language: "vi-VN",
+        literal_preservation: {policy_ref: ".kilo/config/jiraman.json#/language/preserved_literal_kinds", mode: "exact"},
+        managed_content_only: true,
+        acceptance_criteria: [{id: "AC-1", statement: "Đạt yêu cầu", verification: "Kiểm tra"}],
+      };
+      vagueAcceptanceGroup.actions = [vagueAcceptanceAction];
+      vagueAcceptanceGroup.payload_hash = canonicalPayloadHash(asArray(vagueAcceptanceGroup.actions, "vague Acceptance Criteria actions"));
+      const vagueAcceptanceId = asString(vagueAcceptanceGroup.id, "vague Acceptance Criteria group ID");
+      const vagueAcceptanceState = {...state, pending_action_groups: {[vagueAcceptanceId]: vagueAcceptanceGroup}};
+      expect(validateJson("state.schema.json", vagueAcceptanceState).valid).toBe(false);
+      writeFileSync(statePath, JSON.stringify(vagueAcceptanceState));
+      const installedVagueAcceptanceValidation = spawnSync("./verify.sh", ["--validate-state-file", statePath], {encoding: "utf8"});
+      expect(installedVagueAcceptanceValidation.status, installedVagueAcceptanceValidation.stderr).toBe(5);
+
       writeFileSync(statePath, JSON.stringify({ ...state, pending_action_groups: { [groupId]: rejectedPartialApproval } }));
       const rejectedPartialState = spawnSync("./verify.sh", ["--validate-state-file", statePath], { encoding: "utf8" });
       expect(rejectedPartialState.status).toBe(5);

@@ -1,6 +1,6 @@
 import { describe, expect, test } from "vitest";
 
-import { asArray, asObject, asString, parseFrontmatter, readJson, readText, validateJson } from "../../src/contracts.js";
+import { asArray, asObject, asString, parseFrontmatter, readJson, readText, validateJson, type JsonValue } from "../../src/contracts.js";
 import { resolveJiraContentLanguage } from "../../src/jira-language-rules.js";
 
 const WORKFLOWS = [
@@ -14,6 +14,17 @@ const WORKFLOWS = [
   "jiraman-sprint-health",
 ] as const;
 
+function resolveLocalJsonPointer(document: JsonValue, reference: string): JsonValue {
+  const [path, pointer] = reference.split("#", 2);
+  if (path !== "docs/project-management/templates/jira/index.json" || pointer === undefined || !pointer.startsWith("/")) throw new Error(`Invalid Jira language contract reference: ${reference}`);
+  return pointer.slice(1).split("/").reduce<JsonValue>((current, token) => {
+    const key = token.replace(/~1/g, "/").replace(/~0/g, "~");
+    const next = asObject(current, `JSON Pointer segment ${key}`)[key];
+    if (next === undefined) throw new Error(`Unresolved Jira language contract reference: ${reference}`);
+    return next;
+  }, document);
+}
+
 describe("Vietnamese Jira proposal workflows", () => {
   test("defaults English and ambiguous inputs to vi-VN with exact literal preservation", () => {
     expect(resolveJiraContentLanguage(null)).toBe("vi-VN");
@@ -24,12 +35,14 @@ describe("Vietnamese Jira proposal workflows", () => {
 
   test("routes every Jira proposal workflow through the canonical language contract", () => {
     const index = asObject(readJson("template/docs/project-management/templates/jira/index.json"), "Jira template index");
-    const routes = asArray(index.proposal_workflows, "proposal workflows").map((value) => asObject(value, "proposal workflow"));
+    const workflows = asObject(index.proposal_workflows ?? null, "proposal workflows");
+    const routes = Object.entries(workflows).map(([name, value]) => ({name, route: asObject(value, `proposal workflow ${name}`)}));
     expect(asObject(index.override_authorization ?? null, "override authorization").validation_context).toBe("separate-from-draft-and-action");
 
-    expect(routes.map((route) => asString(route.name, "workflow name")).sort()).toEqual([...WORKFLOWS].sort());
-    for (const route of routes) {
+    expect(routes.map(({name}) => name).sort()).toEqual([...WORKFLOWS].sort());
+    for (const {name, route} of routes) {
       expect(route).toMatchObject({
+        name,
         default_content_language: "vi-VN",
         source_language_mode: "translate-user-facing-content",
         literal_mode: "preserve-exact",
@@ -64,10 +77,13 @@ describe("Vietnamese Jira proposal workflows", () => {
   });
 
   test("binds every proposal skill to its exact indexed route", () => {
+    const index = readJson("template/docs/project-management/templates/jira/index.json");
     for (const name of WORKFLOWS) {
       const path = `template/.kilo/skills/${name}/SKILL.md`;
       const frontmatter = parseFrontmatter(readText(path));
-      expect(frontmatter.get("jira_language_contract")).toBe(`docs/project-management/templates/jira/index.json#/proposal_workflows/${name}`);
+      const reference = frontmatter.get("jira_language_contract") ?? "";
+      expect(reference).toBe(`docs/project-management/templates/jira/index.json#/proposal_workflows/${name}`);
+      expect(asObject(resolveLocalJsonPointer(index, reference), `${name} language route`).name).toBe(name);
       expect(frontmatter.get("side_effects")).toBe("none");
     }
   });

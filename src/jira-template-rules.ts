@@ -21,12 +21,13 @@ export function jiraTemplateViolations(): string[] {
   if (Object.keys(glossary).length !== glossaryKeys.length || glossaryKeys.some((key) => typeof glossary[key] !== "string" || glossary[key] === "")) violations.push("glossary");
   const overrideAuthorization = asObject(index.override_authorization ?? null, "override authorization");
   if (overrideAuthorization.source !== "active-local-user-input" || overrideAuthorization.evidence_reference !== "required" || overrideAuthorization.validation_context !== "separate-from-draft-and-action" || overrideAuthorization.remote_content_allowed !== false) violations.push("override-authorization");
-  const proposalWorkflows = asArray(index.proposal_workflows, "Jira proposal workflows").map((value) => asObject(value, "Jira proposal workflow"));
+  const proposalWorkflows = asObject(index.proposal_workflows ?? null, "Jira proposal workflows");
   const expectedWorkflows = ["jiraman-refinement", "jiraman-meeting-actions", "jiraman-risk-management", "jiraman-decision-management", "jiraman-next-two-weeks", "jiraman-sprint-cadence", "jiraman-daily", "jiraman-sprint-health"];
-  const workflowNames = proposalWorkflows.map((workflow) => asString(workflow.name, "Jira proposal workflow name"));
-  if (new Set(workflowNames).size !== expectedWorkflows.length || expectedWorkflows.some((name) => !workflowNames.includes(name))) violations.push("proposal-workflows");
-  for (const workflow of proposalWorkflows) {
-    if (workflow.default_content_language !== "vi-VN" || workflow.source_language_mode !== "translate-user-facing-content" || workflow.literal_mode !== "preserve-exact" || workflow.existing_issue_match !== "evidence-not-language" || workflow.ambiguity_mode !== "vi-VN-with-assumption" || workflow.writes_allowed !== false) violations.push(`${asString(workflow.name, "workflow name")}:language-route`);
+  const workflowNames = Object.keys(proposalWorkflows);
+  if (workflowNames.length !== expectedWorkflows.length || expectedWorkflows.some((name) => !workflowNames.includes(name))) violations.push("proposal-workflows");
+  for (const [name, value] of Object.entries(proposalWorkflows)) {
+    const workflow = asObject(value, `Jira proposal workflow ${name}`);
+    if (workflow.name !== name || workflow.default_content_language !== "vi-VN" || workflow.source_language_mode !== "translate-user-facing-content" || workflow.literal_mode !== "preserve-exact" || workflow.existing_issue_match !== "evidence-not-language" || workflow.ambiguity_mode !== "vi-VN-with-assumption" || workflow.writes_allowed !== false) violations.push(`${name}:language-route`);
   }
   const applyWorkflow = asObject(index.apply_workflow ?? null, "Jira apply workflow");
   const applyOperations = asArray(applyWorkflow.operations, "Jira apply operations").map((value) => asString(value, "Jira apply operation"));

@@ -51,6 +51,44 @@ const languageTag = (value) => {
 const onlyFields = (value, fields) => Object.keys(value).every((field) => fields.has(field));
 const managedFields = new Set(["acceptance_criteria", "content_language", "description_update_mode", "existing_content_mode", "language_override", "literal_preservation", "managed_content", "managed_section"]);
 const commentFields = new Set(["acceptance_criteria", "body", "comment", "content_language", "existing_content_mode", "language_override", "literal_preservation", "managed_content_only", "purpose"]);
+const genericAssessmentEnd = /(?:^|\s)(?:(?:all|everything|it|kết quả|mọi thứ)\s+)?(?:(?:is|are|looks?|seems?|feels?|là|trông|có vẻ|hoạt động|đã)\s+)?(?:good|fine|acceptable|satisfactory|stable|ok(?:ay)?|correct(?:ly)?|pass(?:ed)?|works?|đạt yêu cầu|tốt|đúng|ổn(?: định)?|được|chấp nhận được|kiểm tra)(?:\s+(?:as expected|enough|fully|completely|properly|hoàn toàn|đầy đủ|cơ bản|chung|mong đợi|như mong đợi|xong|hoàn tất))*$/u;
+const verificationMethod = /(?:^|[^\p{L}\p{N}])(?:assert(?:ion)?|audit|benchmark|check(?:list)?|compar(?:e|ison)|demo(?:nstration)?|drill|evidence|inspect(?:ion)?|log|measure(?:ment)?|metric|query|report|review|run|scan|test|validat(?:e|ion)|verif(?:y|ication)|walkthrough|bằng chứng|chạy|đo|đối chiếu|duyệt|ghi nhận|kiểm tra|so sánh|thử|truy vấn|xác minh)(?=$|[^\p{L}\p{N}])/gu;
+const verificationFiller = /(?:^|[^\p{L}\p{N}])(?:a|all|an|and|after|anything|are|be|been|before|behavior|by|complete(?:d)?|details?|everything|features?|functionality|is|it|or|outcome|output|pass(?:ed|es)?|results?|something|stuff|that|the|them|then|thing|this|using|via|was|were|with|bằng|cái này|điều đó|được|hoàn tất|kết quả|là|mọi thứ|nó|qua|sau|sử dụng|tất cả|trước|và|xong)(?=$|[^\p{L}\p{N}])/gu;
+const completeLocator = /^(?:https?:\/\/[a-z0-9](?:[a-z0-9.-]*[a-z0-9])?(?::[0-9]+)?(?:[/?#][^\s]*)?|\.{0,2}\/[a-z0-9_.-][^\s]*)$/u;
+const technicalVerification = /(?:^|[^\p{L}\p{N}])(?:https?:\/\/[a-z0-9](?:[a-z0-9.-]*[a-z0-9])?(?::[0-9]+)?(?:\/[^\s)\]]*)?|\.{0,2}\/[a-z0-9_.-]+(?:\/[a-z0-9_.-]+)*)(?=$|[^\p{L}\p{N}._\/-])/u;
+const incompleteTechnicalLocator = /(?:https?:\/\/(?=$|[^\p{L}\p{N}])|(?:^|[^\p{L}\p{N}:\/])\.{0,2}\/(?=$|[^\p{L}\p{N}]))/u;
+const placeholderMarker = /\b(?:placeholder|tbc|tbd|todo)\b/u;
+const implementationPrefixes = ["add ", "cập nhật ", "fix ", "implement ", "sửa ", "thêm ", "triển khai ", "update "];
+const normalizedText = (value) => value.toLocaleLowerCase("vi").trim().replace(/\s+/g, " ").replace(/[.!?]+$/g, "");
+const specificBeyondMethod = (value) => /[\p{L}\p{N}]/u.test(value.replace(verificationMethod, " ").replace(verificationFiller, " "));
+const markdownLinksValid = (value) => {
+  let index = 0;
+  while (index < value.length) {
+    if (value[index] === "]") return false;
+    if (value[index] !== "[") { index += 1; continue; }
+    const labelEnd = value.indexOf("]", index + 1);
+    if (labelEnd < 0 || labelEnd === index + 1 || value.slice(index + 1, labelEnd).includes("[") || value[labelEnd + 1] !== "(") return false;
+    let destinationEnd = labelEnd + 2, depth = 1;
+    while (destinationEnd < value.length && depth > 0) {
+      if (value[destinationEnd] === "(") depth += 1;
+      if (value[destinationEnd] === ")") depth -= 1;
+      destinationEnd += 1;
+    }
+    if (depth !== 0 || !completeLocator.test(value.slice(labelEnd + 2, destinationEnd - 1))) return false;
+    index = destinationEnd;
+  }
+  return true;
+};
+const unresolvedPlaceholder = (value) => placeholderMarker.test(value) || !markdownLinksValid(value);
+const concreteStatement = (raw) => {
+  const value = normalizedText(raw);
+  return !unresolvedPlaceholder(value) && !genericAssessmentEnd.test(value) && !implementationPrefixes.some((prefix) => value.startsWith(prefix)) && specificBeyondMethod(value);
+};
+const concreteVerification = (raw) => {
+  const value = normalizedText(raw);
+  return !unresolvedPlaceholder(value) && !incompleteTechnicalLocator.test(value) && !genericAssessmentEnd.test(value) &&
+    (technicalVerification.test(value) || (value.match(verificationMethod) !== null && specificBeyondMethod(value)));
+};
 const validJiraLanguageAction = (action) => {
   if (action.system !== "jira" || !["issue.create", "issue.update", "issue.comment"].includes(action.operation)) return true;
   const desired = action.desired_state;
@@ -79,7 +117,8 @@ const criterionIds = (criteria, kind, requirements = []) => {
   };
   const ids = [], covered = new Set(), declared = new Set(requirements);
   for (const criterion of criteria) {
-    if (!exact(criterion, shapes[kind]) || !/^AC-[0-9]+$/.test(criterion.id) || !nonEmpty(criterion.statement) || !nonEmpty(criterion.verification)) return null;
+    if (!exact(criterion, shapes[kind]) || !/^AC-[0-9]+$/.test(criterion.id) || !nonEmpty(criterion.statement) || !nonEmpty(criterion.verification) ||
+        !concreteStatement(criterion.statement) || !concreteVerification(criterion.verification)) return null;
     if (kind === "Story") {
       if (!stringArray(criterion.requirement_refs, true) || !unique(criterion.requirement_refs) || criterion.requirement_refs.some((ref) => !declared.has(ref))) return null;
       for (const ref of criterion.requirement_refs) covered.add(ref);
