@@ -45,6 +45,12 @@ describe("Acceptance Criteria adversarial contract", () => {
       "looks fine",
       "pass",
       "được",
+      "test",
+      "review",
+      "run",
+      "checklist",
+      "test passes",
+      "run test",
     ];
 
     // When
@@ -55,9 +61,14 @@ describe("Acceptance Criteria adversarial contract", () => {
       item.verification = verification;
       return validateJson("backlog-draft.schema.json", backlog);
     });
+    const concise = structuredClone(source);
+    const conciseStory = asObject(asArray(concise.stories, "concise Goal Stories")[0] ?? null, "concise Goal Story");
+    const conciseCriterion = asObject(asArray(conciseStory.acceptance_criteria, "concise Acceptance Criteria")[0] ?? null, "concise Acceptance Criterion");
+    conciseCriterion.statement = "GET /health 200";
 
     // Then
     expect(results.every((result) => result.errors.some((error) => error.keyword === "testableAcceptanceCriterion"))).toBe(true);
+    expect(validateJson("backlog-draft.schema.json", concise).valid).toBe(true);
   });
 
   test("requires Ready goals to contain requirements and structured criteria", () => {
@@ -196,6 +207,8 @@ describe("Acceptance Criteria adversarial contract", () => {
       {body: "Acceptance criteria are okay", managed_content_only: false},
       {purpose: "ordinary-note", body: "Acceptance criteria are okay", managed_content_only: false},
       {purpose: "acceptance-criteria-gap", content_language: "en-US", managed_content_only: false, acceptance_criteria: [criterion()]},
+      {purpose: "acceptance-criteria-gap", content_language: "vi-VN", managed_content_only: true, acceptance_criteria: [{id: "AC-1", statement: "Bản sao lưu được khôi phục nguyên vẹn", verification: "Chạy restore drill và đối chiếu byte"}]},
+      {purpose: "acceptance-criteria-gap", content_language: "vi-VN", managed_content_only: true, acceptance_criteria: [{...criterion(), requirement_refs: ["REQ-999"]}]},
     ];
 
     // When
@@ -204,7 +217,7 @@ describe("Acceptance Criteria adversarial contract", () => {
       const action = structuredClone(asObject(asArray(group.actions, "comment actions")[0] ?? null, "comment action"));
       action.operation = "issue.comment";
       action.target_ref = "AIPLATFORM-101";
-      action.before_state = {project: "AIPLATFORM", issue_type: "Story", description: "human-authored text"};
+      action.before_state = {project: "AIPLATFORM", issue_type: "Story", requirements: ["REQ-1"], description: "human-authored text"};
       action.desired_state = desiredState;
       group.actions = [action];
       return goalActionSemanticErrors(group);
@@ -212,5 +225,27 @@ describe("Acceptance Criteria adversarial contract", () => {
 
     // Then
     expect(results.every((errors) => errors.some((error) => error.keyword === "acceptanceCriteriaComment"))).toBe(true);
+
+    const validGroup = goalHierarchyGroup();
+    const validAction = structuredClone(asObject(asArray(validGroup.actions, "valid comment actions")[0] ?? null, "valid comment action"));
+    validAction.operation = "issue.comment";
+    validAction.target_ref = "AIPLATFORM-101";
+    validAction.before_state = {project: "AIPLATFORM", issue_type: "Story", requirements: ["REQ-1"], description: "human-authored text"};
+    validAction.desired_state = {purpose: "acceptance-criteria-gap", content_language: "vi-VN", managed_content_only: true, acceptance_criteria: [criterion()]};
+    validGroup.actions = [validAction];
+    expect(goalActionSemanticErrors(validGroup)).toEqual([]);
+
+    const crossProject = structuredClone(validGroup);
+    const crossProjectAction = asObject(asArray(crossProject.actions, "cross-project comment actions")[0] ?? null, "cross-project comment action");
+    crossProjectAction.target_ref = "OTHER-101";
+    crossProjectAction.before_state = {project: "OTHER", issue_type: "Story", requirements: ["REQ-1"]};
+    expect(goalActionSemanticErrors(crossProject).some((error) => error.keyword === "acceptanceCriteriaComment")).toBe(true);
+
+    for (const issueType of ["Epic", "Sub-task"] as const) {
+      const wrongRole = structuredClone(validGroup);
+      const wrongRoleAction = asObject(asArray(wrongRole.actions, "wrong-role actions")[0] ?? null, "wrong-role action");
+      wrongRoleAction.before_state = {project: "AIPLATFORM", issue_type: issueType, description: "human-authored text"};
+      expect(goalActionSemanticErrors(wrongRole).some((error) => error.keyword === "acceptanceCriteriaComment")).toBe(true);
+    }
   });
 });

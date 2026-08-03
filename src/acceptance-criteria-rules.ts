@@ -4,7 +4,9 @@ import type { JsonObject, JsonValue } from "./contracts.js";
 
 const GENERIC_ASSESSMENT_END = /(?:^|\s)(?:(?:all|everything|it|kết quả|mọi thứ)\s+)?(?:(?:is|are|looks?|seems?|feels?|là|trông|có vẻ|hoạt động|đã)\s+)?(?:good|fine|acceptable|satisfactory|stable|ok(?:ay)?|correct(?:ly)?|pass(?:ed)?|works?|đạt yêu cầu|tốt|đúng|ổn(?: định)?|được|chấp nhận được|kiểm tra)(?:\s+(?:as expected|enough|fully|completely|properly|hoàn toàn|đầy đủ|cơ bản|chung|mong đợi|như mong đợi|xong|hoàn tất))*$/u;
 
-const VERIFICATION_METHOD = /(?:^|[^\p{L}\p{N}])(?:assert(?:ion)?|audit|benchmark|check(?:list)?|compar(?:e|ison)|demo(?:nstration)?|drill|evidence|inspect(?:ion)?|log|measure(?:ment)?|metric|query|report|review|run|scan|test|validat(?:e|ion)|verif(?:y|ication)|walkthrough|bằng chứng|chạy|đo|đối chiếu|duyệt|ghi nhận|kiểm tra|thử|truy vấn|xác minh)(?=$|[^\p{L}\p{N}])/u;
+const VERIFICATION_METHOD = /(?:^|[^\p{L}\p{N}])(?:assert(?:ion)?|audit|benchmark|check(?:list)?|compar(?:e|ison)|demo(?:nstration)?|drill|evidence|inspect(?:ion)?|log|measure(?:ment)?|metric|query|report|review|run|scan|test|validat(?:e|ion)|verif(?:y|ication)|walkthrough|bằng chứng|chạy|đo|đối chiếu|duyệt|ghi nhận|kiểm tra|thử|truy vấn|xác minh)(?=$|[^\p{L}\p{N}])/gu;
+
+const VERIFICATION_FILLER = /(?:^|[^\p{L}\p{N}])(?:and|after|before|by|complete(?:d)?|or|pass(?:ed|es)?|then|using|via|with|bằng|hoàn tất|qua|sau|sử dụng|trước|và|xong)(?=$|[^\p{L}\p{N}])/gu;
 
 const TECHNICAL_VERIFICATION = /(?:^|\s)(?:\.{0,2}\/|--?[a-z0-9]|https?:\/\/)|[\\/][a-z0-9_.-]+/u;
 
@@ -35,16 +37,17 @@ function normalizedText(value: string): string {
   return value.toLocaleLowerCase("vi").trim().replace(/\s+/g, " ").replace(/[.!?]+$/g, "");
 }
 
-function wordCount(value: string): number {
-  return value.match(/[\p{L}\p{N}]+/gu)?.length ?? 0;
+function hasSpecificContentBeyondMethod(value: string): boolean {
+  const remainder = value.replace(VERIFICATION_METHOD, " ").replace(VERIFICATION_FILLER, " ");
+  return /[\p{L}\p{N}]/u.test(remainder);
 }
 
 function isConcreteStatement(value: string): boolean {
-  return wordCount(value) >= 4 && !GENERIC_ASSESSMENT_END.test(value) && !IMPLEMENTATION_PREFIXES.some((prefix) => value.startsWith(prefix));
+  return !GENERIC_ASSESSMENT_END.test(value) && !IMPLEMENTATION_PREFIXES.some((prefix) => value.startsWith(prefix)) && hasSpecificContentBeyondMethod(value);
 }
 
 function isConcreteVerification(value: string): boolean {
-  return !GENERIC_ASSESSMENT_END.test(value) && (VERIFICATION_METHOD.test(value) || TECHNICAL_VERIFICATION.test(value));
+  return !GENERIC_ASSESSMENT_END.test(value) && (TECHNICAL_VERIFICATION.test(value) || (value.match(VERIFICATION_METHOD) !== null && hasSpecificContentBeyondMethod(value)));
 }
 
 function canonicalCriterionValue(value: JsonValue): JsonValue {

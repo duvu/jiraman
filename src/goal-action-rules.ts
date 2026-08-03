@@ -107,10 +107,14 @@ export function goalActionSemanticErrors(value: JsonValue): ErrorObject[] {
     if (action.system === "jira" && action.operation === "issue.comment") {
       const comment = objectValue(action.desired_state);
       const before = objectValue(action.before_state);
-      const targetMissingAcceptance = hierarchyIssueType(before?.issue_type) !== null && acceptanceCriteriaIds(before?.acceptance_criteria) === null;
+      const targetType = hierarchyIssueType(before?.issue_type);
+      const targetMissingAcceptance = targetType !== null && acceptanceCriteriaIds(before?.acceptance_criteria) === null;
       if (targetMissingAcceptance || comment?.purpose === "acceptance-criteria-gap") {
-        const commentErrors = acceptanceCriterionSemanticErrors(comment?.acceptance_criteria, "");
-        if (comment === null || comment.purpose !== "acceptance-criteria-gap" || comment.content_language !== "vi-VN" || comment.managed_content_only !== true || acceptanceCriteriaIds(comment.acceptance_criteria) === null || commentErrors.length > 0) {
+        const commentState = {...(before ?? {}), acceptance_criteria: comment?.acceptance_criteria ?? null};
+        const commentErrors = targetType === null ? acceptanceCriterionSemanticErrors(comment?.acceptance_criteria, "") : hierarchyAcceptanceErrors(targetType, commentState);
+        const targetContractValid = targetType !== null && before?.project === "AIPLATFORM" && typeof action.target_ref === "string" && /^AIPLATFORM-[0-9]+$/.test(action.target_ref) &&
+          (targetType !== "Story" || stringSet(before.requirements) !== null);
+        if (comment === null || comment.purpose !== "acceptance-criteria-gap" || comment.content_language !== "vi-VN" || comment.managed_content_only !== true || !targetContractValid || acceptanceCriteriaIds(comment.acceptance_criteria) === null || commentErrors.length > 0) {
           errors.push(semanticError(index, "acceptanceCriteriaComment", "Acceptance Criteria gap comments require complete approved Vietnamese managed content"));
         }
       }
