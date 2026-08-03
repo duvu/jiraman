@@ -1,9 +1,10 @@
 ---
 name: jiraman-daily
-description: "Reconcile yesterday and propose evidence-backed daily commitments without writes."
+description: "Reconcile yesterday and propose deadline-bound Goal/Sub-task daily commitments without writes."
 version: 5
 side_effects: none
 policy: .kilo/policies/jiraman-safety.md
+goal_contract: goal-name,target-completion-date,goal-dod,epic-parent,min-two-subtasks,max-four-hours,traceability
 ---
 
 # jiraman-daily
@@ -18,11 +19,11 @@ Empty input or exact `daily`.
 
 ## Required Evidence
 
-Current capability health; active sprint and goal when available; bounded AIPLATFORM Story/Sub-task fields; previous governed Daily page or fallback artifact; current decisions, risks, blockers, review/validation queues, ownership, estimates, and validation evidence. Record retrieval time and source for each fact.
+Current capability health; active sprint and Goal Stories when available; each Goal's name, deadline, deadline source, DoD conditions, parent/decomposition/readiness; bounded AIPLATFORM Sub-task fields; previous governed Daily page or fallback artifact; current decisions, risks, blockers, review/validation queues, ownership, estimates, and validation evidence. Record retrieval time and source for each fact.
 
 ## Output Contract
 
-Capability health; evidence window; previous commitments classified `done`, `partial`, `not started`, `blocked`, or `not verified`; flow constraints; at most one primary and one fallback Sub-task per verified assignee; N+1/N+2 outlook; decisions required; PMG/PMA proposals; facts, assumptions, recommendations, and confidence.
+Capability health; evidence window; previous commitments classified `done`, `partial`, `not started`, `blocked`, or `not verified`; overdue/near-deadline and incomplete-DoD Goal risks; flow constraints; at most one primary and one fallback Sub-task per verified assignee, each naming parent Goal, Goal deadline, relevant Goal DoD condition, outcome, estimate, and validation; N+1/N+2 outlook; decisions required; PMG/PMA proposals; facts, assumptions, recommendations, and confidence.
 
 ## Semantic Capabilities
 
@@ -32,10 +33,11 @@ Capability health; evidence window; previous commitments classified `done`, `par
 
 1. Run capability and fixed-scope preflight before the first read.
 2. Read the active sprint or explicitly report no verified active sprint. Jira status alone never proves completion.
-3. Reconcile prior commitments using acceptance/validation evidence and changed fields, not status alone.
-4. Prioritize incidents/security, unblock work, clear review/validation queues, finish active work, protect the sprint goal, restore runway, then consider new work.
-5. Enforce configured Story and per-assignee Sub-task WIP. Unknown capacity or ownership remains unknown.
-6. Use only transparent counts/arithmetic from returned data and never call a write tool.
+3. Reconcile prior commitments using acceptance/validation and Goal DoD evidence, not status alone. Missing Goal name/date/DoD or fewer than two valid children is a management/refinement risk and never Ready.
+4. Identify overdue and near-deadline Goals, then preserve the priority order: incidents/security, unblock work, clear review/validation queues, finish active work, protect the sprint Goal, restore runway, then consider new work.
+5. Every commitment names its parent Goal, verified target date, relevant Goal DoD condition, Sub-task outcome, `0h < estimate <= 4h`, and exact validation. Do not infer a deadline or completion from status.
+6. Enforce configured Story and per-assignee Sub-task WIP. Unknown capacity or ownership remains unknown.
+7. Use only transparent counts/arithmetic from returned data and never call a write tool.
 
 ## Side Effects
 
@@ -43,7 +45,7 @@ None. Jira and Confluence writes are prohibited; emit reviewable proposals only.
 
 ## Degraded Mode
 
-If sprint APIs are absent, label sprint metadata `not verified` and use bounded project issue evidence. If previous commitments, owner, estimate, history, or capacity cannot be verified, do not infer them or create personal commitments.
+If sprint APIs are absent, label sprint metadata and deadline fit `not verified` and use bounded project issue evidence. If Goal fields/DoD/decomposition, previous commitments, owner, estimate, history, or capacity cannot be verified, do not infer them, classify the Goal Ready, or create personal commitments.
 
 ## Shared Policy
 

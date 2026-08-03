@@ -1,7 +1,7 @@
 import { existsSync } from "node:fs";
 import { dirname, resolve, sep } from "node:path";
 
-import { missingCapabilityCoverage } from "./capability-rules.js";
+import { goalSchemaExpectationViolations, missingCapabilityCoverage } from "./capability-rules.js";
 import { canonicalPayloadHash } from "./action-rules.js";
 import {
   asArray,
@@ -20,6 +20,8 @@ import {
   walkFiles,
 } from "./contracts.js";
 import { missingChecklistGates } from "./release-rules.js";
+import { goalPolicyMetadataValid } from "./goal-rules.js";
+import { goalPackageFixtureViolations } from "./goal-release-rules.js";
 import { commandTableRoutes } from "./routing-rules.js";
 
 const REQUIRED_SKILL_SECTIONS = ["Purpose", "Triggers", "Required Evidence", "Output Contract", "Semantic Capabilities", "Workflow", "Side Effects", "Degraded Mode", "Shared Policy"] as const;
@@ -120,12 +122,14 @@ function validateMcp(): void {
   );
   const coverage = asObject(readJson("tests/fixtures/mcp/capability_coverage.json"), "coverage");
   invariant(missingCapabilityCoverage(contract, coverage.data ?? null).length === 0, "semantic capability fixture coverage is incomplete");
+  invariant(goalSchemaExpectationViolations(contract).length === 0, "Goal field schema expectations are incomplete");
 }
 
 function validateConfig(): void {
   requireValid("config.schema.json", "template/.kilo/config/jiraman.json");
   const policy = parseFrontmatter(readText("template/.kilo/policies/jiraman-safety.md"));
   invariant(policy.get("policy_version") === "5" && policy.get("project") === "AIPLATFORM" && policy.get("write_mode") === "exact-apply-only", "invalid structured policy metadata");
+  invariant(goalPolicyMetadataValid(policy), "invalid Goal delivery policy metadata");
 }
 
 function validateConfluenceMetadata(): void {
@@ -173,6 +177,7 @@ function validateFixtures(domain: string): void {
     invariant(!validateJson("specification.schema.json", incomplete.data ?? null).valid, "incomplete specification unexpectedly passed");
   }
   if (domain === "subtask-drafts") {
+    invariant(goalPackageFixtureViolations().length === 0, `Goal package fixture violations: ${goalPackageFixtureViolations().join(", ")}`);
     for (const path of ["tests/fixtures/drafts/subtasks.oversized.json", "tests/fixtures/drafts/subtasks.untraced.json", "tests/fixtures/drafts/subtasks.unverifiable.json"]) {
       const wrapper = asObject(readJson(path), path);
       invariant(!validateJson("subtask-draft.schema.json", wrapper.data ?? null).valid, `${path} unexpectedly passed`);
@@ -183,7 +188,7 @@ function validateFixtures(domain: string): void {
     for (const value of matrix) {
       const entry = asObject(value, "backlog matrix case");
       const result = validateJson("backlog-draft.schema.json", entry.draft ?? null);
-      invariant(result.valid, `backlog matrix case ${asString(entry.case, "case name")} failed: ${JSON.stringify(result.errors)}`);
+      invariant(result.valid === (entry.expected_valid === true), `backlog matrix case ${asString(entry.case, "case name")} had unexpected validity: ${JSON.stringify(result.errors)}`);
     }
   }
 }

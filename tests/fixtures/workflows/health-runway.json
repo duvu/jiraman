@@ -40,6 +40,10 @@
       "readiness_gaps": [
         {
           "story": "AIPLATFORM-202",
+          "goal_name": "Remove dependency risk",
+          "goal_deadline": "2026-08-14",
+          "goal_dod_gap": "Dependency clearance evidence is missing",
+          "valid_subtask_count": 2,
           "subtask": "AIPLATFORM-203",
           "gap": "missing exact validation",
           "recovery_action": "add validation command and evidence",
@@ -52,6 +56,56 @@
       "unit": "not verified",
       "n1": "not verified",
       "n2": "not verified"
+    },
+    {
+      "case": "goal-on-track",
+      "goal_name": "Restore v5 upgrades safely",
+      "target_completion_date": "2026-08-07",
+      "as_of": "2026-08-03",
+      "jira_status": "In Progress",
+      "at_risk": false,
+      "completion_evidence": false,
+      "definition_of_done_evidence": [{"condition": "DOD-1", "satisfied": false, "evidence": "test scheduled"}]
+    },
+    {
+      "case": "goal-at-risk",
+      "goal_name": "Restore v5 upgrades safely",
+      "target_completion_date": "2026-08-07",
+      "as_of": "2026-08-03",
+      "jira_status": "In Progress",
+      "at_risk": true,
+      "completion_evidence": false,
+      "definition_of_done_evidence": [{"condition": "DOD-1", "satisfied": false, "evidence": "blocked validation"}]
+    },
+    {
+      "case": "goal-overdue",
+      "goal_name": "Restore v5 upgrades safely",
+      "target_completion_date": "2026-08-02",
+      "as_of": "2026-08-03",
+      "jira_status": "In Progress",
+      "at_risk": true,
+      "completion_evidence": false,
+      "definition_of_done_evidence": [{"condition": "DOD-1", "satisfied": false, "evidence": "blocked validation"}]
+    },
+    {
+      "case": "done-without-dod",
+      "goal_name": "Restore v5 upgrades safely",
+      "target_completion_date": "2026-08-02",
+      "as_of": "2026-08-03",
+      "jira_status": "Done",
+      "at_risk": false,
+      "completion_evidence": false,
+      "definition_of_done_evidence": [{"condition": "DOD-1", "satisfied": false, "evidence": "not verified"}]
+    },
+    {
+      "case": "completed-with-evidence",
+      "goal_name": "Restore v5 upgrades safely",
+      "target_completion_date": "2026-08-02",
+      "as_of": "2026-08-03",
+      "jira_status": "Done",
+      "at_risk": false,
+      "completion_evidence": true,
+      "definition_of_done_evidence": [{"condition": "DOD-1", "satisfied": true, "evidence": "rollback drill passed"}]
     }
   ]
 }

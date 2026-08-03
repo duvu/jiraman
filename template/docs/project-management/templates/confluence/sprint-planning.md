@@ -13,20 +13,28 @@ deliverable_id: null
 confidentiality: internal
 managed_by: jiraman
 ownership: jiraman-managed
+goal_contract: goal-name,target-completion-date,goal-dod,epic-parent,min-two-subtasks,max-four-hours,traceability
 parent: Project Home
 ---
 
-# Sprints
+# Sprint Planning
 
 <!-- JIRAMAN:BEGIN full-content -->
 ## Verified Facts
 
 - Source and retrieval time: [SOURCE]
+- Sprint and verified end date: [SPRINT] / [YYYY-MM-DD]
+- Capacity basis: [SOURCE / NOT VERIFIED]
 
-## Outcomes and Evidence
+## Sprint Goal and Selected Goal Stories
 
-- Outcome: [OUTCOME]
-- Acceptance/validation signal: [SIGNAL]
+- Sprint Goal: [OUTCOME]
+
+| Goal Story | Goal name | Target completion date | Deadline fit / exception | Goal DoD / acceptance signal | Readiness | Valid Sub-tasks | Capacity fit |
+| --- | --- | --- | --- | --- | --- | ---: | --- |
+| [AIPLATFORM-KEY] | [GOAL NAME] | [YYYY-MM-DD] | [FITS / APPROVED EXCEPTION / BLOCKED] | [DOD] | [READY / NOT VERIFIED] | [COUNT >= 2] | [VERIFIED / NOT VERIFIED] |
+
+Only complete Goal contracts may enter committed scope. Jira status, an undecomposed Story, or an over-four-hour Sub-task never substitutes for readiness.
 
 ## Risks, Dependencies, and Decisions Required
 

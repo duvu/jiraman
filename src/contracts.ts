@@ -4,6 +4,9 @@ import { basename, join, relative, resolve } from "node:path";
 
 import { Ajv, type ErrorObject, type ValidateFunction } from "ajv";
 
+import { goalDraftSemanticErrors } from "./goal-rules.js";
+import { goalActionSemanticErrors } from "./goal-action-rules.js";
+
 export type JsonPrimitive = boolean | number | string | null;
 export type JsonValue = JsonPrimitive | JsonValue[] | { [key: string]: JsonValue };
 export type JsonObject = { [key: string]: JsonValue };
@@ -212,7 +215,11 @@ function actionGroupApprovalErrors(value: JsonValue): ErrorObject[] {
 export function validateJson(schemaName: string, value: JsonValue): ValidationResult {
   const validator = schemaValidator(schemaName);
   const schemaValid = validator(value);
-  const semanticErrors = schemaName === "action-group.schema.json" ? actionGroupApprovalErrors(value) : [];
+  const semanticErrors = [
+    ...(schemaName === "action-group.schema.json" ? actionGroupApprovalErrors(value) : []),
+    ...(schemaName === "action-group.schema.json" ? goalActionSemanticErrors(value) : []),
+    ...goalDraftSemanticErrors(schemaName, value),
+  ];
   return { valid: schemaValid && semanticErrors.length === 0, errors: [...(validator.errors ?? []), ...semanticErrors] };
 }
 

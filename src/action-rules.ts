@@ -21,6 +21,32 @@ export interface PreflightResult {
   readonly violations: readonly string[];
 }
 
+export interface GoalPreflightInput {
+  readonly goalFieldsPresent: boolean;
+  readonly parentageVerified: boolean;
+  readonly minimumChildrenPresent: boolean;
+  readonly dueDateWrite: "resolved" | "missing" | "ambiguous";
+  readonly dueDateRead: "resolved" | "missing" | "ambiguous";
+  readonly estimatesValid: boolean;
+  readonly duplicatesAbsent: boolean;
+  readonly payloadUnchanged: boolean;
+  readonly readBackMatches: boolean;
+}
+
+export function goalPreflightBlockers(input: GoalPreflightInput): string[] {
+  const blockers: string[] = [];
+  if (!input.goalFieldsPresent) blockers.push("missing-goal-fields");
+  if (!input.parentageVerified) blockers.push("unverified-goal-parentage");
+  if (!input.minimumChildrenPresent) blockers.push("insufficient-goal-decomposition");
+  if (input.dueDateWrite !== "resolved") blockers.push(`jira-due-date-write-${input.dueDateWrite}`);
+  if (input.dueDateRead !== "resolved") blockers.push(`jira-due-date-read-${input.dueDateRead}`);
+  if (!input.estimatesValid) blockers.push("invalid-subtask-estimate");
+  if (!input.duplicatesAbsent) blockers.push("duplicate-target");
+  if (!input.payloadUnchanged) blockers.push("modified");
+  if (!input.readBackMatches) blockers.push("goal-read-after-write-mismatch");
+  return blockers;
+}
+
 export function evaluatePreflight(input: PreflightInput): PreflightResult {
   const violations: string[] = [];
   if (input.status !== "approved") violations.push(`status-${input.status}`);

@@ -13,20 +13,29 @@ deliverable_id: null
 confidentiality: internal
 managed_by: jiraman
 ownership: jiraman-managed
+goal_contract: goal-name,target-completion-date,goal-dod,epic-parent,min-two-subtasks,max-four-hours,traceability
 parent: Project Home
 ---
 
-# Sprints
+# Sprint Review
 
 <!-- JIRAMAN:BEGIN full-content -->
 ## Verified Facts
 
 - Source and retrieval time: [SOURCE]
+- Sprint: [SPRINT]
 
-## Outcomes and Evidence
+## Goal Results and Definition of Done Evidence
 
-- Outcome: [OUTCOME]
-- Acceptance/validation signal: [SIGNAL]
+| Goal Story | Goal name | Target date | Deadline result | Jira status | Satisfied Goal DoD | Unsatisfied / unverified Goal DoD | Acceptance / Sub-task evidence | Accepted result |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| [AIPLATFORM-KEY] | [GOAL NAME] | [YYYY-MM-DD] | [ON TRACK / AT RISK / OVERDUE / COMPLETED / NOT VERIFIED] | [STATUS] | [CONDITIONS + EVIDENCE] | [GAPS] | [EVIDENCE] | [COMPLETED WITH EVIDENCE / DOD INCOMPLETE / NOT VERIFIED] |
+
+Jira `Done` alone is never accepted completion. Every Goal DoD condition, required acceptance criterion, and required Sub-task must have evidence.
+
+## Carry-over and Scope Changes
+
+- [GOAL / SUB-TASK, REASON, DEADLINE IMPACT]
 
 ## Risks, Dependencies, and Decisions Required
 

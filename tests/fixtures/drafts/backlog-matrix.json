@@ -14,6 +14,7 @@
     "cases": [
       {
         "case": "one-story",
+        "expected_valid": false,
         "evidence_id": "evidence-one",
         "draft": {
           "epic": {
@@ -81,6 +82,7 @@
       },
       {
         "case": "multi-story",
+        "expected_valid": true,
         "evidence_id": "evidence-multi",
         "draft": {
           "epic": {
@@ -117,6 +119,16 @@
             {
               "draft_ref": "story-1",
               "disposition": "create",
+              "goal_name": "Restore v4 backups safely",
+              "target_completion_date": "2026-08-07",
+              "target_completion_date_evidence": {
+                "source": "sprint-end",
+                "reference": "Sprint 7 end",
+                "verified": true
+              },
+              "definition_of_done": [
+                "Restore evidence is accepted"
+              ],
               "outcome": "Operators restore a v4 backup",
               "canonical_spec": "Confluence page-200",
               "context": "v5 migration safety",
@@ -147,6 +159,16 @@
             {
               "draft_ref": "story-2",
               "disposition": "create",
+              "goal_name": "Verify the rollback guide",
+              "target_completion_date": "2026-08-07",
+              "target_completion_date_evidence": {
+                "source": "specification",
+                "reference": "Confluence page-200 target date",
+                "verified": true
+              },
+              "definition_of_done": [
+                "Guide walkthrough evidence is accepted"
+              ],
               "outcome": "Maintainers verify the rollback guide",
               "canonical_spec": "Confluence page-200",
               "context": "v5 migration safety",
@@ -179,6 +201,7 @@
       },
       {
         "case": "existing-epic",
+        "expected_valid": false,
         "evidence_id": "evidence-existing-epic",
         "draft": {
           "epic": {
@@ -246,6 +269,7 @@
       },
       {
         "case": "update-existing-story",
+        "expected_valid": false,
         "evidence_id": "evidence-update-story",
         "draft": {
           "epic": {
@@ -314,6 +338,7 @@
       },
       {
         "case": "unresolved-decision",
+        "expected_valid": false,
         "evidence_id": "evidence-unresolved",
         "draft": {
           "epic": {
@@ -385,6 +410,7 @@
       },
       {
         "case": "determinism-a",
+        "expected_valid": false,
         "evidence_id": "evidence-deterministic",
         "draft": {
           "epic": {
@@ -452,6 +478,7 @@
       },
       {
         "case": "determinism-b",
+        "expected_valid": false,
         "evidence_id": "evidence-deterministic",
         "draft": {
           "epic": {

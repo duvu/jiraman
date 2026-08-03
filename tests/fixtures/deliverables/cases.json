@@ -20,7 +20,24 @@
         "stories": [
           "AIPLATFORM-101"
         ],
+        "goals": [
+          {
+            "story_ref": "AIPLATFORM-101",
+            "goal_name": "Restore v5 upgrades safely",
+            "target_completion_date": "2026-08-07",
+            "definition_of_done": ["Rollback drill evidence is accepted"],
+            "epic_parent": "AIPLATFORM-100",
+            "readiness": "ready",
+            "subtasks": [
+              {"ref": "AIPLATFORM-102", "estimate_hours": 3},
+              {"ref": "AIPLATFORM-103", "estimate_hours": 2}
+            ],
+            "traceability_complete": true,
+            "deadline_exception_approved": false
+          }
+        ],
         "target_sprint": "N+1",
+        "target_sprint_end": "2026-08-07",
         "week_1_outcome": "Backup verified",
         "week_2_outcome": "Rollback drill accepted",
         "acceptance_signal": "drill passes",
@@ -45,7 +62,21 @@
         "stories": [
           "New candidate"
         ],
+        "goals": [
+          {
+            "story_ref": "draft-goal-hypothesis",
+            "goal_name": "Automation hypothesis",
+            "target_completion_date": null,
+            "definition_of_done": [],
+            "epic_parent": "AIPLATFORM-100",
+            "readiness": "not verified",
+            "subtasks": [],
+            "traceability_complete": false,
+            "deadline_exception_approved": false
+          }
+        ],
         "target_sprint": "N+2",
+        "target_sprint_end": "2026-08-14",
         "week_1_outcome": "evidence gathered",
         "week_2_outcome": "hypothesis reviewed",
         "acceptance_signal": "decision recorded",
@@ -74,7 +105,23 @@
         "stories": [
           "AIPLATFORM-202"
         ],
+        "goals": [
+          {
+            "story_ref": "AIPLATFORM-202",
+            "goal_name": "Remove dependency risk",
+            "target_completion_date": null,
+            "definition_of_done": ["The dependent Goal is unblocked"],
+            "epic_parent": "AIPLATFORM-100",
+            "readiness": "needs refinement",
+            "subtasks": [
+              {"ref": "AIPLATFORM-203", "estimate_hours": 2}
+            ],
+            "traceability_complete": false,
+            "deadline_exception_approved": false
+          }
+        ],
         "target_sprint": "N+2",
+        "target_sprint_end": "2026-08-14",
         "week_1_outcome": "dependency evidence gathered",
         "week_2_outcome": "dependency removed",
         "acceptance_signal": "dependent Story unblocked",
@@ -104,7 +151,8 @@
           "DLV-20260801-02",
           "DLV-20260801-03"
         ],
-        "trade_off": "finish ready work"
+        "trade_off": "finish ready work",
+        "deadline_impact": "Protects Restore v5 upgrades safely by 2026-08-07; moves unready Goals out of commitment"
       },
       {
         "name": "Risk-reduction",
@@ -115,7 +163,8 @@
           "DLV-20260801-01",
           "DLV-20260801-02"
         ],
-        "trade_off": "spend capacity on dependency refinement"
+        "trade_off": "spend capacity on dependency refinement",
+        "deadline_impact": "Puts the 2026-08-07 restore Goal at risk while clarifying the undated dependency Goal"
       },
       {
         "name": "Value-first",
@@ -125,7 +174,8 @@
           "DLV-20260801-02",
           "DLV-20260801-03"
         ],
-        "trade_off": "No evidence-based recommendation without value evidence"
+        "trade_off": "No evidence-based recommendation without value evidence",
+        "deadline_impact": "No Goal deadline is protected without sufficient value and readiness evidence"
       }
     ],
     "recommendation": "DLV-20260801-01",

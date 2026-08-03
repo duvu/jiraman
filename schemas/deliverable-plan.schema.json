@@ -21,7 +21,9 @@
           "outcome",
           "primary_epic",
           "stories",
+          "goals",
           "target_sprint",
+          "target_sprint_end",
           "week_1_outcome",
           "week_2_outcome",
           "acceptance_signal",
@@ -61,11 +63,59 @@
             "type": "array",
             "minItems": 1
           },
+          "goals": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "story_ref",
+                "goal_name",
+                "target_completion_date",
+                "definition_of_done",
+                "epic_parent",
+                "readiness",
+                "subtasks",
+                "traceability_complete",
+                "deadline_exception_approved"
+              ],
+              "properties": {
+                "story_ref": {"type": "string", "minLength": 1},
+                "goal_name": {"type": "string", "minLength": 1},
+                "target_completion_date": {"type": ["string", "null"], "format": "date"},
+                "definition_of_done": {
+                  "type": "array",
+                  "items": {"type": "string", "minLength": 1}
+                },
+                "epic_parent": {"type": "string", "minLength": 1},
+                "readiness": {"type": "string", "minLength": 1},
+                "subtasks": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": ["ref", "estimate_hours"],
+                    "properties": {
+                      "ref": {"type": "string", "minLength": 1},
+                      "estimate_hours": {"type": "number", "exclusiveMinimum": 0, "maximum": 4}
+                    }
+                  }
+                },
+                "traceability_complete": {"type": "boolean"},
+                "deadline_exception_approved": {"type": "boolean"}
+              }
+            }
+          },
           "target_sprint": {
             "enum": [
               "N+1",
               "N+2"
             ]
+          },
+          "target_sprint_end": {
+            "type": "string",
+            "format": "date"
           },
           "week_1_outcome": {
             "type": "string",
@@ -128,7 +178,8 @@
           "name",
           "selected",
           "displaced_work",
-          "trade_off"
+          "trade_off",
+          "deadline_impact"
         ],
         "properties": {
           "name": {
@@ -152,6 +203,10 @@
             }
           },
           "trade_off": {
+            "type": "string",
+            "minLength": 1
+          },
+          "deadline_impact": {
             "type": "string",
             "minLength": 1
           }

@@ -1,9 +1,10 @@
 ---
 name: jiraman-sprint-health
-description: "Diagnose sprint health, flow bottlenecks, and Ready runway from direct MCP evidence."
+description: "Diagnose Goal deadline/DoD health, flow bottlenecks, and independent N+1/N+2 Ready runway."
 version: 5
 side_effects: none
 policy: .kilo/policies/jiraman-safety.md
+goal_contract: goal-name,target-completion-date,goal-dod,epic-parent,min-two-subtasks,max-four-hours,traceability
 ---
 
 # jiraman-sprint-health
@@ -18,11 +19,11 @@ Exact `health` or `runway`, including normalized v4 `sprint-health`.
 
 ## Required Evidence
 
-Capability health; active sprint/goal; bounded AIPLATFORM issues with status, hierarchy, estimates, blockers, assignees, dependencies, changed dates, and acceptance evidence; verified capacity basis; relevant specifications, decisions, and risks.
+Capability health; active sprint/Goal; bounded AIPLATFORM Goal Stories with name, target date/source, Goal DoD/evidence, Epic parent, child count, traceability, status, blockers and dependencies; Sub-task estimates/assignees/validation; verified N+1/N+2 sprint dates and capacity basis; relevant specifications, decisions, and risks.
 
 ## Output Contract
 
-For health: Green, Amber, Red, or Not verified with triggering rules, goal/outcome view, WIP/aging/queue/blocker/dependency findings, and smallest corrective actions. For runway: N+1, N+2, reserve, total coverage, hard-floor gap, operating-target gap, unready potential, exact readiness recovery, and outcome-coherence risk.
+For health: Green, Amber, Red, or Not verified plus per-Goal `on track`, `at risk`, `overdue`, `DoD incomplete`, `completed with evidence`, or `not verified`; cardinality, WIP/aging/queue/blocker/dependency findings; and smallest corrective actions. For runway: independent N+1/N+2 Goal coverage, reserve, gaps, unready potential, exact readiness recovery, deadlines/DoD/child coverage, and outcome-coherence risk.
 
 ## Semantic Capabilities
 
@@ -31,11 +32,12 @@ For health: Green, Amber, Red, or Not verified with triggering rules, goal/outco
 ## Workflow
 
 1. Detect WIP breaches, stale work, review/validation congestion, blockers, unassigned active Sub-tasks, and explicit dependency risks from returned fields.
-2. A blocked Sprint Goal may be Red even when most issues are Done; issue counts are not value.
-3. Count a Story once. Never add a Story estimate and child Sub-task estimates. Never count an Epic.
-4. Only Stories satisfying N+1/N+2 readiness and resolved dependencies count as Ready. Excess N+1 cannot compensate for empty N+2.
-5. Unready estimates are potential only. Green volume can still have incoherent outcomes.
-6. Recommend finish/unblock/refine before start and never call a write tool.
+2. Classify each Goal from verified deadline and DoD evidence as `on track`, `at risk`, `overdue`, `DoD incomplete`, `completed with evidence`, or `not verified`. Jira Done alone never proves completion.
+3. Flag every Epic with fewer than two Goals and every Goal with fewer than two valid Sub-tasks, missing Goal fields, incomplete traceability, or an estimate outside `(0h, 4h]`.
+4. A blocked Sprint Goal may be Red even when most issues are Done; issue counts are not value. Count a Goal Story once, never add its estimate to child estimates, and never count an Epic.
+5. Only Goal Stories satisfying the full shared contract, sprint deadline fit, and resolved dependencies count as Ready. Evaluate N+1 and N+2 separately; excess N+1 cannot compensate for empty N+2.
+6. Unready estimates are potential only. Green volume can still have incoherent outcomes or deadline/DoD risk.
+7. Recommend finish/unblock/refine before start and never call a write tool.
 
 ## Side Effects
 
@@ -43,7 +45,7 @@ None. Jira and Confluence writes are prohibited; emit reviewable proposals only.
 
 ## Degraded Mode
 
-No active sprint produces a labeled no-active-sprint view. Missing change history, capacity, dates, or estimates yields `not verified`, never invented percentiles, trends, or issue-count capacity.
+No active sprint produces a labeled no-active-sprint view. Missing change history, capacity, Goal deadline/DoD/decomposition, sprint dates, or estimates yields `not verified`, never invented completion, percentiles, trends, or issue-count capacity.
 
 ## Shared Policy
 

@@ -22,7 +22,7 @@
       "constraints": ["one-week sprint"],
       "dependencies": [],
       "risks": ["backup drift"],
-      "story_map": ["story-1"],
+      "story_map": ["story-1", "story-2"],
       "exit_criteria": ["rollback evidence accepted"],
       "blocking_gaps": []
     },
@@ -30,6 +30,17 @@
       {
         "draft_ref": "story-1",
         "disposition": "create",
+        "goal_name": "Restore v4 backups safely",
+        "target_completion_date": "2026-08-07",
+        "target_completion_date_evidence": {
+          "source": "sprint-end",
+          "reference": "AIPLATFORM Sprint 7 ends 2026-08-07",
+          "verified": true
+        },
+        "definition_of_done": [
+          "A clean v5 installation is restored byte-for-byte from the v4 backup",
+          "The rollback drill evidence is attached to the Goal Story"
+        ],
         "outcome": "Operators restore a v4 backup",
         "canonical_spec": "Confluence page-200",
         "context": "v5 migration safety",
@@ -54,6 +65,47 @@
         ],
         "rollout": "install into a temporary project",
         "recovery": "restore timestamped backup",
+        "estimate_basis": "verified team unit",
+        "blocking_gaps": []
+      },
+      {
+        "draft_ref": "story-2",
+        "disposition": "create",
+        "goal_name": "Verify the rollback guide",
+        "target_completion_date": "2026-08-07",
+        "target_completion_date_evidence": {
+          "source": "specification",
+          "reference": "Confluence page-200 target date",
+          "verified": true
+        },
+        "definition_of_done": [
+          "A maintainer completes the rollback guide without undocumented steps",
+          "The reviewed guide links the successful validation evidence"
+        ],
+        "outcome": "Maintainers can follow the rollback guide",
+        "canonical_spec": "Confluence page-200",
+        "context": "v5 migration safety",
+        "in_scope": [
+          "rollback documentation"
+        ],
+        "out_of_scope": [
+          "MCP"
+        ],
+        "requirements": [
+          "REQ-2"
+        ],
+        "acceptance_criteria": [
+          "AC-2"
+        ],
+        "constraints": [
+          "one sprint"
+        ],
+        "dependencies": [],
+        "validation": [
+          "maintainer walkthrough"
+        ],
+        "rollout": "publish the verified guide",
+        "recovery": "restore the previously reviewed guide",
         "estimate_basis": "verified team unit",
         "blocking_gaps": []
       }

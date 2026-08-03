@@ -27,13 +27,15 @@ export interface SecurityFinding {
 }
 
 export function inspectUntrustedContent(source: string, content: string): SecurityFinding | null {
-  const suspicious = /ignore (?:policy|instructions)|use (?:the )?tool|reveal (?:a )?secret|auto-approve|update [A-Z]+-[0-9]+/i.test(content);
+  const goalPolicyOverride = /(?:lower|reduce) (?:the )?(?:minimum|child)|raise (?:the )?(?:sub-task )?limit|remove (?:the )?goal (?:name|deadline|dod)|invent (?:a )?deadline/i.test(content);
+  const suspicious = goalPolicyOverride || /ignore (?:policy|instructions)|use (?:the )?tool|reveal (?:a )?secret|auto-approve|update [A-Z]+-[0-9]+/i.test(content);
   if (!suspicious) return null;
   const effects: string[] = [];
   if (/update [A-Z]+-[0-9]+|change project/i.test(content)) effects.push("scope change");
   if (/use (?:the )?tool|fake mcp/i.test(content)) effects.push("tool selection");
   if (/auto-approve|approve write/i.test(content)) effects.push("write approval");
   if (/reveal (?:a )?secret|credential/i.test(content)) effects.push("secret disclosure");
+  if (goalPolicyOverride) effects.push("goal policy override");
   return { source, category: "instruction-injection", blockedEffect: effects, preservedEvidenceIds: extractStableIds(content) };
 }
 

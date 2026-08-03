@@ -16,7 +16,14 @@ describe("sprint-cadence", () => {
     const data = asObject(asObject(readJson("tests/fixtures/workflows/sprint-cadence.json"), "cadence").data ?? null, "data");
     const review = asObject(data.review ?? null, "review");
     expect(sprintReviewAccepted(review)).toBe(false);
-    expect(sprintReviewAccepted({ jira_status: "Done", validation_evidence: "acceptance run passed", accepted_outcome: true })).toBe(true);
+    expect(sprintReviewAccepted({
+      jira_status: "Done",
+      validation_evidence: "acceptance run passed",
+      accepted_outcome: true,
+      acceptance_criteria_satisfied: true,
+      subtasks_satisfied: true,
+      goal_definition_of_done_evidence: [{ condition: "DOD-1", satisfied: true, evidence: "rollback drill passed" }],
+    })).toBe(true);
     expect(asArray(asObject(data.retrospective ?? null, "retrospective").experiments, "experiments").length).toBeLessThanOrEqual(3);
   });
 });

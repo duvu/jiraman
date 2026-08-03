@@ -7,6 +7,13 @@
     "label",
     "title"
   ],
+  "goal_contract": {
+    "jira_issue_type": "Story",
+    "required_fields": ["goal_name", "target_completion_date", "definition_of_done"],
+    "minimum_goal_stories_per_epic": 2,
+    "minimum_subtasks_per_goal": 2,
+    "maximum_subtask_hours": 4
+  },
   "page_types": [
     {
       "page_type": "project-home",
@@ -35,7 +42,7 @@
     {
       "page_type": "epic-brief",
       "file": "epic-brief.md",
-      "purpose": "Epics",
+      "purpose": "Epic Goal Registers",
       "parent": "Project Home",
       "ownership": "mixed",
       "lifecycle": "active"
@@ -43,7 +50,7 @@
     {
       "page_type": "story-specification",
       "file": "story-specification.md",
-      "purpose": "Specifications",
+      "purpose": "Goal Story Specifications",
       "parent": "Epics",
       "ownership": "mixed",
       "lifecycle": "active"

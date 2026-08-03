@@ -1,9 +1,10 @@
 ---
 name: jiraman-next-two-weeks
-description: "Build two-week scenarios, recommendations, sprint plans, reviews, and retrospectives without writes."
+description: "Build independent N+1/N+2 scenarios from deadline-bound Ready Goal Stories without writes."
 version: 5
 side_effects: none
 policy: .kilo/policies/jiraman-safety.md
+goal_contract: goal-name,target-completion-date,goal-dod,epic-parent,min-two-subtasks,max-four-hours,traceability
 ---
 
 # jiraman-next-two-weeks
@@ -18,11 +19,11 @@ Exact `plan next-2-weeks` or `brainstorm`, including deliverable aliases.
 
 ## Required Evidence
 
-Verified Epic alignment/value/urgency/dependencies/risks; Ready Stories and Sub-tasks; N+1/N+2 capacity basis; WIP; acceptance/validation evidence; prior sprint scope changes/carry-over; selected DLV lineage; governed report/page ownership and version.
+Verified Epic alignment/value/urgency/dependencies/risks; Goal Story name, deadline source/date, Goal DoD, parent, specification, REQ/AC/traceability, and at least two valid Sub-tasks; independent N+1/N+2 sprint end and capacity evidence; WIP; prior scope changes/carry-over; selected DLV lineage; governed report/page ownership and version.
 
 ## Output Contract
 
-Stable DLV candidates and distinct scenarios; evidence-based recommendation or `No evidence-based recommendation`; Week 1/Week 2 outcomes and acceptance signals; displaced work; and a governed Confluence page proposal.
+Stable DLV candidates listing each supporting Goal's name, deadline, DoD/acceptance signal, readiness, and child coverage; distinct scenarios with protected/moved/at-risk deadlines; evidence-based recommendation or `No evidence-based recommendation`; separate N+1/N+2 outcomes and displaced work; and a governed Confluence page proposal.
 
 ## Semantic Capabilities
 
@@ -30,14 +31,15 @@ Stable DLV candidates and distinct scenarios; evidence-based recommendation or `
 
 ## Workflow
 
-1. Assign stable `DLV-YYYYMMDD-NN` IDs with outcome, primary Epic, supporting Stories, target sprint, acceptance signal, rationale, evidence, assumptions, hypotheses, readiness, capacity/dependency/WIP fit, risk, and confidence.
-2. Classify each candidate Ready-backed, Refinement candidate, New hypothesis, or Excluded. Hypotheses never count toward runway or commitments.
-3. Create materially different Flow-first, Risk-reduction, and Value-first scenarios with displaced work and separate demonstrable Week 1/Week 2 outcomes.
-4. Compare qualitative alignment, value, urgency, leverage, risk reduction, readiness, capacity, validation, and WIP. Recommend only Ready-backed feasible scenarios; otherwise say `No evidence-based recommendation`.
-5. Sprint planning defines the Sprint Goal/deliverables before supporting Stories and rejects incoherent or over-capacity scope.
-6. Sprint review distinguishes Jira Done from accepted outcome evidence and preserves carry-over reasons.
-7. Each of at most three retrospective experiments has owner role, expected signal, review date, and stop/rollback condition. Never rank individual performance.
-8. Route page proposals through `jiraman-confluence-publish`; never execute them.
+1. Assign stable `DLV-YYYYMMDD-NN` IDs with outcome, primary Epic, supporting Goal Stories, each Goal name/deadline/DoD/readiness/Sub-task coverage, target sprint and verified end date, acceptance signal, rationale, evidence, assumptions, hypotheses, capacity/dependency/WIP fit, risk, and confidence.
+2. Classify each candidate Ready-backed, Refinement candidate, New hypothesis, or Excluded. Ready-backed requires the full shared Goal contract, at least two Sub-tasks in `(0h, 4h]`, complete traceability, and dependencies resolved for the target sprint. Missing/malformed/conflicting date or DoD is Refinement, and hypotheses or undecomposed work never count toward runway or commitments.
+3. Evaluate N+1 and N+2 independently; excess N+1 cannot fill an empty/unready N+2. A committed Goal date must be on or before its verified sprint end unless an explicit approved exception is recorded.
+4. Create materially different Flow-first, Risk-reduction, and Value-first scenarios with displaced work, separate demonstrable Week 1/Week 2 outcomes, and exact Goal deadlines protected, moved, or put at risk.
+5. Compare qualitative alignment, value, urgency, leverage, risk reduction, Goal readiness, deadline fit, capacity, validation, dependencies, and WIP. Recommend only Ready-backed feasible scenarios; insufficient deadline/capacity/dependency/DoD evidence returns `No evidence-based recommendation`.
+6. Sprint planning defines the Sprint Goal/deliverables before coherent supporting Goal Stories and rejects unverified, deadline-misaligned, or over-capacity scope.
+7. Sprint review distinguishes Jira Done from Goal DoD/acceptance evidence and preserves carry-over reasons.
+8. Each of at most three retrospective experiments has owner role, expected signal, review date, and stop/rollback condition. Never rank individual performance.
+9. Route page proposals through `jiraman-confluence-publish`; never execute them.
 
 ## Side Effects
 
@@ -45,7 +47,7 @@ None. Jira and Confluence writes are prohibited; emit reviewable proposals only.
 
 ## Degraded Mode
 
-Without verified priority, capacity, dependency, readiness, or decision evidence, produce hypotheses/refinement needs and no capacity-feasible recommendation. Never invent numeric weights.
+Without verified priority, Goal deadline/DoD/decomposition, capacity, dependency, readiness, or decision evidence, produce hypotheses/refinement needs and no capacity-feasible recommendation. Use `not verified`; never invent dates, numeric weights, or commitments.
 
 ## Shared Policy
 

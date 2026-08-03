@@ -69,3 +69,26 @@ export function responseFixtureViolations(contract: JsonObject, fixture: JsonObj
   }
   return violations;
 }
+
+export function goalSchemaExpectationViolations(contract: JsonObject): string[] {
+  const expectations = asObject(contract.schema_expectations ?? null, "schema expectations");
+  const required: Readonly<Record<string, readonly string[]>> = {
+    "jira.issue.create": ["project", "issue_type", "parent", "summary", "due_date", "definition_of_done", "original_estimate"],
+    "jira.issue.update": ["parent", "summary", "due_date", "definition_of_done", "original_estimate"],
+    "jira.issue.read": ["issue_type", "parent", "summary", "due_date", "description", "original_estimate"],
+  };
+  const violations: string[] = [];
+  for (const [semantic, fields] of Object.entries(required)) {
+    const expectation = asObject(expectations[semantic] ?? null, semantic);
+    const configured = semantic === "jira.issue.read"
+      ? asArray(expectation.read_back_fields, `${semantic} read-back fields`).map((value) => asString(value, "read-back field"))
+      : [
+          ...asArray(expectation.story_required_fields, `${semantic} Story fields`).map((value) => asString(value, "Story field")),
+          ...asArray(expectation.subtask_required_fields, `${semantic} Sub-task fields`).map((value) => asString(value, "Sub-task field")),
+        ];
+    for (const field of fields) if (!configured.includes(field)) violations.push(`${semantic}:${field}`);
+    if (expectation.due_date_mapping !== "required-unambiguous") violations.push(`${semantic}:due-date-mapping`);
+    if (typeof expectation.degraded_behavior !== "string" || expectation.degraded_behavior.length === 0) violations.push(`${semantic}:degraded-behavior`);
+  }
+  return violations;
+}

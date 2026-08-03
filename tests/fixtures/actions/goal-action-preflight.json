@@ -1,0 +1,43 @@
+{
+  "fixture_version": 1,
+  "kind": "goal-action-preflight",
+  "metadata": {
+    "source": "synthetic-sanitized",
+    "version": "5.0",
+    "sanitized": true,
+    "semantic_capability": "actions.goal-preflight"
+  },
+  "expected": {
+    "writes_when_blocked": 0,
+    "mismatch_status": "verification-failed"
+  },
+  "data": {
+    "cases": [
+      {
+        "case": "complete",
+        "input": {"goalFieldsPresent": true, "parentageVerified": true, "minimumChildrenPresent": true, "dueDateWrite": "resolved", "dueDateRead": "resolved", "estimatesValid": true, "duplicatesAbsent": true, "payloadUnchanged": true, "readBackMatches": true},
+        "expected_blockers": []
+      },
+      {
+        "case": "missing-due-date-write-schema",
+        "input": {"goalFieldsPresent": true, "parentageVerified": true, "minimumChildrenPresent": true, "dueDateWrite": "missing", "dueDateRead": "resolved", "estimatesValid": true, "duplicatesAbsent": true, "payloadUnchanged": true, "readBackMatches": true},
+        "expected_blockers": ["jira-due-date-write-missing"]
+      },
+      {
+        "case": "ambiguous-due-date-read-schema",
+        "input": {"goalFieldsPresent": true, "parentageVerified": true, "minimumChildrenPresent": true, "dueDateWrite": "resolved", "dueDateRead": "ambiguous", "estimatesValid": true, "duplicatesAbsent": true, "payloadUnchanged": true, "readBackMatches": true},
+        "expected_blockers": ["jira-due-date-read-ambiguous"]
+      },
+      {
+        "case": "missing-goal-contract",
+        "input": {"goalFieldsPresent": false, "parentageVerified": false, "minimumChildrenPresent": false, "dueDateWrite": "resolved", "dueDateRead": "resolved", "estimatesValid": false, "duplicatesAbsent": true, "payloadUnchanged": true, "readBackMatches": true},
+        "expected_blockers": ["missing-goal-fields", "unverified-goal-parentage", "insufficient-goal-decomposition", "invalid-subtask-estimate"]
+      },
+      {
+        "case": "read-after-write-mismatch",
+        "input": {"goalFieldsPresent": true, "parentageVerified": true, "minimumChildrenPresent": true, "dueDateWrite": "resolved", "dueDateRead": "resolved", "estimatesValid": true, "duplicatesAbsent": true, "payloadUnchanged": true, "readBackMatches": false},
+        "expected_blockers": ["goal-read-after-write-mismatch"]
+      }
+    ]
+  }
+}

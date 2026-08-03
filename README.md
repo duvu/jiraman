@@ -30,6 +30,12 @@ docs/project-management/templates/
 
 `.kilo/state/` and `.jiraman-backup-*/` are gitignored. User MCP configuration and credentials remain untouched.
 
+## Goal Delivery Model
+
+Jiraman keeps Jira's native `Epic -> Story -> Sub-task` hierarchy and treats each `Story` as one delivery Goal. Every Epic must map at least two Goal Stories, and every Goal must have an outcome-oriented name, a verified `YYYY-MM-DD` target completion date, a testable Goal Definition of Done, a canonical specification with stable REQ/AC IDs, complete traceability, and at least two actionable Sub-tasks. Every Sub-task has a verified original estimate in `(0h, 4h]`.
+
+Deadlines come only from a verified sprint end, milestone, specification, or explicit user decision. Jiraman never guesses one. A missing, conflicting, unwritable, or unreadable Jira due date blocks Ready/executable status. Jira `Done` also does not complete a Goal unless all Goal DoD, acceptance, and required child evidence is satisfied.
+
 ## Commands
 
 ```text
@@ -60,4 +66,4 @@ npm run ci
 
 For release artifacts, `./scripts/package.sh --output <directory>` accepts paths relative to the current directory or absolute paths.
 
-The release gate runs TypeScript type checking, Vitest, Ajv schema and static contract validation, security/secret scans, clean install, v4 migration, reproducible packaging, and package verification. See [architecture](docs/architecture/jiraman-v5.md), [configuration](docs/configuration-reference.md), [security](docs/security-model.md), and [manual smoke tests](docs/manual-smoke-tests.md).
+The release gate runs TypeScript type checking, Vitest/Ajv Goal hierarchy invariants, static skill/template/action/MCP contract validation, security/secret scans, clean install, v4 migration, reproducible packaging, and package verification. See [architecture](docs/architecture/jiraman-v5.md), [configuration](docs/configuration-reference.md), [security](docs/security-model.md), and [manual smoke tests](docs/manual-smoke-tests.md).
