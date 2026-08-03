@@ -24,53 +24,97 @@ function isJiraIssueWrite(action: JsonObject): boolean {
   return action.system === "jira" && (action.operation === "issue.create" || action.operation === "issue.update");
 }
 
+type HierarchyIssueType = "Epic" | "Story" | "Sub-task";
+
+interface ValidHierarchyCreate {
+  readonly index: number;
+  readonly issueType: HierarchyIssueType;
+  readonly ref: string;
+  readonly parentRef: string | null;
+}
+
+function hierarchyIssueType(value: JsonValue | undefined): HierarchyIssueType | null {
+  if (value === "Epic" || value === "Story" || value === "Sub-task") return value;
+  return null;
+}
+
+function hierarchyFieldsValid(issueType: HierarchyIssueType, state: JsonObject, ref: string | null): boolean {
+  switch (issueType) {
+    case "Epic":
+      return ref !== null && typeof state.summary === "string" && state.summary.length > 0;
+    case "Story": {
+      const deadlineEvidence = objectValue(state.target_completion_date_evidence);
+      return typeof state.parent_ref === "string" && state.parent_ref.length > 0 &&
+        typeof state.goal_name === "string" && state.goal_name.length > 0 && state.summary === state.goal_name &&
+        typeof state.target_completion_date === "string" && validDate(state.target_completion_date) && state.due_date === state.target_completion_date &&
+        deadlineEvidence !== null && ["sprint-end", "milestone", "specification", "explicit-user-decision"].includes(String(deadlineEvidence.source)) && typeof deadlineEvidence.reference === "string" && deadlineEvidence.reference.length > 0 && deadlineEvidence.verified === true &&
+        nonEmptyStrings(state.definition_of_done) && typeof state.canonical_spec === "string" && state.canonical_spec.length > 0 &&
+        nonEmptyStrings(state.requirements) && nonEmptyStrings(state.acceptance_criteria) && nonEmptyStrings(state.validation);
+    }
+    case "Sub-task":
+      return typeof state.parent_ref === "string" && state.parent_ref.length > 0 &&
+        typeof state.summary === "string" && state.summary.length > 0 && typeof state.outcome === "string" && state.outcome.length > 0 &&
+        typeof state.validation === "string" && state.validation.length > 0 && typeof state.definition_of_done === "string" && state.definition_of_done.length > 0 &&
+        typeof state.original_estimate_hours === "number" && state.original_estimate_hours > 0 && state.original_estimate_hours <= 4 &&
+        nonEmptyStrings(state.requirements) && nonEmptyStrings(state.acceptance_criteria);
+  }
+}
+
 export function goalActionSemanticErrors(value: JsonValue): ErrorObject[] {
   const group = objectValue(value);
   if (group === null || !Array.isArray(group.actions)) return [];
   const actions = group.actions.map(objectValue);
   const errors: ErrorObject[] = [];
-  const hierarchyActions = actions.filter((action) => action !== null && isJiraIssueWrite(action) && ["Epic", "Story", "Sub-task"].includes(String(objectValue(action.desired_state)?.issue_type)));
-  if (hierarchyActions.length === 0) return [];
   const refs: string[] = [];
+  const validCreates: ValidHierarchyCreate[] = [];
   for (const [index, action] of actions.entries()) {
     if (action === null || !isJiraIssueWrite(action)) continue;
     const desired = objectValue(action.desired_state);
-    if (desired === null || !["Epic", "Story", "Sub-task"].includes(String(desired.issue_type))) continue;
-    const ref = typeof desired.draft_ref === "string" ? desired.draft_ref : typeof action.target_ref === "string" ? action.target_ref : null;
-    if (ref !== null) refs.push(ref);
-    if (desired.project !== "AIPLATFORM") errors.push(semanticError(index, "project", "must target AIPLATFORM"));
-    if (desired.issue_type === "Story") {
-      const deadlineEvidence = objectValue(desired.target_completion_date_evidence);
-      const fieldsValid = typeof desired.parent_ref === "string" && desired.parent_ref.length > 0 &&
-        typeof desired.goal_name === "string" && desired.goal_name.length > 0 && desired.summary === desired.goal_name &&
-        typeof desired.target_completion_date === "string" && validDate(desired.target_completion_date) && desired.due_date === desired.target_completion_date &&
-        deadlineEvidence !== null && ["sprint-end", "milestone", "specification", "explicit-user-decision"].includes(String(deadlineEvidence.source)) && typeof deadlineEvidence.reference === "string" && deadlineEvidence.reference.length > 0 && deadlineEvidence.verified === true &&
-        nonEmptyStrings(desired.definition_of_done) && typeof desired.canonical_spec === "string" && desired.canonical_spec.length > 0 &&
-        nonEmptyStrings(desired.requirements) && nonEmptyStrings(desired.acceptance_criteria) && nonEmptyStrings(desired.validation);
-      if (!fieldsValid) errors.push(semanticError(index, "goalFields", "Story writes require exact Goal name, Epic parent, verified deadline/due date, Goal DoD, specification, REQ/AC, and validation"));
+    if (desired === null) {
+      errors.push(semanticError(index, "issueType", "Jira issue writes require an authoritative Epic, Story, or Sub-task type"));
+      continue;
     }
-    if (desired.issue_type === "Sub-task") {
-      const fieldsValid = typeof desired.parent_ref === "string" && desired.parent_ref.length > 0 &&
-        typeof desired.summary === "string" && desired.summary.length > 0 && typeof desired.outcome === "string" && desired.outcome.length > 0 &&
-        typeof desired.validation === "string" && desired.validation.length > 0 && typeof desired.definition_of_done === "string" && desired.definition_of_done.length > 0 &&
-        typeof desired.original_estimate_hours === "number" && desired.original_estimate_hours > 0 && desired.original_estimate_hours <= 4 &&
-        nonEmptyStrings(desired.requirements) && nonEmptyStrings(desired.acceptance_criteria);
-      if (!fieldsValid) errors.push(semanticError(index, "subtaskFields", "Sub-task writes require a Goal parent, outcome, validation, DoD, REQ/AC, and an estimate in (0, 4]"));
+    const before = objectValue(action.before_state);
+    const isCreate = action.operation === "issue.create";
+    const authoritative = isCreate ? desired : before;
+    const issueType = hierarchyIssueType(authoritative?.issue_type);
+    if (issueType === null) {
+      errors.push(semanticError(index, "issueType", "Jira issue writes require an authoritative Epic, Story, or Sub-task type"));
+      continue;
+    }
+    let authorityValid = true;
+    if (!isCreate && desired.issue_type !== undefined && desired.issue_type !== issueType) {
+      errors.push(semanticError(index, "issueTypeDrift", "an update cannot change the freshly read Jira issue type"));
+      authorityValid = false;
+    }
+    const authoritativeProject = authoritative?.project;
+    if (!isCreate && desired.project !== undefined && desired.project !== authoritativeProject) {
+      errors.push(semanticError(index, "projectDrift", "an update cannot change the freshly read Jira project"));
+      authorityValid = false;
+    }
+    const effective = isCreate ? desired : {...(before ?? {}), ...desired, issue_type: issueType, project: authoritativeProject ?? null};
+    const projectValid = authoritativeProject === "AIPLATFORM";
+    if (!projectValid) errors.push(semanticError(index, "project", "must target authoritative AIPLATFORM state"));
+    const ref = typeof effective.draft_ref === "string" ? effective.draft_ref : typeof action.target_ref === "string" ? action.target_ref : null;
+    const fieldsValid = hierarchyFieldsValid(issueType, effective, ref);
+    if (!fieldsValid) {
+      const keyword = issueType === "Epic" ? "epicFields" : issueType === "Story" ? "goalFields" : "subtaskFields";
+      errors.push(semanticError(index, keyword, `${issueType} writes require the complete approved hierarchy contract`));
+    }
+    if (ref !== null) refs.push(ref);
+    if (isCreate && authorityValid && projectValid && fieldsValid && ref !== null) {
+      validCreates.push({index, issueType, ref, parentRef: typeof effective.parent_ref === "string" ? effective.parent_ref : null});
     }
   }
   if (new Set(refs).size !== refs.length) errors.push(semanticError(0, "uniqueDraftRefs", "hierarchy draft references must be unique"));
-  for (const [index, action] of actions.entries()) {
-    if (action === null || action.operation !== "issue.create") continue;
-    const desired = objectValue(action.desired_state);
-    const parentRef = typeof desired?.draft_ref === "string" ? desired.draft_ref : typeof action.target_ref === "string" ? action.target_ref : null;
-    if (parentRef === null) continue;
-    if (desired?.issue_type === "Epic") {
-      const goalCount = actions.filter((candidate) => objectValue(candidate?.desired_state)?.issue_type === "Story" && objectValue(candidate?.desired_state)?.parent_ref === parentRef).length;
-      if (goalCount < 2) errors.push(semanticError(index, "minimumGoals", "an Epic create group requires at least two Goal Story writes"));
+  for (const parent of validCreates) {
+    if (parent.issueType === "Epic") {
+      const goalCount = validCreates.filter((candidate) => candidate.issueType === "Story" && candidate.parentRef === parent.ref).length;
+      if (goalCount < 2) errors.push(semanticError(parent.index, "minimumGoals", "an Epic create group requires at least two valid Goal Story writes"));
     }
-    if (desired?.issue_type === "Story") {
-      const subtaskCount = actions.filter((candidate) => objectValue(candidate?.desired_state)?.issue_type === "Sub-task" && objectValue(candidate?.desired_state)?.parent_ref === parentRef).length;
-      if (subtaskCount < 2) errors.push(semanticError(index, "minimumSubtasks", "a Goal Story create group requires at least two Sub-task writes"));
+    if (parent.issueType === "Story") {
+      const subtaskCount = validCreates.filter((candidate) => candidate.issueType === "Sub-task" && candidate.parentRef === parent.ref).length;
+      if (subtaskCount < 2) errors.push(semanticError(parent.index, "minimumSubtasks", "a Goal Story create group requires at least two valid Sub-task writes"));
     }
   }
   return errors;
