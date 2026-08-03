@@ -13,6 +13,16 @@ printf '%s\n' '{"servers":{"mcp-atlassian":{"command":"USER-OWNED-SENTINEL"}}}' 
 cp "$TARGET/.kilo/mcp.json" "$TARGET/mcp.before"
 "$ROOT/install.sh" "$TARGET" >/dev/null
 "$ROOT/verify.sh" "$TARGET" >/dev/null
+for relative in \
+  "docs/project-management/templates/jira/index.json" \
+  "docs/project-management/templates/jira/epic.md" \
+  "docs/project-management/templates/jira/goal-story.md" \
+  "docs/project-management/templates/jira/sub-task.md"; do
+  [[ -f "$TARGET/$relative" ]] || { echo "missing installed Jira template: $relative" >&2; exit 1; }
+done
+grep -q '## Tiêu chí nghiệm thu' "$TARGET/docs/project-management/templates/jira/epic.md"
+grep -q '## Tiêu chí nghiệm thu' "$TARGET/docs/project-management/templates/jira/goal-story.md"
+grep -q '## Tiêu chí nghiệm thu' "$TARGET/docs/project-management/templates/jira/sub-task.md"
 "$ROOT/install.sh" "$TARGET" --check >/dev/null
 cmp "$TARGET/mcp.before" "$TARGET/.kilo/mcp.json"
 if "$ROOT/install.sh" "$TARGET" >"$TARGET/reinstall.out" 2>&1; then echo "expected conflict refusal" >&2; exit 1; fi

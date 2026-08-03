@@ -12,6 +12,7 @@
     "oversized_rejected": true
   },
   "data": {
+    "content_language": "vi-VN",
     "story_ref": "story-2",
     "goal": {
       "goal_name": "Verify the rollback guide",
@@ -19,6 +20,15 @@
       "definition_of_done": [
         "A maintainer completes the rollback guide without undocumented steps",
         "The reviewed guide links the successful validation evidence"
+      ],
+      "requirements": ["REQ-2"],
+      "acceptance_criteria": [
+        {
+          "id": "AC-2",
+          "statement": "Maintainer hoàn tất hướng dẫn rollback mà không gặp bước chưa được mô tả",
+          "verification": "Thực hiện walkthrough trong dự án tạm và ghi nhận không còn bước chưa xác định",
+          "requirement_refs": ["REQ-2"]
+        }
       ]
     },
     "subtasks": [
@@ -35,7 +45,16 @@
         "definition_of_done": "All guide gaps are recorded with a verification step",
         "estimate_hours": 2,
         "requirements": ["REQ-2"],
-        "acceptance_criteria": ["AC-2"]
+        "parent_acceptance_criteria_refs": ["AC-2"],
+        "acceptance_criteria": [
+          {
+            "id": "AC-1",
+            "statement": "Mọi bước rollback chưa được mô tả đều được ghi nhận",
+            "verification": "walkthrough notes contain no unresolved step",
+            "validation_ref": "VAL-1",
+            "definition_of_done_ref": "DOD-1"
+          }
+        ]
       },
       {
         "draft_ref": "subtask-4",
@@ -50,12 +69,21 @@
         "definition_of_done": "The reviewed guide links the passing walkthrough evidence",
         "estimate_hours": 3,
         "requirements": ["REQ-2"],
-        "acceptance_criteria": ["AC-2"]
+        "parent_acceptance_criteria_refs": ["AC-2"],
+        "acceptance_criteria": [
+          {
+            "id": "AC-1",
+            "statement": "Walkthrough lần hai hoàn tất mà không có bước chưa được mô tả",
+            "verification": "second walkthrough passes",
+            "validation_ref": "VAL-1",
+            "definition_of_done_ref": "DOD-1"
+          }
+        ]
       }
     ],
     "traceability": {
       "requirements": {"REQ-2": ["subtask-3", "subtask-4"]},
-      "acceptance_criteria": {"AC-2": ["subtask-3", "subtask-4"]},
+      "parent_acceptance_criteria": {"AC-2": ["subtask-3", "subtask-4"]},
       "goal_definition_of_done": {"DOD-1": ["subtask-3"], "DOD-2": ["subtask-4"]}
     }
   }

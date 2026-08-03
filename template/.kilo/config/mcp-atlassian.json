@@ -4,14 +4,14 @@
   "selection": "one-unambiguous-schema-compatible-exposed-tool",
   "schema_expectations": {
     "jira.issue.create": {
-      "story_required_fields": ["project", "issue_type", "parent", "summary", "due_date", "definition_of_done"],
-      "subtask_required_fields": ["project", "issue_type", "parent", "summary", "original_estimate"],
+      "story_required_fields": ["project", "issue_type", "parent", "summary", "description", "due_date", "definition_of_done"],
+      "subtask_required_fields": ["project", "issue_type", "parent", "summary", "description", "original_estimate"],
       "due_date_mapping": "required-unambiguous",
       "degraded_behavior": "Block Goal creation and report the missing or ambiguous due-date write field."
     },
     "jira.issue.update": {
-      "story_required_fields": ["parent", "summary", "due_date", "definition_of_done"],
-      "subtask_required_fields": ["parent", "summary", "original_estimate"],
+      "story_required_fields": ["parent", "summary", "description", "due_date", "definition_of_done"],
+      "subtask_required_fields": ["parent", "summary", "description", "original_estimate"],
       "due_date_mapping": "required-unambiguous",
       "degraded_behavior": "Block Goal update and report the missing or ambiguous due-date write field."
     },
@@ -20,6 +20,14 @@
       "due_date_mapping": "required-unambiguous",
       "degraded_behavior": "Block operational readiness or post-write success when Goal due date cannot be read back."
     }
+  },
+  "acceptance_criteria_mapping": {
+    "mode": "managed-description-section",
+    "section_id": "acceptance-criteria",
+    "heading": "## Tiêu chí nghiệm thu",
+    "read_back_field": "description",
+    "custom_field": null,
+    "comparison": "all-approved-criterion-fields-exact"
   },
   "capabilities": [
     {

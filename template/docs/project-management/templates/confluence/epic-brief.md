@@ -13,7 +13,7 @@ deliverable_id: null
 confidentiality: internal
 managed_by: jiraman
 ownership: mixed
-goal_contract: goal-name,target-completion-date,goal-dod,epic-parent,min-two-subtasks,max-four-hours,traceability
+goal_contract: goal-name,target-completion-date,structured-ac,goal-dod,epic-parent,min-two-subtasks,max-four-hours,traceability
 parent: Project Home
 ---
 

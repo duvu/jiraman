@@ -13,7 +13,7 @@ export interface IndexedGoalTemplate {
   readonly text: string;
 }
 
-const EXPECTED_FIELDS = ["goal_name", "target_completion_date", "definition_of_done"] as const;
+const EXPECTED_FIELDS = ["goal_name", "target_completion_date", "acceptance_criteria", "definition_of_done"] as const;
 const EXPECTED_KEYS = [
   "epic_parent_required",
   "jira_issue_type",
@@ -32,7 +32,7 @@ export function goalContractMarker(contract: JsonObject): string | null {
   if (contract.jira_issue_type !== "Story" || contract.minimum_goal_stories_per_epic !== 2 ||
       contract.minimum_subtasks_per_goal !== 2 || contract.maximum_subtask_hours !== 4 ||
       contract.epic_parent_required !== true || contract.traceability_required !== true) return null;
-  return "goal-name,target-completion-date,goal-dod,epic-parent,min-two-subtasks,max-four-hours,traceability";
+  return "goal-name,target-completion-date,structured-ac,goal-dod,epic-parent,min-two-subtasks,max-four-hours,traceability";
 }
 
 export function goalContractMetadataViolations(contract: JsonObject, documents: readonly IndexedGoalDocument[]): string[] {

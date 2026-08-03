@@ -4,6 +4,7 @@ description: "Validate and reconcile governed decision records without writes."
 version: 5
 side_effects: none
 policy: .kilo/policies/jiraman-safety.md
+jira_ticket_contract: docs/project-management/templates/jira/index.json
 ---
 
 # jiraman-decision-management
@@ -22,7 +23,7 @@ In-scope decision pages, source sections, related specifications/Jira work, supe
 
 ## Output Contract
 
-Decision records/findings with context, options, decision, rationale, owner, date, consequences, status, affected readiness, duplicate disposition, and proposals.
+Decision records/findings with context, options, decision, rationale, owner, date, consequences, status, affected readiness, duplicate disposition, and proposals. Any Jira proposal uses the canonical Vietnamese ticket template and complete structured ACs or remains non-executable.
 
 ## Semantic Capabilities
 
@@ -32,8 +33,8 @@ Decision records/findings with context, options, decision, rationale, owner, dat
 
 1. Validate every required decision field and distinguish decision from proposal/discussion/question.
 2. Search before proposing duplicates or supersession.
-3. Link unresolved blockers to affected Stories and specifications.
-4. Never call a write tool.
+3. Link unresolved blockers to affected Stories and specifications. A decision does not supply missing AC statements or verification unless its recorded outcome states them explicitly.
+4. Render any complete Jira proposal through `docs/project-management/templates/jira/index.json`, preserve technical literals, and never call a write tool.
 
 ## Side Effects
 

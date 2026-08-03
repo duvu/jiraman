@@ -25,7 +25,7 @@ describe("goal hierarchy contracts", () => {
     expect(delivery.story_semantics).toBe("goal");
     expect(delivery.minimum_goal_stories_per_epic).toBe(2);
     expect(delivery.minimum_subtasks_per_goal).toBe(2);
-    expect(delivery.required_goal_fields).toEqual(["goal_name", "target_completion_date", "definition_of_done"]);
+    expect(delivery.required_goal_fields).toEqual(["goal_name", "target_completion_date", "acceptance_criteria", "definition_of_done"]);
     expect(goalPolicyMetadataValid(parseFrontmatter(readText("template/.kilo/policies/jiraman-safety.md")))).toBe(true);
     expect(backlogResult.valid).toBe(true);
     expect(asArray(backlog.stories, "Goal Stories")).toHaveLength(2);
@@ -172,13 +172,21 @@ describe("goal hierarchy contracts", () => {
     typeDriftAction.desired_state = {issue_type: "Sub-task", due_date: "2026-08-08"};
     const typeDrift: JsonObject = {...complete, actions: [typeDriftAction]};
     const validUpdateAction: JsonObject = structuredClone(updateEnvelope);
-    validUpdateAction.before_state = {...story, parent_issue_type: "Epic", parent_project: "AIPLATFORM"};
+    validUpdateAction.before_state = {
+      ...Object.fromEntries(Object.entries(story).filter(([key]) => key !== "draft_ref")),
+      parent_ref: "AIPLATFORM-100",
+      parent_state: {issue_key: "AIPLATFORM-100", issue_type: "Epic", project: "AIPLATFORM"},
+    };
     validUpdateAction.desired_state = {
       target_completion_date: "2026-08-08",
       due_date: "2026-08-08",
       target_completion_date_evidence: {source: "explicit-user-decision", reference: "approved date change", verified: true},
     };
-    const validUpdate: JsonObject = {...complete, actions: [validUpdateAction]};
+    const validUpdateChildren = completeActions.slice(2, 4).map((action) => structuredClone(action));
+    for (const action of validUpdateChildren) {
+      asObject(action.desired_state ?? null, "valid update child state").parent_ref = "AIPLATFORM-101";
+    }
+    const validUpdate: JsonObject = {...complete, actions: [validUpdateAction, ...validUpdateChildren]};
     const crossProjectAction: JsonObject = structuredClone(updateEnvelope);
     crossProjectAction.before_state = {...story, project: "OTHER"};
     const crossProject: JsonObject = {...complete, actions: [crossProjectAction]};

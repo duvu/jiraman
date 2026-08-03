@@ -4,7 +4,7 @@ description: "Prepare Goal deadline, DoD, and active-Sub-task aware Confluence r
 version: 5
 side_effects: none
 policy: .kilo/policies/jiraman-safety.md
-goal_contract: goal-name,target-completion-date,goal-dod,epic-parent,min-two-subtasks,max-four-hours,traceability
+goal_contract: goal-name,target-completion-date,structured-ac,goal-dod,epic-parent,min-two-subtasks,max-four-hours,traceability
 ---
 
 # jiraman-confluence-reporting

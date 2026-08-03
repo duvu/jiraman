@@ -22,7 +22,7 @@
     "story_semantics": "goal",
     "minimum_goal_stories_per_epic": 2,
     "minimum_subtasks_per_goal": 2,
-    "required_goal_fields": ["goal_name", "target_completion_date", "definition_of_done"],
+    "required_goal_fields": ["goal_name", "target_completion_date", "acceptance_criteria", "definition_of_done"],
     "goal_deadline_sources": ["sprint-end", "milestone", "specification", "explicit-user-decision"],
     "maximum_subtask_hours": 4,
     "active_story_limit": 4,

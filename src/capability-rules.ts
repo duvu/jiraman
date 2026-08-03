@@ -73,11 +73,13 @@ export function responseFixtureViolations(contract: JsonObject, fixture: JsonObj
 export function goalSchemaExpectationViolations(contract: JsonObject): string[] {
   const expectations = asObject(contract.schema_expectations ?? null, "schema expectations");
   const required: Readonly<Record<string, readonly string[]>> = {
-    "jira.issue.create": ["project", "issue_type", "parent", "summary", "due_date", "definition_of_done", "original_estimate"],
-    "jira.issue.update": ["parent", "summary", "due_date", "definition_of_done", "original_estimate"],
+    "jira.issue.create": ["project", "issue_type", "parent", "summary", "description", "due_date", "definition_of_done", "original_estimate"],
+    "jira.issue.update": ["parent", "summary", "description", "due_date", "definition_of_done", "original_estimate"],
     "jira.issue.read": ["issue_type", "parent", "summary", "due_date", "description", "original_estimate"],
   };
   const violations: string[] = [];
+  const acceptanceMapping = asObject(contract.acceptance_criteria_mapping ?? null, "Acceptance Criteria mapping");
+  if (acceptanceMapping.mode !== "managed-description-section" || acceptanceMapping.section_id !== "acceptance-criteria" || acceptanceMapping.heading !== "## Tiêu chí nghiệm thu" || acceptanceMapping.read_back_field !== "description" || acceptanceMapping.custom_field !== null || acceptanceMapping.comparison !== "all-approved-criterion-fields-exact") violations.push("acceptance-criteria-mapping");
   for (const [semantic, fields] of Object.entries(required)) {
     const expectation = asObject(expectations[semantic] ?? null, semantic);
     const configured = semantic === "jira.issue.read"

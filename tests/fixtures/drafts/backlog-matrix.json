@@ -17,6 +17,7 @@
         "expected_valid": false,
         "evidence_id": "evidence-one",
         "draft": {
+          "content_language": "vi-VN",
           "epic": {
             "disposition": "create",
             "outcome": "Safe upgrades",
@@ -85,6 +86,7 @@
         "expected_valid": true,
         "evidence_id": "evidence-multi",
         "draft": {
+          "content_language": "vi-VN",
           "epic": {
             "disposition": "create",
             "outcome": "Safe upgrades",
@@ -108,6 +110,13 @@
             "story_map": [
               "story-1",
               "story-2"
+            ],
+            "acceptance_criteria": [
+              {
+                "id": "AC-1",
+                "statement": "Các Goal Stories được nghiệm thu và restore drill đạt thước đo thành công",
+                "verification": "Đối chiếu Story map và chạy restore drill"
+              }
             ],
             "exit_criteria": [
               "rollback evidence accepted"
@@ -142,7 +151,12 @@
                 "REQ-1"
               ],
               "acceptance_criteria": [
-                "AC-1"
+                {
+                  "id": "AC-1",
+                  "statement": "Bản sao lưu được khôi phục nguyên vẹn",
+                  "verification": "backup byte comparison",
+                  "requirement_refs": ["REQ-1"]
+                }
               ],
               "constraints": [
                 "one sprint"
@@ -182,7 +196,12 @@
                 "REQ-2"
               ],
               "acceptance_criteria": [
-                "AC-2"
+                {
+                  "id": "AC-2",
+                  "statement": "Hướng dẫn rollback hoàn tất walkthrough",
+                  "verification": "rollback guide walkthrough",
+                  "requirement_refs": ["REQ-2"]
+                }
               ],
               "constraints": [
                 "one sprint"

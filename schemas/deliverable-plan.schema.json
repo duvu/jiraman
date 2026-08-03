@@ -81,8 +81,8 @@
                 "deadline_exception_approved"
               ],
               "properties": {
-                "story_ref": {"type": "string", "minLength": 1},
-                "goal_name": {"type": "string", "minLength": 1},
+                "story_ref": {"type": "string", "minLength": 1, "pattern": "^(?![\\s\\S]*[\\p{Default_Ignorable_Code_Point}\\p{Cc}])(?=[\\s\\S]*[\\p{L}\\p{N}])"},
+                "goal_name": {"type": "string", "minLength": 1, "pattern": "^(?![\\s\\S]*[\\p{Default_Ignorable_Code_Point}\\p{Cc}])(?=[\\s\\S]*[\\p{L}\\p{N}])"},
                 "target_completion_date": {"type": ["string", "null"], "format": "date"},
                 "target_completion_date_evidence": {
                   "type": "object",
@@ -90,15 +90,15 @@
                   "required": ["source", "reference", "verified"],
                   "properties": {
                     "source": {"enum": ["sprint-end", "milestone", "specification", "explicit-user-decision"]},
-                    "reference": {"type": "string", "minLength": 1},
+                    "reference": {"type": "string", "minLength": 1, "pattern": "^(?![\\s\\S]*[\\p{Default_Ignorable_Code_Point}\\p{Cc}])(?=[\\s\\S]*[\\p{L}\\p{N}])"},
                     "verified": {"const": true}
                   }
                 },
                 "definition_of_done": {
                   "type": "array",
-                  "items": {"type": "string", "minLength": 1}
+                  "items": {"type": "string", "minLength": 1, "pattern": "^(?![\\s\\S]*[\\p{Default_Ignorable_Code_Point}\\p{Cc}])(?=[\\s\\S]*[\\p{L}\\p{N}])"}
                 },
-                "canonical_spec": {"type": "string", "minLength": 1},
+                "canonical_spec": {"type": "string", "minLength": 1, "pattern": "^(?![\\s\\S]*[\\p{Default_Ignorable_Code_Point}\\p{Cc}])(?=[\\s\\S]*[\\p{L}\\p{N}])"},
                 "requirements": {
                   "type": "array",
                   "minItems": 1,
@@ -108,11 +108,10 @@
                 "acceptance_criteria": {
                   "type": "array",
                   "minItems": 1,
-                  "uniqueItems": true,
-                  "items": {"type": "string", "pattern": "^AC-[0-9]+$"}
+                  "items": {"$ref": "https://duvu.github.io/jiraman/schemas/acceptance-criterion.schema.json#/definitions/goal-criterion"}
                 },
-                "epic_parent": {"type": "string", "minLength": 1},
-                "readiness": {"type": "string", "minLength": 1},
+                "epic_parent": {"type": "string", "minLength": 1, "pattern": "^(?![\\s\\S]*[\\p{Default_Ignorable_Code_Point}\\p{Cc}])(?=[\\s\\S]*[\\p{L}\\p{N}])"},
+                "readiness": {"type": "string", "minLength": 1, "pattern": "^(?![\\s\\S]*[\\p{Default_Ignorable_Code_Point}\\p{Cc}])(?=[\\s\\S]*[\\p{L}\\p{N}])"},
                 "subtasks": {
                   "type": "array",
                   "items": {
@@ -121,7 +120,39 @@
                     "required": ["ref", "estimate_hours"],
                     "properties": {
                       "ref": {"type": "string", "minLength": 1},
-                      "estimate_hours": {"type": "number", "exclusiveMinimum": 0, "maximum": 4}
+                      "summary": {"type": "string", "minLength": 1, "pattern": "^(?![\\s\\S]*[\\p{Default_Ignorable_Code_Point}\\p{Cc}])(?=[\\s\\S]*[\\p{L}\\p{N}])"},
+                      "outcome": {"type": "string", "minLength": 1, "pattern": "^(?![\\s\\S]*[\\p{Default_Ignorable_Code_Point}\\p{Cc}])(?=[\\s\\S]*[\\p{L}\\p{N}])"},
+                      "in_scope": {"type": "array", "minItems": 1, "items": {"type": "string", "minLength": 1, "pattern": "^(?![\\s\\S]*[\\p{Default_Ignorable_Code_Point}\\p{Cc}])(?=[\\s\\S]*[\\p{L}\\p{N}])"}},
+                      "out_of_scope": {"type": "array", "items": {"type": "string", "minLength": 1, "pattern": "^(?![\\s\\S]*[\\p{Default_Ignorable_Code_Point}\\p{Cc}])(?=[\\s\\S]*[\\p{L}\\p{N}])"}},
+                      "steps": {"type": "array", "minItems": 1, "items": {"type": "string", "minLength": 1, "pattern": "^(?![\\s\\S]*[\\p{Default_Ignorable_Code_Point}\\p{Cc}])(?=[\\s\\S]*[\\p{L}\\p{N}])"}},
+                      "affected_files": {"type": "array", "items": {"type": "string", "minLength": 1, "pattern": "^(?![\\s\\S]*[\\p{Default_Ignorable_Code_Point}\\p{Cc}])(?=[\\s\\S]*[\\p{L}\\p{N}])"}},
+                      "validation": {"type": "string", "minLength": 1, "pattern": "^(?![\\s\\S]*[\\p{Default_Ignorable_Code_Point}\\p{Cc}])(?=[\\s\\S]*[\\p{L}\\p{N}])"},
+                      "definition_of_done": {"type": "string", "minLength": 1, "pattern": "^(?![\\s\\S]*[\\p{Default_Ignorable_Code_Point}\\p{Cc}])(?=[\\s\\S]*[\\p{L}\\p{N}])"},
+                      "dependencies": {
+                        "type": "array",
+                        "uniqueItems": true,
+                        "items": {"type": "string", "minLength": 1, "pattern": "^(?![\\s\\S]*[\\p{Default_Ignorable_Code_Point}\\p{Cc}])(?=[\\s\\S]*[\\p{L}\\p{N}])"}
+                      },
+                      "estimate_hours": {"type": "number", "exclusiveMinimum": 0, "maximum": 4},
+                      "requirements": {
+                        "type": "array",
+                        "minItems": 1,
+                        "uniqueItems": true,
+                        "items": {"type": "string", "pattern": "^REQ-[0-9]+$"}
+                      },
+                      "parent_acceptance_criteria_refs": {
+                        "type": "array",
+                        "minItems": 1,
+                        "uniqueItems": true,
+                        "items": {"type": "string", "pattern": "^AC-[0-9]+$"}
+                      },
+                      "content_language": {"const": "vi-VN"},
+                      "acceptance_criteria_storage": {"const": "managed-description-section"},
+                      "acceptance_criteria": {
+                        "type": "array",
+                        "minItems": 1,
+                        "items": {"$ref": "https://duvu.github.io/jiraman/schemas/acceptance-criterion.schema.json#/definitions/subtask-criterion"}
+                      }
                     }
                   }
                 },
@@ -214,13 +245,44 @@
                   "items": {
                     "type": "object",
                     "properties": {
+                      "story_ref": {"type": "string", "pattern": "^AIPLATFORM-[0-9]+$"},
+                      "epic_parent": {"type": "string", "pattern": "^AIPLATFORM-[0-9]+$"},
                       "target_completion_date": {"type": "string", "format": "date"},
                       "target_completion_date_evidence": true,
                       "definition_of_done": {"type": "array", "minItems": 1, "uniqueItems": true},
                       "canonical_spec": true,
                       "requirements": true,
                       "acceptance_criteria": true,
-                      "subtasks": {"type": "array", "minItems": 2},
+                      "subtasks": {
+                        "type": "array",
+                        "minItems": 2,
+                        "items": {
+                          "type": "object",
+                          "required": ["ref", "summary", "outcome", "in_scope", "out_of_scope", "steps", "affected_files", "validation", "definition_of_done", "dependencies", "estimate_hours", "requirements", "parent_acceptance_criteria_refs", "content_language", "acceptance_criteria_storage", "acceptance_criteria"],
+                          "properties": {
+                            "ref": {"type": "string", "pattern": "^AIPLATFORM-[0-9]+$"},
+                            "summary": true,
+                            "outcome": true,
+                            "in_scope": true,
+                            "out_of_scope": true,
+                            "steps": true,
+                            "affected_files": true,
+                            "validation": true,
+                            "definition_of_done": true,
+                            "dependencies": {
+                              "type": "array",
+                              "uniqueItems": true,
+                              "items": {"type": "string", "pattern": "^AIPLATFORM-[0-9]+$"}
+                            },
+                            "estimate_hours": true,
+                            "requirements": true,
+                            "parent_acceptance_criteria_refs": true,
+                            "content_language": true,
+                            "acceptance_criteria_storage": true,
+                            "acceptance_criteria": true
+                          }
+                        }
+                      },
                       "traceability": true,
                       "traceability_complete": {"const": true}
                     },

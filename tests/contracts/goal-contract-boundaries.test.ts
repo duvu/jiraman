@@ -39,14 +39,54 @@ describe("Goal contract boundaries", () => {
         case "empty-goal-dod":
           if (story !== null) story.definition_of_done = [];
           break;
+        case "missing-epic-acceptance":
+          delete asObject(value.epic ?? null, "Epic").acceptance_criteria;
+          break;
+        case "duplicate-goal-acceptance":
+          if (story !== null) {
+            const criteria = asArray(story.acceptance_criteria, "Goal Acceptance Criteria");
+            criteria.push(structuredClone(criteria[0] ?? null));
+          }
+          break;
+        case "vague-goal-acceptance":
+          if (story !== null) {
+            const criterion = asObject(asArray(story.acceptance_criteria, "Goal Acceptance Criteria")[0] ?? null, "Goal Acceptance Criterion");
+            criterion.verification = "đã kiểm tra";
+          }
+          break;
+        case "uncovered-requirement":
+          if (story !== null) {
+            const criterion = asObject(asArray(story.acceptance_criteria, "Goal Acceptance Criteria")[0] ?? null, "Goal Acceptance Criterion");
+            criterion.requirement_refs = ["REQ-999"];
+          }
+          break;
         case "duplicate-goal-ref":
           asObject(stories[1] ?? null, "second Goal").draft_ref = "story-1";
           break;
         case "one-subtask":
           value.subtasks = [subtasks[0] ?? null];
           break;
+        case "invalid-story-ref":
+          value.story_ref = "OTHER-101";
+          break;
+        case "invisible-parent-goal-name":
+          asObject(value.goal ?? null, "parent Goal").goal_name = "\u00AD";
+          break;
+        case "invisible-parent-goal-dod":
+          asObject(value.goal ?? null, "parent Goal").definition_of_done = ["\u200E"];
+          break;
         case "duplicate-subtask-ref":
           asObject(subtasks[1] ?? null, "second Sub-task").draft_ref = "subtask-1";
+          break;
+        case "self-subtask-dependency":
+          if (subtask !== null) subtask.dependencies = ["subtask-1"];
+          break;
+        case "missing-subtask-dependency":
+          if (subtask !== null) subtask.dependencies = ["subtask-missing"];
+          break;
+        case "cyclic-subtask-dependency":
+          if (subtask !== null) subtask.dependencies = ["subtask-2"];
+          asObject(subtasks[1] ?? null, "second Sub-task").dependencies = ["subtask-1"];
           break;
         case "zero-estimate":
           if (subtask !== null) subtask.estimate_hours = 0;
@@ -54,9 +94,37 @@ describe("Goal contract boundaries", () => {
         case "oversized-estimate":
           if (subtask !== null) subtask.estimate_hours = 5;
           break;
+        case "invalid-parent-acceptance":
+          if (subtask !== null) subtask.parent_acceptance_criteria_refs = ["AC-999"];
+          break;
+        case "invalid-parent-requirement":
+          for (const value of subtasks) asObject(value, "Sub-task").requirements = ["REQ-999"];
+          asObject(value.traceability ?? null, "traceability").requirements = {"REQ-999": subtasks.map((value) => asString(asObject(value, "Sub-task").draft_ref, "Sub-task ref"))};
+          break;
+        case "unimplemented-goal-acceptance": {
+          const goal = asObject(value.goal ?? null, "Goal");
+          const criteria = asArray(goal.acceptance_criteria, "Goal Acceptance Criteria");
+          const unimplemented = structuredClone(asObject(criteria[0] ?? null, "Goal Acceptance Criterion"));
+          unimplemented.id = "AC-2";
+          unimplemented.statement = "Bằng chứng khôi phục được lưu trong hồ sơ nghiệm thu";
+          criteria.push(unimplemented);
+          break;
+        }
+        case "missing-local-verification":
+          if (subtask !== null) {
+            const criterion = asObject(asArray(subtask.acceptance_criteria, "local Acceptance Criteria")[0] ?? null, "local Acceptance Criterion");
+            delete criterion.verification;
+          }
+          break;
+        case "duplicate-local-acceptance":
+          if (subtask !== null) {
+            const criteria = asArray(subtask.acceptance_criteria, "local Acceptance Criteria");
+            criteria.push(structuredClone(criteria[0] ?? null));
+          }
+          break;
         case "uncovered-acceptance":
-          asObject(asObject(value.traceability ?? null, "traceability").acceptance_criteria ?? null, "acceptance traceability");
-          asObject(value.traceability ?? null, "traceability").acceptance_criteria = {"AC-9": ["subtask-1"]};
+          asObject(asObject(value.traceability ?? null, "traceability").parent_acceptance_criteria ?? null, "acceptance traceability");
+          asObject(value.traceability ?? null, "traceability").parent_acceptance_criteria = {"AC-9": ["subtask-1"]};
           break;
         default:
           invariant(false, `unknown Goal boundary case: ${caseName}`);
@@ -130,8 +198,8 @@ describe("Goal contract boundaries", () => {
     asObject(requirementDrift.traceability ?? null, "requirement traceability").requirements = {"REQ-999": requirementSubtasks.map((subtask) => asString(subtask.draft_ref, "Sub-task ref"))};
     const acceptanceDrift: JsonObject = structuredClone(first);
     const acceptanceSubtasks = asArray(acceptanceDrift.subtasks, "acceptance Sub-tasks").map((value) => asObject(value, "acceptance Sub-task"));
-    for (const subtask of acceptanceSubtasks) subtask.acceptance_criteria = ["AC-999"];
-    asObject(acceptanceDrift.traceability ?? null, "acceptance traceability").acceptance_criteria = {"AC-999": acceptanceSubtasks.map((subtask) => asString(subtask.draft_ref, "Sub-task ref"))};
+    for (const subtask of acceptanceSubtasks) subtask.parent_acceptance_criteria_refs = ["AC-999"];
+    asObject(acceptanceDrift.traceability ?? null, "acceptance traceability").parent_acceptance_criteria = {"AC-999": acceptanceSubtasks.map((subtask) => asString(subtask.draft_ref, "Sub-task ref"))};
 
     // When
     const requirementViolations = goalPackageSetViolations(backlog, [requirementDrift, second]);

@@ -22,6 +22,7 @@ import { goalContractMetadataViolations, goalTemplateSectionViolations, type Ind
 import { missingChecklistGates } from "./release-rules.js";
 import { goalPolicyMetadataValid } from "./goal-rules.js";
 import { namedPathBijectionViolations, type NamedPathEntry } from "./index-rules.js";
+import { jiraTemplateViolations } from "./jira-template-rules.js";
 import { commandTableRoutes } from "./routing-rules.js";
 
 const REQUIRED_SKILL_SECTIONS = ["Purpose", "Triggers", "Required Evidence", "Output Contract", "Semantic Capabilities", "Workflow", "Side Effects", "Degraded Mode", "Shared Policy"] as const;
@@ -198,6 +199,8 @@ function validateDocs(): void {
     invariant(readme.includes(mode), `README missing command: ${mode}`);
   }
   invariant(missingChecklistGates().length === 0, `release checklist missing gates: ${missingChecklistGates().join(", ")}`);
+  const jiraViolations = jiraTemplateViolations();
+  invariant(jiraViolations.length === 0, `Jira template violations: ${jiraViolations.join(", ")}`);
   const workflow = readText(".github/workflows/ci.yml");
   invariant(workflow.includes("GITHUB_STEP_SUMMARY") && workflow.includes("actions/upload-artifact@") && workflow.includes("sanitized-ci-failure") && workflow.includes("sanitize_ci_log.sh"), "CI summary or sanitized failure artifact retention is missing");
 }

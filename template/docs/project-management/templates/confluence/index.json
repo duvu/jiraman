@@ -9,7 +9,7 @@
   ],
   "goal_contract": {
     "jira_issue_type": "Story",
-    "required_fields": ["goal_name", "target_completion_date", "definition_of_done"],
+    "required_fields": ["goal_name", "target_completion_date", "acceptance_criteria", "definition_of_done"],
     "minimum_goal_stories_per_epic": 2,
     "minimum_subtasks_per_goal": 2,
     "maximum_subtask_hours": 4,

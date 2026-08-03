@@ -13,7 +13,7 @@ deliverable_id: null
 confidentiality: internal
 managed_by: jiraman
 ownership: mixed
-goal_contract: goal-name,target-completion-date,goal-dod,epic-parent,min-two-subtasks,max-four-hours,traceability
+goal_contract: goal-name,target-completion-date,structured-ac,goal-dod,epic-parent,min-two-subtasks,max-four-hours,traceability
 parent: Epics
 ---
 
@@ -39,11 +39,15 @@ parent: Epics
 - Out of scope: [ITEMS]
 
 <!-- JIRAMAN:GOAL-SECTION:requirements-acceptance:BEGIN -->
-## Requirements and Acceptance Criteria
+## Requirements and Structured Acceptance Criteria
 
-| ID | Requirement / acceptance condition | Evidence source |
+| REQ ID | Requirement | Evidence source |
 | --- | --- | --- |
-| [REQ-N / AC-N] | [CONDITION] | [SOURCE] |
+| [REQ-N] | [REQUIREMENT] | [SOURCE] |
+
+| AC ID | Covered REQ IDs | Observable statement | Verification | Evidence source |
+| --- | --- | --- | --- | --- |
+| [AC-N] | [REQ-N] | [STATEMENT] | [COMMAND / CHECK / EVIDENCE] | [SOURCE] |
 <!-- JIRAMAN:GOAL-SECTION:requirements-acceptance:END -->
 
 <!-- JIRAMAN:GOAL-SECTION:goal-dod:BEGIN -->
@@ -72,7 +76,7 @@ At least two sibling Jira Sub-tasks are required; every original estimate satisf
 <!-- JIRAMAN:GOAL-SECTION:traceability:BEGIN -->
 ## Traceability Matrix
 
-| REQ / AC / Goal DoD ID | Covering Sub-task refs | Coverage |
+| REQ / parent AC / Goal DoD ID | Covering Sub-task refs | Coverage |
 | --- | --- | --- |
 | [ID] | [REFS] | [COMPLETE / GAP] |
 <!-- JIRAMAN:GOAL-SECTION:traceability:END -->

@@ -3,15 +3,17 @@
   "type": "object",
   "additionalProperties": false,
   "required": [
+    "content_language",
     "story_ref",
     "goal",
     "subtasks",
     "traceability"
   ],
   "properties": {
+    "content_language": {"const": "vi-VN"},
     "story_ref": {
       "type": "string",
-      "minLength": 1
+      "pattern": "^(?:story-[0-9]+|AIPLATFORM-[0-9]+)$"
     },
     "goal": {
       "type": "object",
@@ -19,16 +21,29 @@
       "required": [
         "goal_name",
         "target_completion_date",
-        "definition_of_done"
+        "definition_of_done",
+        "requirements",
+        "acceptance_criteria"
       ],
       "properties": {
-        "goal_name": {"type": "string", "minLength": 1},
+        "goal_name": {"type": "string", "minLength": 1, "pattern": "^(?![\\s\\S]*[\\p{Default_Ignorable_Code_Point}\\p{Cc}])(?=[\\s\\S]*[\\p{L}\\p{N}])"},
         "target_completion_date": {"type": "string", "format": "date"},
         "definition_of_done": {
           "type": "array",
           "minItems": 1,
           "uniqueItems": true,
-          "items": {"type": "string", "minLength": 1}
+          "items": {"type": "string", "minLength": 1, "pattern": "^(?![\\s\\S]*[\\p{Default_Ignorable_Code_Point}\\p{Cc}])(?=[\\s\\S]*[\\p{L}\\p{N}])"}
+        },
+        "requirements": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {"type": "string", "pattern": "^REQ-[0-9]+$"}
+        },
+        "acceptance_criteria": {
+          "type": "array",
+          "minItems": 1,
+          "items": {"$ref": "https://duvu.github.io/jiraman/schemas/acceptance-criterion.schema.json#/definitions/goal-criterion"}
         }
       }
     },
@@ -51,45 +66,57 @@
           "definition_of_done",
           "estimate_hours",
           "requirements",
+          "parent_acceptance_criteria_refs",
           "acceptance_criteria"
         ],
         "properties": {
           "draft_ref": {
             "type": "string",
-            "minLength": 1
+            "minLength": 1,
+            "pattern": "^(?![\\s\\S]*[\\p{Default_Ignorable_Code_Point}\\p{Cc}])(?=[\\s\\S]*[\\p{L}\\p{N}])"
           },
           "title": {
             "type": "string",
-            "minLength": 1
+            "minLength": 1,
+            "pattern": "^(?![\\s\\S]*[\\p{Default_Ignorable_Code_Point}\\p{Cc}])(?=[\\s\\S]*[\\p{L}\\p{N}])"
           },
           "outcome": {
             "type": "string",
-            "minLength": 1
+            "minLength": 1,
+            "pattern": "^(?![\\s\\S]*[\\p{Default_Ignorable_Code_Point}\\p{Cc}])(?=[\\s\\S]*[\\p{L}\\p{N}])"
           },
           "in_scope": {
             "type": "array",
-            "minItems": 1
+            "minItems": 1,
+            "items": {"type": "string", "minLength": 1, "pattern": "^(?![\\s\\S]*[\\p{Default_Ignorable_Code_Point}\\p{Cc}])(?=[\\s\\S]*[\\p{L}\\p{N}])"}
           },
           "out_of_scope": {
-            "type": "array"
+            "type": "array",
+            "items": {"type": "string", "minLength": 1, "pattern": "^(?![\\s\\S]*[\\p{Default_Ignorable_Code_Point}\\p{Cc}])(?=[\\s\\S]*[\\p{L}\\p{N}])"}
           },
           "steps": {
             "type": "array",
-            "minItems": 1
+            "minItems": 1,
+            "items": {"type": "string", "minLength": 1, "pattern": "^(?![\\s\\S]*[\\p{Default_Ignorable_Code_Point}\\p{Cc}])(?=[\\s\\S]*[\\p{L}\\p{N}])"}
           },
           "affected_files": {
-            "type": "array"
+            "type": "array",
+            "items": {"type": "string", "minLength": 1, "pattern": "^(?![\\s\\S]*[\\p{Default_Ignorable_Code_Point}\\p{Cc}])(?=[\\s\\S]*[\\p{L}\\p{N}])"}
           },
           "dependencies": {
-            "type": "array"
+            "type": "array",
+            "uniqueItems": true,
+            "items": {"type": "string", "minLength": 1, "pattern": "^(?![\\s\\S]*[\\p{Default_Ignorable_Code_Point}\\p{Cc}])(?=[\\s\\S]*[\\p{L}\\p{N}])"}
           },
           "validation": {
             "type": "string",
-            "minLength": 1
+            "minLength": 1,
+            "pattern": "^(?![\\s\\S]*[\\p{Default_Ignorable_Code_Point}\\p{Cc}])(?=[\\s\\S]*[\\p{L}\\p{N}])"
           },
           "definition_of_done": {
             "type": "string",
-            "minLength": 1
+            "minLength": 1,
+            "pattern": "^(?![\\s\\S]*[\\p{Default_Ignorable_Code_Point}\\p{Cc}])(?=[\\s\\S]*[\\p{L}\\p{N}])"
           },
           "estimate_hours": {
             "type": "number",
@@ -99,18 +126,22 @@
           "requirements": {
             "type": "array",
             "minItems": 1,
+            "uniqueItems": true,
             "items": {
               "pattern": "^REQ-[0-9]+$",
               "type": "string"
             }
           },
+          "parent_acceptance_criteria_refs": {
+            "type": "array",
+            "minItems": 1,
+            "uniqueItems": true,
+            "items": {"type": "string", "pattern": "^AC-[0-9]+$"}
+          },
           "acceptance_criteria": {
             "type": "array",
             "minItems": 1,
-            "items": {
-              "pattern": "^AC-[0-9]+$",
-              "type": "string"
-            }
+            "items": {"$ref": "https://duvu.github.io/jiraman/schemas/acceptance-criterion.schema.json#/definitions/subtask-criterion"}
           }
         }
       }
@@ -120,12 +151,12 @@
       "additionalProperties": false,
       "required": [
         "requirements",
-        "acceptance_criteria",
+        "parent_acceptance_criteria",
         "goal_definition_of_done"
       ],
       "properties": {
         "requirements": {"$ref": "#/definitions/traceability-map"},
-        "acceptance_criteria": {"$ref": "#/definitions/traceability-map"},
+        "parent_acceptance_criteria": {"$ref": "#/definitions/traceability-map"},
         "goal_definition_of_done": {"$ref": "#/definitions/traceability-map"}
       }
     }

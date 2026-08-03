@@ -28,14 +28,17 @@ Dependencies point inward to the shared policy and configuration. Skills may cal
 | Canonical modes and aliases | `.kilo/config/command-router.json` |
 | Semantic MCP contract/profiles | `.kilo/config/mcp-atlassian.json` |
 | Workflow behavior | matching `.kilo/skills/*/SKILL.md` |
+| Installed Jira ticket shape and managed AC section | `docs/project-management/templates/jira/index.json` and its three indexed templates |
 | Pending actions and minimal run metadata | gitignored `.kilo/state/jiraman.json` |
 | JSON validation | root `schemas/` during development/release |
 
 ## Goal Contract Boundary
 
-Goal is a semantic role of Jira `Story`; no custom issue type or fourth hierarchy level exists. The shared safety policy owns the invariant of at least two Goal Stories per Epic, at least two Sub-tasks per Goal, verified Goal name/date/DoD/specification, exact traceability, and `(0h, 4h]` Sub-task estimates. Schemas own structural rejection, TypeScript owns cross-document relation, authoritative action-state, readiness, and installed-metadata invariants, skills own evidence acquisition and classification, and Confluence templates expose the same fields to readers. Skill and page indexes explicitly mark Goal-aware documents; the page index also declares required Goal section-region tokens. Release validation derives frontmatter from one canonical contract and rejects missing, duplicate, undeclared, or empty indexed Goal regions without pinning prose.
+Goal is a semantic role of Jira `Story`; no custom issue type or fourth hierarchy level exists. The shared safety policy owns the invariant of at least two Goal Stories per Epic, at least two Sub-tasks per Goal, verified Goal name/date/DoD/specification, structured Acceptance Criteria, exact traceability, and `(0h, 4h]` Sub-task estimates. Every Epic, Goal Story, and Sub-task criterion has a unique ID plus an observable statement and a verification method with target/evidence or an exact command/path. Goal criteria cover declared REQs; Sub-tasks separately declare parent Goal AC references and local criteria traced to validation and DoD. External-parent validation derives type, project, REQ IDs, and AC IDs from a fresh `before_state.parent_state` snapshot bound to the parent key, never from writable desired state. Schemas own structural rejection, TypeScript owns semantic coverage, cross-document relations, authoritative action-state, readiness, and installed-metadata invariants, skills own evidence acquisition and classification, Jira templates own the vi-VN managed ticket shape, and Confluence templates expose the same fields to readers. Skill and page indexes explicitly mark Goal-aware documents; the page index also declares required Goal section-region tokens. Release validation derives frontmatter from one canonical contract and rejects missing, duplicate, undeclared, or empty indexed regions without pinning prose.
 
-Jira remains authoritative for issue type, project, hierarchy, due date, original estimate, and execution state. Updates merge fresh authoritative `before_state` with approved changes and reject type/project drift. Evidence-only `issue.reuse` references preserve fresh state, reject desired mutations, and perform no write. Only valid in-scope Jira creates/updates or immutable reuse references with correctly typed effective parentage count toward Goal cardinality. Confluence owns narrative specifications and evidence. Executable Goal writes require operation-specific due-date schema support and read-after-write verification; missing support blocks apply without introducing another Atlassian client.
+Acceptance Criteria read-back normalization is deliberately narrow: CRLF becomes LF and object keys are order-insensitive. Criterion order, nested array order, and rich-text representation remain exact and any difference fails verification.
+
+Jira remains authoritative for issue type, project, hierarchy, due date, original estimate, and execution state. Updates merge fresh authoritative `before_state` with approved changes and reject type/project drift. Evidence-only `issue.reuse` references preserve fresh state, reject desired mutations, and perform no write. Only valid in-scope Jira creates/updates or immutable reuse references with correctly typed effective parentage count toward Goal cardinality. Confluence owns narrative specifications and evidence. Executable Goal writes require operation-specific due-date schema support and a managed Jira description mapping for `## Tiêu chí nghiệm thu`. Existing descriptions preserve human-owned content; an AC change targets only that managed section or a managed gap comment. A post-write read must exactly match every approved AC ID, statement, and verification or the action becomes `verification-failed`.
 
 MCP configuration, credentials, and tool registration are external user-owned state. Jiraman must never create or modify them.
 
@@ -49,7 +52,7 @@ MCP configuration, credentials, and tool registration are external user-owned st
 ├── policies/jiraman-safety.md
 ├── skills/<skill-name>/SKILL.md
 └── state/jiraman.json              # gitignored operational state
-docs/project-management/templates/ # governed artifact templates
+docs/project-management/templates/ # governed Confluence and Jira templates
 ```
 
 ## Runtime and Tooling Boundary

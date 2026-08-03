@@ -1,6 +1,15 @@
 import type { ErrorObject } from "ajv";
 
+import {
+  acceptanceCriteriaEqual,
+  acceptanceCriteriaIds,
+  epicAcceptanceCriterionErrors,
+  goalAcceptanceCriterionErrors,
+  localAcceptanceCriterionErrors,
+  sourceAcceptanceCriterionErrors,
+} from "./acceptance-criteria-rules.js";
 import { validDate, type JsonObject, type JsonValue } from "./contracts.js";
+import { internalDependencyGraphValid } from "./dependency-rules.js";
 
 function objectValue(value: JsonValue | undefined): JsonObject | null {
   return value !== null && typeof value === "object" && !Array.isArray(value) ? value : null;
@@ -24,7 +33,11 @@ function backlogErrors(value: JsonValue): ErrorObject[] {
     .map((story) => objectValue(story)?.draft_ref)
     .filter((ref): ref is string => typeof ref === "string");
   const storyMap = epic.story_map.filter((ref): ref is string => typeof ref === "string");
-  const errors: ErrorObject[] = [];
+  const errors = epicAcceptanceCriterionErrors(epic.acceptance_criteria, "/epic/acceptance_criteria");
+  for (const [index, value] of backlog.stories.entries()) {
+    const story = objectValue(value);
+    if (story !== null) errors.push(...goalAcceptanceCriterionErrors(story.requirements, story.acceptance_criteria, `/stories/${index}/acceptance_criteria`));
+  }
   if (new Set(refs).size !== refs.length) errors.push(semanticError("/stories", "uniqueGoalRefs", "must contain unique Goal Story draft_ref values"));
   for (const ref of new Set([...refs, ...storyMap])) {
     const storyCount = refs.filter((candidate) => candidate === ref).length;
@@ -34,7 +47,7 @@ function backlogErrors(value: JsonValue): ErrorObject[] {
   return errors;
 }
 
-function traceabilityRelations(subtasks: readonly JsonValue[], field: "requirements" | "acceptance_criteria"): ReadonlyMap<string, ReadonlySet<string>> {
+function traceabilityRelations(subtasks: readonly JsonValue[], field: "requirements" | "parent_acceptance_criteria_refs"): ReadonlyMap<string, ReadonlySet<string>> {
   const relations = new Map<string, Set<string>>();
   for (const value of subtasks) {
     const subtask = objectValue(value);
@@ -59,13 +72,52 @@ function subtaskErrors(value: JsonValue): ErrorObject[] {
     .filter((ref): ref is string => typeof ref === "string");
   const errors: ErrorObject[] = [];
   if (new Set(refs).size !== refs.length) errors.push(semanticError("/subtasks", "uniqueSubtaskRefs", "must contain unique Sub-task draft_ref values"));
+  const dependencyGraph = new Map<string, readonly string[]>();
+  for (const value of packageValue.subtasks) {
+    const subtask = objectValue(value);
+    if (typeof subtask?.draft_ref !== "string" || !Array.isArray(subtask.dependencies) || subtask.dependencies.some((dependency) => typeof dependency !== "string" || dependency.trim().length === 0)) continue;
+    dependencyGraph.set(subtask.draft_ref, subtask.dependencies.filter((dependency): dependency is string => typeof dependency === "string"));
+  }
+  const refSet = new Set(refs);
+  if (refSet.size === refs.length && (dependencyGraph.size !== refs.length || !internalDependencyGraphValid(dependencyGraph, refSet))) {
+    errors.push(semanticError("/subtasks", "resolvedSubtaskDependencies", "Sub-task dependencies must form an acyclic graph of declared sibling draft_ref values"));
+  }
+  const goal = objectValue(packageValue.goal);
+  if (goal !== null) errors.push(...goalAcceptanceCriterionErrors(goal.requirements, goal.acceptance_criteria, "/goal/acceptance_criteria"));
+  const parentRequirementIds = new Set(Array.isArray(goal?.requirements) ? goal.requirements.filter((ref): ref is string => typeof ref === "string") : []);
+  const parentCriterionIds = new Set(acceptanceCriteriaIds(goal?.acceptance_criteria) ?? []);
+  for (const [index, value] of packageValue.subtasks.entries()) {
+    const subtask = objectValue(value);
+    if (subtask === null) continue;
+    errors.push(...localAcceptanceCriterionErrors(subtask.acceptance_criteria, `/subtasks/${index}/acceptance_criteria`));
+    const parentRefs = Array.isArray(subtask.parent_acceptance_criteria_refs)
+      ? subtask.parent_acceptance_criteria_refs.filter((ref): ref is string => typeof ref === "string")
+      : [];
+    const requirementRefs = Array.isArray(subtask.requirements)
+      ? subtask.requirements.filter((ref): ref is string => typeof ref === "string")
+      : [];
+    if (requirementRefs.some((ref) => !parentRequirementIds.has(ref))) {
+      errors.push(semanticError(`/subtasks/${index}/requirements`, "resolvedParentRequirementReference", "must reference only requirements declared by the parent Goal"));
+    }
+    if (parentRefs.some((ref) => !parentCriterionIds.has(ref))) {
+      errors.push(semanticError(`/subtasks/${index}/parent_acceptance_criteria_refs`, "resolvedParentAcceptanceReference", "must reference only Acceptance Criteria declared by the parent Goal"));
+    }
+  }
   const traceability = objectValue(packageValue.traceability);
   if (traceability === null) return errors;
-  const expectedByField: Readonly<Record<"requirements" | "acceptance_criteria", ReadonlyMap<string, ReadonlySet<string>>>> = {
+  const parentAcceptanceMap = objectValue(traceability.parent_acceptance_criteria);
+  if (parentAcceptanceMap !== null && [...parentCriterionIds].some((id) => parentAcceptanceMap[id] === undefined)) {
+    errors.push(semanticError("/traceability/parent_acceptance_criteria", "goalAcceptanceSubtaskCoverage", "must map every parent Goal Acceptance Criterion to at least one Sub-task"));
+  }
+  const requirementMap = objectValue(traceability.requirements);
+  if (requirementMap !== null && [...parentRequirementIds].some((id) => requirementMap[id] === undefined)) {
+    errors.push(semanticError("/traceability/requirements", "goalRequirementSubtaskCoverage", "must map every parent Goal requirement to at least one Sub-task"));
+  }
+  const expectedByField: Readonly<Record<"requirements" | "parent_acceptance_criteria", ReadonlyMap<string, ReadonlySet<string>>>> = {
     requirements: traceabilityRelations(packageValue.subtasks, "requirements"),
-    acceptance_criteria: traceabilityRelations(packageValue.subtasks, "acceptance_criteria"),
+    parent_acceptance_criteria: traceabilityRelations(packageValue.subtasks, "parent_acceptance_criteria_refs"),
   };
-  for (const field of ["requirements", "acceptance_criteria"] as const) {
+  for (const field of ["requirements", "parent_acceptance_criteria"] as const) {
     const map = objectValue(traceability[field]);
     if (map === null) continue;
     const expected = expectedByField[field];
@@ -84,7 +136,6 @@ function subtaskErrors(value: JsonValue): ErrorObject[] {
       }
     }
   }
-  const goal = objectValue(packageValue.goal);
   const goalDod = goal?.definition_of_done;
   const goalDodMap = objectValue(traceability.goal_definition_of_done);
   if (Array.isArray(goalDod) && goalDodMap !== null) {
@@ -104,6 +155,14 @@ function subtaskErrors(value: JsonValue): ErrorObject[] {
 export function goalDraftSemanticErrors(schemaName: string, value: JsonValue): ErrorObject[] {
   if (schemaName === "backlog-draft.schema.json") return backlogErrors(value);
   if (schemaName === "subtask-draft.schema.json") return subtaskErrors(value);
+  if (schemaName === "specification.schema.json") {
+    const specification = objectValue(value);
+    if (specification === null || !Array.isArray(specification.requirements)) return [];
+    const requirementIds = specification.requirements
+      .map((requirement) => objectValue(requirement)?.id)
+      .filter((id): id is string => typeof id === "string");
+    return sourceAcceptanceCriterionErrors(requirementIds, specification.acceptance_criteria, "/acceptance_criteria");
+  }
   return [];
 }
 
@@ -112,7 +171,7 @@ export function goalPolicyMetadataValid(metadata: ReadonlyMap<string, string>): 
     metadata.get("minimum_goal_stories_per_epic") === "2" &&
     metadata.get("minimum_subtasks_per_goal") === "2" &&
     metadata.get("maximum_subtask_hours") === "4" &&
-    metadata.get("required_goal_fields") === "goal_name,target_completion_date,definition_of_done";
+    metadata.get("required_goal_fields") === "goal_name,target_completion_date,acceptance_criteria,definition_of_done";
 }
 
 export function confluenceGoalContractViolations(value: JsonObject): string[] {
@@ -150,14 +209,16 @@ export function goalPackageSetViolations(backlog: JsonObject, packages: readonly
     const packageValue = matchingPackages[0];
     const goal = objectValue(packageValue?.goal);
     if (goal === null || goal.goal_name !== story.goal_name || goal.target_completion_date !== story.target_completion_date || JSON.stringify(goal.definition_of_done) !== JSON.stringify(story.definition_of_done)) violations.push(`${ref}:goal-contract-mismatch`);
+    if (goal === null || !acceptanceCriteriaEqual(goal.acceptance_criteria, story.acceptance_criteria)) violations.push(`${ref}:acceptance-criteria-content-mismatch`);
     const traceability = objectValue(packageValue?.traceability);
-    for (const field of ["requirements", "acceptance_criteria"] as const) {
-      const declared = story[field];
-      const map = objectValue(traceability?.[field]);
-      const declaredIds = Array.isArray(declared) ? declared.filter((id): id is string => typeof id === "string") : [];
-      const mappedIds = map === null ? [] : Object.keys(map);
-      if (new Set(declaredIds).size !== declaredIds.length || declaredIds.length !== mappedIds.length || declaredIds.some((id) => !mappedIds.includes(id))) violations.push(`${ref}:${field.replace("_", "-")}-traceability-mismatch`);
-    }
+    const requirementMap = objectValue(traceability?.requirements);
+    const requirementIds = Array.isArray(story.requirements) ? story.requirements.filter((id): id is string => typeof id === "string") : [];
+    const mappedRequirementIds = requirementMap === null ? [] : Object.keys(requirementMap);
+    if (new Set(requirementIds).size !== requirementIds.length || requirementIds.length !== mappedRequirementIds.length || requirementIds.some((id) => !mappedRequirementIds.includes(id))) violations.push(`${ref}:requirements-traceability-mismatch`);
+    const parentAcceptanceMap = objectValue(traceability?.parent_acceptance_criteria);
+    const acceptanceIds = acceptanceCriteriaIds(story.acceptance_criteria) ?? [];
+    const mappedAcceptanceIds = parentAcceptanceMap === null ? [] : Object.keys(parentAcceptanceMap);
+    if (acceptanceIds.length !== mappedAcceptanceIds.length || acceptanceIds.some((id) => !mappedAcceptanceIds.includes(id))) violations.push(`${ref}:acceptance-criteria-traceability-mismatch`);
   }
   return violations;
 }
