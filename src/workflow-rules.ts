@@ -2,7 +2,7 @@ import { acceptanceCriteriaIds, goalAcceptanceCriterionErrors, localAcceptanceCr
 import { asArray, asObject, asString, invariant, validDate, type JsonObject, type JsonValue } from "./contracts.js";
 import { internalDependencyGraphValid } from "./dependency-rules.js";
 
-const VISIBLE_TEXT = /[^\p{White_Space}\p{Default_Ignorable_Code_Point}]/u;
+const VISIBLE_TEXT = /[^\p{White_Space}\p{Default_Ignorable_Code_Point}\p{Cc}]/u;
 const JIRA_ISSUE_KEY = /^AIPLATFORM-[0-9]+$/;
 
 function objectValue(value: JsonValue | undefined): JsonObject | null {

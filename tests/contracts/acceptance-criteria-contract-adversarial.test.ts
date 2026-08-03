@@ -139,6 +139,7 @@ describe("Acceptance Criteria adversarial contract", () => {
       ["title", "   "],
       ["title", "\u200B"],
       ["title", "\u00AD"],
+      ["title", "\u0000"],
       ["outcome", "\t"],
       ["in_scope", [null]],
       ["in_scope", ["   "]],
@@ -153,6 +154,7 @@ describe("Acceptance Criteria adversarial contract", () => {
       ["dependencies", ["   "]],
       ["dependencies", ["\u200B"]],
       ["validation", "   "],
+      ["validation", "\u0007"],
       ["definition_of_done", "\t"],
     ];
 
@@ -174,6 +176,8 @@ describe("Acceptance Criteria adversarial contract", () => {
     emptyCriteria.acceptance_criteria = [];
     const invisibleName = readyGoal();
     invisibleName.goal_name = "\u200B";
+    const controlOnlyName = readyGoal();
+    controlOnlyName.goal_name = "\u0000";
     const invisibleDefinitionOfDone = readyGoal();
     invisibleDefinitionOfDone.definition_of_done = ["\u200B"];
     const malformedEpicParent = readyGoal();
@@ -184,6 +188,7 @@ describe("Acceptance Criteria adversarial contract", () => {
       expect(goalReadinessViolations(goal)).toContain("incomplete-acceptance-criteria");
     }
     expect(goalReadinessViolations(invisibleName)).toContain("missing-goal-name");
+    expect(goalReadinessViolations(controlOnlyName)).toContain("missing-goal-name");
     expect(goalReadinessViolations(invisibleDefinitionOfDone)).toContain("missing-goal-dod");
     expect(goalReadinessViolations(malformedEpicParent)).toContain("unverified-epic-parent");
   });
@@ -211,11 +216,13 @@ describe("Acceptance Criteria adversarial contract", () => {
       ["in_scope", [null]],
       ["in_scope", ["   "]],
       ["in_scope", ["\u200B"]],
+      ["in_scope", ["\u0007"]],
       ["out_of_scope", [false]],
       ["steps", [{}]],
       ["steps", ["\t"]],
       ["steps", ["\u200B"]],
       ["steps", ["\u200E"]],
+      ["steps", ["\u001F"]],
       ["affected_files", [42]],
     ];
     const malformedChildLists = malformedListValues.map(([field, value]) => {
@@ -225,10 +232,12 @@ describe("Acceptance Criteria adversarial contract", () => {
     });
     const whitespaceSummary = readyGoal();
     asObject(asArray(whitespaceSummary.subtasks, "whitespace-summary Sub-tasks")[0] ?? null, "whitespace-summary Sub-task").summary = "   ";
+    const controlOnlySummary = readyGoal();
+    asObject(asArray(controlOnlySummary.subtasks, "control-summary Sub-tasks")[0] ?? null, "control-summary Sub-task").summary = "\u0000";
 
     // When / Then
     expect(goalReadinessViolations(readyGoal())).not.toContain("incomplete-acceptance-criteria");
-    for (const goal of [uncovered, unresolved, invalidLocalTrace, duplicateDependencies, unresolvedDependency, cyclicDependencies, whitespaceSummary, ...incompleteChildren, ...malformedChildLists]) {
+    for (const goal of [uncovered, unresolved, invalidLocalTrace, duplicateDependencies, unresolvedDependency, cyclicDependencies, whitespaceSummary, controlOnlySummary, ...incompleteChildren, ...malformedChildLists]) {
       expect(goalReadinessViolations(goal)).toContain("incomplete-acceptance-criteria");
       expect(goalReadinessViolations(goal)).toContain("incomplete-traceability");
     }
