@@ -41,7 +41,10 @@ describe("scope-guards and untrusted-content", () => {
     const finding = inspectUntrustedContent(asString(injection.source, "source"), asString(injection.content, "content"));
     expect(finding?.preservedEvidenceIds).toEqual(["REQ-1"]);
     expect(finding?.blockedEffect).toEqual(["scope change", "tool selection", "write approval", "secret disclosure", "goal policy override"]);
-    expect(inspectUntrustedContent(asString(injection.source, "source"), asString(injection.baseline_content, "baseline"))).toBeNull();
+    const baseline = inspectUntrustedContent(asString(injection.source, "source"), asString(injection.baseline_content, "baseline"));
+    expect(baseline.blockedEffect).toEqual([]);
+    expect(baseline.effectAuthorizationAllowed).toBe(false);
+    expect(baseline.preservedEvidenceIds).toEqual(["REQ-1"]);
   });
 
   test("blocks paraphrased cardinality hours Goal DoD deadline tool scope and approval overrides", () => {
@@ -54,7 +57,9 @@ describe("scope-guards and untrusted-content", () => {
     }
     for (const item of asArray(injection.benign_cases, "benign cases")) {
       const content = asString(item, "benign content");
-      expect(inspectUntrustedContent(asString(injection.source, "source"), content), content).toBeNull();
+      const benign = inspectUntrustedContent(asString(injection.source, "source"), content);
+      expect(benign.blockedEffect, content).toEqual([]);
+      expect(benign.effectAuthorizationAllowed, content).toBe(false);
     }
   });
 });

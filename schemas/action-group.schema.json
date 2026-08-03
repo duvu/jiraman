@@ -38,6 +38,7 @@
           "enum": [
             "issue.create",
             "issue.update",
+            "issue.reuse",
             "issue.comment",
             "issue.link",
             "issue.transition",
@@ -183,6 +184,47 @@
                 }
               }
             ]
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "operation": {
+                "const": "issue.reuse"
+              }
+            },
+            "required": [
+              "operation"
+            ]
+          },
+          "then": {
+            "properties": {
+              "system": {
+                "const": "jira"
+              },
+              "target_version": {
+                "type": [
+                  "string",
+                  "integer"
+                ]
+              },
+              "before_state": {
+                "type": "object",
+                "minProperties": 1
+              },
+              "desired_state": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "reuse"
+                ],
+                "properties": {
+                  "reuse": {
+                    "const": true
+                  }
+                }
+              }
+            }
           }
         }
       ]

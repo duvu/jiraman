@@ -20,18 +20,20 @@ function nonEmptyStrings(value: JsonValue | undefined): boolean {
   return Array.isArray(value) && value.length > 0 && value.every((item) => typeof item === "string" && item.length > 0);
 }
 
-function isJiraIssueWrite(action: JsonObject): boolean {
-  return action.system === "jira" && (action.operation === "issue.create" || action.operation === "issue.update");
+function isJiraHierarchyAction(action: JsonObject): boolean {
+  return action.system === "jira" && (action.operation === "issue.create" || action.operation === "issue.update" || action.operation === "issue.reuse");
 }
 
 type HierarchyIssueType = "Epic" | "Story" | "Sub-task";
 
-interface ValidHierarchyWrite {
+interface ValidHierarchyAction {
   readonly index: number;
   readonly isCreate: boolean;
   readonly issueType: HierarchyIssueType;
   readonly ref: string;
   readonly parentRef: string | null;
+  readonly parentIssueType: JsonValue | undefined;
+  readonly parentProject: JsonValue | undefined;
 }
 
 function hierarchyIssueType(value: JsonValue | undefined): HierarchyIssueType | null {
@@ -67,33 +69,38 @@ export function goalActionSemanticErrors(value: JsonValue): ErrorObject[] {
   const actions = group.actions.map(objectValue);
   const errors: ErrorObject[] = [];
   const refs: string[] = [];
-  const validWrites: ValidHierarchyWrite[] = [];
+  const validActions: ValidHierarchyAction[] = [];
   for (const [index, action] of actions.entries()) {
-    if (action === null || !isJiraIssueWrite(action)) continue;
+    if (action === null || !isJiraHierarchyAction(action)) continue;
     const desired = objectValue(action.desired_state);
     if (desired === null) {
-      errors.push(semanticError(index, "issueType", "Jira issue writes require an authoritative Epic, Story, or Sub-task type"));
+      errors.push(semanticError(index, "issueType", "Jira hierarchy actions require an authoritative Epic, Story, or Sub-task type"));
       continue;
     }
     const before = objectValue(action.before_state);
     const isCreate = action.operation === "issue.create";
+    const isReuse = action.operation === "issue.reuse";
     const authoritative = isCreate ? desired : before;
     const issueType = hierarchyIssueType(authoritative?.issue_type);
     if (issueType === null) {
-      errors.push(semanticError(index, "issueType", "Jira issue writes require an authoritative Epic, Story, or Sub-task type"));
+      errors.push(semanticError(index, "issueType", "Jira hierarchy actions require an authoritative Epic, Story, or Sub-task type"));
       continue;
     }
     let authorityValid = true;
-    if (!isCreate && desired.issue_type !== undefined && desired.issue_type !== issueType) {
+    if (isReuse && (desired.reuse !== true || Object.keys(desired).length !== 1)) {
+      errors.push(semanticError(index, "reuseMutation", "a reuse action must be an evidence-only reference with no desired Jira mutation"));
+      authorityValid = false;
+    }
+    if (!isCreate && !isReuse && desired.issue_type !== undefined && desired.issue_type !== issueType) {
       errors.push(semanticError(index, "issueTypeDrift", "an update cannot change the freshly read Jira issue type"));
       authorityValid = false;
     }
     const authoritativeProject = authoritative?.project;
-    if (!isCreate && desired.project !== undefined && desired.project !== authoritativeProject) {
+    if (!isCreate && !isReuse && desired.project !== undefined && desired.project !== authoritativeProject) {
       errors.push(semanticError(index, "projectDrift", "an update cannot change the freshly read Jira project"));
       authorityValid = false;
     }
-    const effective = isCreate ? desired : {...(before ?? {}), ...desired, issue_type: issueType, project: authoritativeProject ?? null};
+    const effective = isCreate ? desired : isReuse ? (before ?? {}) : {...(before ?? {}), ...desired, issue_type: issueType, project: authoritativeProject ?? null};
     const projectValid = authoritativeProject === "AIPLATFORM";
     if (!projectValid) errors.push(semanticError(index, "project", "must target authoritative AIPLATFORM state"));
     const ref = typeof effective.draft_ref === "string" ? effective.draft_ref : typeof action.target_ref === "string" ? action.target_ref : null;
@@ -104,17 +111,39 @@ export function goalActionSemanticErrors(value: JsonValue): ErrorObject[] {
     }
     if (ref !== null) refs.push(ref);
     if (authorityValid && projectValid && fieldsValid && ref !== null) {
-      validWrites.push({index, isCreate, issueType, ref, parentRef: typeof effective.parent_ref === "string" ? effective.parent_ref : null});
+      validActions.push({
+        index,
+        isCreate,
+        issueType,
+        ref,
+        parentRef: typeof effective.parent_ref === "string" ? effective.parent_ref : null,
+        parentIssueType: effective.parent_issue_type,
+        parentProject: effective.parent_project,
+      });
     }
   }
   if (new Set(refs).size !== refs.length) errors.push(semanticError(0, "uniqueDraftRefs", "hierarchy draft references must be unique"));
-  for (const parent of validWrites.filter((candidate) => candidate.isCreate)) {
+  const invalidParentage = new Set<number>();
+  const byRef = new Map(validActions.map((action) => [action.ref, action]));
+  for (const action of validActions.filter((candidate) => candidate.issueType !== "Epic")) {
+    const parent = action.parentRef === null ? undefined : byRef.get(action.parentRef);
+    const expected = action.issueType === "Story" ? "Epic" : "Story";
+    if (parent !== undefined && parent.issueType !== expected) {
+      errors.push(semanticError(action.index, "parentType", `${action.issueType} parent must resolve to ${expected}`));
+      invalidParentage.add(action.index);
+    } else if (parent === undefined && (action.parentIssueType !== expected || action.parentProject !== "AIPLATFORM")) {
+      errors.push(semanticError(action.index, "parentAuthority", `${action.issueType} external parent requires authoritative AIPLATFORM ${expected} state`));
+      invalidParentage.add(action.index);
+    }
+  }
+  const countable = validActions.filter((candidate) => !invalidParentage.has(candidate.index));
+  for (const parent of countable.filter((candidate) => candidate.isCreate)) {
     if (parent.issueType === "Epic") {
-      const goalCount = validWrites.filter((candidate) => candidate.issueType === "Story" && candidate.parentRef === parent.ref).length;
+      const goalCount = countable.filter((candidate) => candidate.issueType === "Story" && candidate.parentRef === parent.ref).length;
       if (goalCount < 2) errors.push(semanticError(parent.index, "minimumGoals", "an Epic create group requires at least two valid Goal Story writes"));
     }
     if (parent.issueType === "Story") {
-      const subtaskCount = validWrites.filter((candidate) => candidate.issueType === "Sub-task" && candidate.parentRef === parent.ref).length;
+      const subtaskCount = countable.filter((candidate) => candidate.issueType === "Sub-task" && candidate.parentRef === parent.ref).length;
       if (subtaskCount < 2) errors.push(semanticError(parent.index, "minimumSubtasks", "a Goal Story create group requires at least two valid Sub-task writes"));
     }
   }

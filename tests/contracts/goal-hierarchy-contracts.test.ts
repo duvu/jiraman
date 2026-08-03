@@ -5,37 +5,7 @@ import { inspectUntrustedContent } from "../../src/security-rules.js";
 import { candidateCanCommit, sprintReviewAccepted } from "../../src/workflow-rules.js";
 import { goalPolicyMetadataValid } from "../../src/goal-rules.js";
 import { goalContractMetadataViolations, type IndexedGoalDocument } from "../../src/goal-contract-metadata-rules.js";
-
-function goalHierarchyGroup(): JsonObject {
-  const goalActions = [
-    {target_ref: "epic-1", dependencies: [], desired_state: {project: "AIPLATFORM", issue_type: "Epic", summary: "Safe upgrades", draft_ref: "epic-1"}},
-    {target_ref: "goal-1", dependencies: ["PMA-20260803-01"], desired_state: {project: "AIPLATFORM", issue_type: "Story", parent_ref: "epic-1", draft_ref: "goal-1", goal_name: "Restore backups", summary: "Restore backups", target_completion_date: "2026-08-07", target_completion_date_evidence: {source: "sprint-end", reference: "Sprint 7 end", verified: true}, due_date: "2026-08-07", definition_of_done: ["Restore evidence accepted"], canonical_spec: "Confluence page-200", requirements: ["REQ-1"], acceptance_criteria: ["AC-1"], validation: ["restore drill"]}},
-    {target_ref: "task-1", dependencies: ["PMA-20260803-02"], desired_state: {project: "AIPLATFORM", issue_type: "Sub-task", parent_ref: "goal-1", draft_ref: "task-1", summary: "Run restore drill", outcome: "Restore is verified", validation: "restore test", definition_of_done: "Evidence is attached", original_estimate_hours: 3, requirements: ["REQ-1"], acceptance_criteria: ["AC-1"]}},
-    {target_ref: "task-2", dependencies: ["PMA-20260803-02"], desired_state: {project: "AIPLATFORM", issue_type: "Sub-task", parent_ref: "goal-1", draft_ref: "task-2", summary: "Review restore evidence", outcome: "Evidence is accepted", validation: "review checklist", definition_of_done: "Review is recorded", original_estimate_hours: 2, requirements: ["REQ-1"], acceptance_criteria: ["AC-1"]}},
-    {target_ref: "goal-2", dependencies: ["PMA-20260803-01"], desired_state: {project: "AIPLATFORM", issue_type: "Story", parent_ref: "epic-1", draft_ref: "goal-2", goal_name: "Verify rollback guide", summary: "Verify rollback guide", target_completion_date: "2026-08-07", target_completion_date_evidence: {source: "specification", reference: "Confluence page-200 target", verified: true}, due_date: "2026-08-07", definition_of_done: ["Walkthrough evidence accepted"], canonical_spec: "Confluence page-200", requirements: ["REQ-2"], acceptance_criteria: ["AC-2"], validation: ["guide walkthrough"]}},
-    {target_ref: "task-3", dependencies: ["PMA-20260803-05"], desired_state: {project: "AIPLATFORM", issue_type: "Sub-task", parent_ref: "goal-2", draft_ref: "task-3", summary: "Run guide walkthrough", outcome: "Guide gaps are known", validation: "walkthrough", definition_of_done: "Gaps are recorded", original_estimate_hours: 2, requirements: ["REQ-2"], acceptance_criteria: ["AC-2"]}},
-    {target_ref: "task-4", dependencies: ["PMA-20260803-05"], desired_state: {project: "AIPLATFORM", issue_type: "Sub-task", parent_ref: "goal-2", draft_ref: "task-4", summary: "Resolve guide gaps", outcome: "Guide is usable", validation: "second walkthrough", definition_of_done: "Walkthrough passes", original_estimate_hours: 4, requirements: ["REQ-2"], acceptance_criteria: ["AC-2"]}},
-  ];
-  const actions = goalActions.map((action, index) => ({
-    id: `PMA-20260803-${String(index + 1).padStart(2, "0")}`,
-    system: "jira",
-    operation: "issue.create",
-    target_ref: action.target_ref,
-    target_version: null,
-    before_state: {},
-    desired_state: action.desired_state,
-    evidence: ["approved Goal draft"],
-    reason: "Create approved Goal hierarchy",
-    preconditions: ["Goal contract remains verified"],
-    dependencies: action.dependencies,
-    risk: "medium",
-    approval_required: "group",
-    expires_at: "2026-08-04T00:00:00Z",
-    rollback_guidance: "Stop and report the created issue IDs",
-    status: "proposed",
-  }));
-  return {schema_version: 5, id: "PMG-20260803-01", project: "AIPLATFORM", summary: "Create Goal hierarchy", created_at: "2026-08-03T00:00:00Z", expires_at: "2026-08-04T00:00:00Z", status: "proposed", payload_hash: "0".repeat(64), approval: {group_approved_by: null, approved_action_ids: [], approved_at: null, payload_hash: null}, actions};
-}
+import { goalHierarchyGroup } from "./goal-hierarchy-fixture.js";
 
 describe("goal hierarchy contracts", () => {
   test("configuration and draft schemas reject incomplete Goal hierarchies", () => {
@@ -202,7 +172,7 @@ describe("goal hierarchy contracts", () => {
     typeDriftAction.desired_state = {issue_type: "Sub-task", due_date: "2026-08-08"};
     const typeDrift: JsonObject = {...complete, actions: [typeDriftAction]};
     const validUpdateAction: JsonObject = structuredClone(updateEnvelope);
-    validUpdateAction.before_state = story;
+    validUpdateAction.before_state = {...story, parent_issue_type: "Epic", parent_project: "AIPLATFORM"};
     validUpdateAction.desired_state = {
       target_completion_date: "2026-08-08",
       due_date: "2026-08-08",
@@ -249,6 +219,9 @@ describe("goal hierarchy contracts", () => {
       action.before_state = {...Object.fromEntries(Object.entries(desired).filter(([key]) => key !== "draft_ref")), parent_ref: "AIPLATFORM-OLD"};
       action.desired_state = {parent_ref: "epic-1"};
     }
+    for (const [indexes, parentRef] of [[[2, 3], "AIPLATFORM-201"], [[5, 6], "AIPLATFORM-202"]] as const) {
+      for (const index of indexes) asObject(epicActions[index]?.desired_state ?? null, "Sub-task desired state").parent_ref = parentRef;
+    }
     const goalWithUpdatedChildren: JsonObject = structuredClone(goalHierarchyGroup());
     const goalActions = asArray(goalWithUpdatedChildren.actions, "Goal actions").map((value) => asObject(value, "Goal action"));
     for (const [index, targetRef] of [[2, "AIPLATFORM-301"], [3, "AIPLATFORM-302"]] as const) {
@@ -269,5 +242,48 @@ describe("goal hierarchy contracts", () => {
     // Then
     expect(epicResult.valid, JSON.stringify(epicResult.errors)).toBe(true);
     expect(goalResult.valid, JSON.stringify(goalResult.errors)).toBe(true);
+  });
+
+  test("unchanged Jira reuse references satisfy decomposition without a write", () => {
+    const group: JsonObject = structuredClone(goalHierarchyGroup());
+    const actions = asArray(group.actions, "Goal actions").map((value) => asObject(value, "Goal action"));
+    for (const index of [2, 3]) {
+      const action = actions[index];
+      if (action === undefined) throw new Error("missing reusable Sub-task action");
+      action.operation = "issue.reuse";
+      action.target_ref = `AIPLATFORM-30${index}`;
+      action.target_version = "7";
+      action.before_state = action.desired_state ?? {};
+      action.desired_state = {reuse: true};
+    }
+    const mutated: JsonObject = structuredClone(group);
+    asObject(asArray(mutated.actions, "mutated actions")[2] ?? null, "mutated reuse").desired_state = {reuse: true, summary: "hidden write"};
+
+    const result = validateJson("action-group.schema.json", group);
+    const mutationResult = validateJson("action-group.schema.json", mutated);
+
+    expect(result.valid, JSON.stringify(result.errors)).toBe(true);
+    expect(mutationResult.valid).toBe(false);
+  });
+
+  test("hierarchy actions reject parent references to the wrong issue type", () => {
+    const storyUnderSubtask: JsonObject = structuredClone(goalHierarchyGroup());
+    const storyActions = asArray(storyUnderSubtask.actions, "Story actions").map((value) => asObject(value, "Story action"));
+    asObject(storyActions[4]?.desired_state ?? null, "Story state").parent_ref = "task-1";
+    const subtaskUnderEpic: JsonObject = structuredClone(goalHierarchyGroup());
+    const subtaskActions = asArray(subtaskUnderEpic.actions, "Sub-task actions").map((value) => asObject(value, "Sub-task action"));
+    asObject(subtaskActions[6]?.desired_state ?? null, "Sub-task state").parent_ref = "epic-1";
+    const unverifiedExternalParent: JsonObject = structuredClone(goalHierarchyGroup());
+    const externalActions = asArray(unverifiedExternalParent.actions, "External parent actions").map((value) => asObject(value, "External parent action"));
+    asObject(externalActions[4]?.desired_state ?? null, "External Story state").parent_ref = "AIPLATFORM-999";
+
+    for (const invalid of [storyUnderSubtask, subtaskUnderEpic]) {
+      const result = validateJson("action-group.schema.json", invalid);
+      expect(result.valid).toBe(false);
+      expect(result.errors.some((error) => error.keyword === "parentType")).toBe(true);
+    }
+    const externalResult = validateJson("action-group.schema.json", unverifiedExternalParent);
+    expect(externalResult.valid).toBe(false);
+    expect(externalResult.errors.some((error) => error.keyword === "parentAuthority")).toBe(true);
   });
 });
