@@ -31,15 +31,16 @@ const statuses = new Set(["proposed", "approved", "rejected", "stale", "applying
 const operations = new Set(["issue.create", "issue.update", "issue.reuse", "issue.comment", "issue.link", "issue.transition", "page.create", "page.update", "page.section-update", "page.comment"]);
 const updateOperations = new Set(["issue.update", "page.update", "page.section-update"]);
 const hash = (value) => typeof value === "string" && /^[a-f0-9]{64}$/.test(value);
+const compareCodeUnits = (left, right) => left < right ? -1 : left > right ? 1 : 0;
 const canonical = (value) => {
   if (Array.isArray(value)) return value.map(canonical);
-  if (object(value)) return Object.fromEntries(Object.entries(value).sort(([left], [right]) => left.localeCompare(right)).map(([key, item]) => [key, canonical(item)]));
+  if (object(value)) return Object.fromEntries(Object.entries(value).sort(([left], [right]) => compareCodeUnits(left, right)).map(([key, item]) => [key, canonical(item)]));
   return value;
 };
 const canonicalPayloadHash = (actions) => {
   const immutable = actions
     .map((action) => Object.fromEntries(Object.entries(action).filter(([key]) => key !== "status")))
-    .sort((left, right) => left.id.localeCompare(right.id));
+    .sort((left, right) => compareCodeUnits(left.id, right.id));
   return crypto.createHash("sha256").update(JSON.stringify(canonical(immutable))).digest("hex");
 };
 const literalPreservation = (value) => exact(value, ["policy_ref", "mode"]) &&

@@ -1,5 +1,6 @@
 import type { ErrorObject } from "ajv";
 
+import { compareCodeUnits } from "./canonical-order.js";
 import type { JsonObject, JsonValue } from "./contracts.js";
 
 const GENERIC_ASSESSMENT_END = /(?:^|\s)(?:(?:all|everything|it|kết quả|mọi thứ)\s+)?(?:(?:is|are|looks?|seems?|feels?|là|trông|có vẻ|hoạt động|đã)\s+)?(?:good|fine|acceptable|satisfactory|stable|ok(?:ay)?|correct(?:ly)?|pass(?:ed)?|works?|đạt yêu cầu|tốt|đúng|ổn(?: định)?|được|chấp nhận được|kiểm tra)(?:\s+(?:as expected|enough|fully|completely|properly|hoàn toàn|đầy đủ|cơ bản|chung|mong đợi|như mong đợi|xong|hoàn tất))*$/u;
@@ -90,7 +91,7 @@ function canonicalCriterionValue(value: JsonValue): JsonValue {
   if (typeof value === "string") return value.replace(/\r\n/g, "\n");
   if (Array.isArray(value)) return value.map(canonicalCriterionValue);
   if (value !== null && typeof value === "object") {
-    return Object.fromEntries(Object.entries(value).sort(([left], [right]) => left.localeCompare(right)).map(([key, item]) => [key, canonicalCriterionValue(item)]));
+    return Object.fromEntries(Object.entries(value).sort(([left], [right]) => compareCodeUnits(left, right)).map(([key, item]) => [key, canonicalCriterionValue(item)]));
   }
   return value;
 }

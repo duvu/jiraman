@@ -53,6 +53,22 @@ function targetPreflightInput(value: JsonObject): TargetPreflightInput {
 }
 
 describe("action-contracts", () => {
+  test("canonical payload hashing is independent of host collation", () => {
+    const actions: JsonValue[] = [{id: "PMA-20260801-01", status: "proposed", desired_state: {z: 1, "ä": 2, "å": 3, a: 4}}];
+    const originalLocaleCompare = String.prototype.localeCompare;
+    const hashUnder = (locale: string): string => {
+      String.prototype.localeCompare = function (this: string, compareString: string): number {
+        return originalLocaleCompare.call(this, compareString, locale);
+      };
+      return canonicalPayloadHash(actions);
+    };
+    try {
+      expect(hashUnder("en")).toBe(hashUnder("sv"));
+    } finally {
+      String.prototype.localeCompare = originalLocaleCompare;
+    }
+  });
+
   test("valid envelopes pass and high risk has per-action approval", () => {
     requireValid("action-group.schema.json", "tests/fixtures/actions/valid.json");
     const invalid = validateJson("action-group.schema.json", readJson("examples/action-group.invalid.json"));
@@ -300,6 +316,20 @@ describe("action-preflight approved-actions security", () => {
       writeFileSync(statePath, JSON.stringify(vagueAcceptanceState));
       const installedVagueAcceptanceValidation = spawnSync("./verify.sh", ["--validate-state-file", statePath], {encoding: "utf8"});
       expect(installedVagueAcceptanceValidation.status, installedVagueAcceptanceValidation.stderr).toBe(5);
+
+      const nonAsciiHashGroup = goalHierarchyGroup();
+      const nonAsciiHashAction = asObject(asArray(nonAsciiHashGroup.actions, "non-ASCII hash actions")[0] ?? null, "non-ASCII hash action");
+      const nonAsciiHashDesired = asObject(nonAsciiHashAction.desired_state ?? null, "non-ASCII hash desired state");
+      Object.assign(nonAsciiHashDesired, {z: 1, "ä": 2, "å": 3, a: 4});
+      nonAsciiHashGroup.payload_hash = canonicalPayloadHash(asArray(nonAsciiHashGroup.actions, "non-ASCII hash actions"));
+      const nonAsciiHashId = asString(nonAsciiHashGroup.id, "non-ASCII hash group ID");
+      const nonAsciiHashState = {...state, pending_action_groups: {[nonAsciiHashId]: nonAsciiHashGroup}};
+      expect(validateJson("state.schema.json", nonAsciiHashState)).toEqual({valid: true, errors: []});
+      writeFileSync(statePath, JSON.stringify(nonAsciiHashState));
+      for (const locale of ["C.UTF-8", "sv_SE.UTF-8"]) {
+        const installedNonAsciiHashValidation = spawnSync("./verify.sh", ["--validate-state-file", statePath], {encoding: "utf8", env: {...process.env, LANG: locale}});
+        expect(installedNonAsciiHashValidation.status, `${locale}: ${installedNonAsciiHashValidation.stderr}`).toBe(0);
+      }
 
       writeFileSync(statePath, JSON.stringify({ ...state, pending_action_groups: { [groupId]: rejectedPartialApproval } }));
       const rejectedPartialState = spawnSync("./verify.sh", ["--validate-state-file", statePath], { encoding: "utf8" });

@@ -1,6 +1,7 @@
 import { createHash } from "node:crypto";
 
 import { acceptanceCriteriaEqual } from "./acceptance-criteria-rules.js";
+import { compareCodeUnits } from "./canonical-order.js";
 import { type JsonValue } from "./contracts.js";
 
 export interface PreflightInput {
@@ -142,7 +143,7 @@ function canonicalPayloadValue(value: JsonValue): JsonValue {
   if (value !== null && typeof value === "object") {
     return Object.fromEntries(
       Object.entries(value)
-        .sort(([left], [right]) => left.localeCompare(right))
+        .sort(([left], [right]) => compareCodeUnits(left, right))
         .map(([key, item]) => [key, canonicalPayloadValue(item)]),
     );
   }
@@ -160,13 +161,13 @@ function actionId(value: JsonValue): string {
 }
 
 export function canonicalPayloadHash(actions: readonly JsonValue[]): string {
-  const immutable = actions.map(immutableAction).sort((left, right) => actionId(left).localeCompare(actionId(right)));
+  const immutable = actions.map(immutableAction).sort((left, right) => compareCodeUnits(actionId(left), actionId(right)));
   return createHash("sha256").update(JSON.stringify(canonicalPayloadValue(immutable))).digest("hex");
 }
 
 function canonical(value: JsonValue): JsonValue {
-  if (Array.isArray(value)) return value.map(canonical).sort((left, right) => JSON.stringify(left).localeCompare(JSON.stringify(right)));
-  if (value !== null && typeof value === "object") return Object.fromEntries(Object.entries(value).sort(([left], [right]) => left.localeCompare(right)).map(([key, item]) => [key, canonical(item)]));
+  if (Array.isArray(value)) return value.map(canonical).sort((left, right) => compareCodeUnits(JSON.stringify(left), JSON.stringify(right)));
+  if (value !== null && typeof value === "object") return Object.fromEntries(Object.entries(value).sort(([left], [right]) => compareCodeUnits(left, right)).map(([key, item]) => [key, canonical(item)]));
   return value;
 }
 
@@ -178,7 +179,7 @@ function canonicalJiraReadBack(value: JsonValue): JsonValue {
   if (typeof value === "string") return value.replace(/\r\n/g, "\n");
   if (Array.isArray(value)) return value.map(canonicalJiraReadBack);
   if (value !== null && typeof value === "object") {
-    return Object.fromEntries(Object.entries(value).sort(([left], [right]) => left.localeCompare(right)).map(([key, item]) => [key, canonicalJiraReadBack(item)]));
+    return Object.fromEntries(Object.entries(value).sort(([left], [right]) => compareCodeUnits(left, right)).map(([key, item]) => [key, canonicalJiraReadBack(item)]));
   }
   return value;
 }

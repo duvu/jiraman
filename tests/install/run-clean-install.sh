@@ -1,13 +1,14 @@
 #!/usr/bin/env bash
 set -euo pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
-TARGET="$ROOT/tests/install/output/clean-project"
-SYMLINK_TARGET="$ROOT/tests/install/output/symlink-project"
-OUTSIDE="$ROOT/tests/install/output/outside-agents"
-RACE_TARGET="$ROOT/tests/install/output/race-project"
-RACE_OUTSIDE="$ROOT/tests/install/output/race-outside"
-PERMISSION_ROOT="$ROOT/tests/install/output/permission-project"
-rm -rf "$TARGET" "$SYMLINK_TARGET" "$OUTSIDE" "$RACE_TARGET" "$RACE_OUTSIDE" "$PERMISSION_ROOT"-*
+OUTPUT_ROOT="$(mktemp -d)"
+trap 'rm -rf "$OUTPUT_ROOT"' EXIT
+TARGET="$OUTPUT_ROOT/clean-project"
+SYMLINK_TARGET="$OUTPUT_ROOT/symlink-project"
+OUTSIDE="$OUTPUT_ROOT/outside-agents"
+RACE_TARGET="$OUTPUT_ROOT/race-project"
+RACE_OUTSIDE="$OUTPUT_ROOT/race-outside"
+PERMISSION_ROOT="$OUTPUT_ROOT/permission-project"
 mkdir -p "$TARGET/.kilo"
 printf '%s\n' '{"servers":{"mcp-atlassian":{"command":"USER-OWNED-SENTINEL"}}}' > "$TARGET/.kilo/mcp.json"
 cp "$TARGET/.kilo/mcp.json" "$TARGET/mcp.before"
