@@ -53,4 +53,21 @@ describe("confluence-page-proposals knowledge-audit confluence-reporting", () =>
     expect(report.history).toBe("not verified");
     expect(asArray(report.sources, "sources").length).toBeGreaterThan(0);
   });
+
+  test("Goal-aware page proposals preserve every required structural section", () => {
+    const content = readText("template/docs/project-management/templates/confluence/story-specification.md");
+    const proposal = {
+      ownership: "jiraman-managed",
+      current_version: 4,
+      operation: "page.update",
+      desired_content: content,
+      page_type: "story-specification",
+      preconditions: ["version remains current"],
+      rollback_source: "version-4",
+    };
+
+    expect(pageProposalViolations(proposal)).toEqual([]);
+    expect(pageProposalViolations({...proposal, desired_content: "replacement without Goal regions"}))
+      .toContain("proposal:story-specification:goal-identity:markers");
+  });
 });
