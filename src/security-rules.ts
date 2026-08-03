@@ -26,51 +26,74 @@ export interface SecurityFinding {
   readonly preservedEvidenceIds: readonly string[];
 }
 
-const SCOPE_OVERRIDE_PATTERNS = [
-  /\b(?:update|edit|modify|move)\s+[A-Z][A-Z0-9_]+-[0-9]+\b/i,
-  /\bchange\s+(?:the\s+)?(?:project|scope)\b/i,
-  /\b(?:work|operate|write|create|move|switch)\s+(?:in|to)\s+(?:project\s+)?[A-Z][A-Z0-9_]{2,}\b/,
-  /\b(?:outside|another|different)\s+(?:the\s+)?(?:configured\s+)?(?:project|scope)\b/i,
-] as const;
-const TOOL_OVERRIDE_PATTERNS = [
-  /\b(?:switch|use|call|invoke|select)\s+(?:to\s+)?(?:(?:the|another|different)\s+)?(?:[\w.-]*(?:tool|mcp|connector)|jira_[a-z_]+|confluence_[a-z_]+)\b/i,
-  /\bfake\s+mcp\b/i,
-] as const;
-const APPROVAL_OVERRIDE_PATTERNS = [
-  /\bauto-?approve\b/i,
-  /\bapprove\s+(?:the\s+)?write\b/i,
-  /\b(?:consider|treat|mark)\s+(?:this|it)\s+(?:as\s+)?approved\b/i,
-  /\b(?:skip|bypass|ignore)\s+(?:the\s+)?approval\b/i,
-  /\bself-?approve\b|\bwrite\s+without\s+(?:an?\s+)?ask\b/i,
-] as const;
-const SECRET_DISCLOSURE_PATTERNS = [
-  /\b(?:reveal|expose|print|show|send)\b.{0,32}\b(?:secret|credential|password|token|api[- ]?key)\b/i,
-] as const;
-const GOAL_OVERRIDE_PATTERNS = [
-  /\b(?:ignore|bypass|override|disregard)\s+(?:the\s+)?(?:goal\s+)?(?:policy|instructions?)\b/i,
-  /\b(?:set|lower|reduce|change|override)\b.{0,40}\b(?:minimum|goal count|child count|sub-?tasks?)\b.{0,24}\b(?:0|1|zero|one)\b/i,
-  /\b(?:make|treat)\b.{0,32}\b(?:children|sub-?tasks?)\b.{0,20}\boptional\b/i,
-  /\b(?:keep|use|create)\b.{0,32}\b(?:single|one|fewer)\b.{0,20}\b(?:child|sub-?task)\b/i,
-  /\b(?:allow|permit|raise|increase|set)\b.{0,40}\b(?:[5-9]|[1-9][0-9]+|five|six|seven|eight|nine|ten|eleven|twelve)(?:-|\s*)hours?\b.{0,20}\b(?:tasks?|sub-?tasks?)\b/i,
-  /\b(?:allow|permit|raise|increase|set)\b.{0,40}\b(?:tasks?|sub-?tasks?)\b.{0,24}\b(?:[5-9]|[1-9][0-9]+|five|six|seven|eight|nine|ten|eleven|twelve)(?:-|\s*)hours?\b/i,
-  /\b(?:allow|permit)\b.{0,32}\bestimates?\b.{0,24}\b(?:over|above|greater than)\s+(?:4|four)\s*hours?\b/i,
-  /\b(?:omit|remove|drop|skip)\b.{0,32}\b(?:goal\s+)?(?:name|deadline|target completion date|dod|definition of done)\b/i,
-  /\b(?:make|treat)\b.{0,32}\b(?:goal\s+)?(?:dod|definition of done|deadline)\b.{0,20}\boptional\b/i,
-  /\b(?:invent|guess|assume|fabricate)\b.{0,48}\b(?:due date|deadline|target completion date)\b/i,
-  /\b(?:invent|guess|assume|use|set)\b.{0,32}\b(?:tomorrow|next week|soon|asap)\b.{0,24}\b(?:due date|deadline|target completion date)\b/i,
-] as const;
+function contentWords(content: string): ReadonlySet<string> {
+  return new Set(content.toLowerCase().replace(/sub[- ]tasks?/g, "subtask").match(/[a-z0-9_]+/g) ?? []);
+}
 
-function matchesAny(content: string, patterns: readonly RegExp[]): boolean {
-  return patterns.some((pattern) => pattern.test(content));
+function hasAny(words: ReadonlySet<string>, candidates: readonly string[]): boolean {
+  return candidates.some((candidate) => words.has(candidate));
+}
+
+function hasPrefix(words: ReadonlySet<string>, prefixes: readonly string[]): boolean {
+  return [...words].some((word) => prefixes.some((prefix) => word.startsWith(prefix)));
+}
+
+function scopeOverride(content: string, words: ReadonlySet<string>): boolean {
+  const movement = hasAny(words, ["change", "create", "move", "operate", "put", "switch", "update", "work", "write"]);
+  const external = hasAny(words, ["another", "different", "other", "outside"]);
+  const context = hasAny(words, ["in", "portfolio", "project", "scope", "to", "under"]);
+  const foreignIssue = /\b(?!AIPLATFORM-)[A-Z][A-Z0-9_]+-[0-9]+\b/.test(content);
+  return movement && (external || foreignIssue) && (context || foreignIssue);
+}
+
+function toolOverride(words: ReadonlySet<string>): boolean {
+  const selection = hasAny(words, ["call", "choose", "invoke", "pick", "select", "switch", "use"]);
+  const tool = hasAny(words, ["connector", "integration", "mcp", "tool"]) || hasPrefix(words, ["jira_", "confluence_"]);
+  return (selection && tool) || (words.has("fake") && words.has("mcp"));
+}
+
+function approvalOverride(words: ReadonlySet<string>): boolean {
+  const approval = hasPrefix(words, ["approv", "authoriz", "confirm", "permiss", "request"]) || words.has("ask");
+  const write = hasAny(words, ["apply", "change", "commit", "create", "execute", "proceed", "publish", "update", "write"]);
+  const bypass = hasAny(words, ["auto", "bypass", "ignore", "self", "skip", "without"]);
+  const directive = hasAny(words, ["approve", "consider", "mark", "treat"]);
+  return (approval && bypass) || (approval && directive && (write || words.has("this") || words.has("it")));
+}
+
+function secretDisclosure(words: ReadonlySet<string>): boolean {
+  const disclosure = hasAny(words, ["copy", "expose", "include", "print", "publish", "reveal", "send", "show"]);
+  const secret = hasAny(words, ["bearer", "cookie", "credential", "key", "password", "secret", "token"]);
+  return disclosure && secret;
+}
+
+function goalPolicyOverride(words: ReadonlySet<string>): boolean {
+  if (hasAny(words, ["bypass", "disregard", "ignore", "override"]) && hasPrefix(words, ["instruction", "policy"])) return true;
+  const work = hasPrefix(words, ["child", "implementation", "item", "subtask", "task", "work"]) || words.has("goal");
+  const lowCount = hasAny(words, ["0", "1", "fewer", "one", "only", "optional", "single", "zero"]);
+  const cardinalityChange = hasAny(words, ["allow", "create", "keep", "lower", "make", "necessary", "permit", "reduce", "set", "treat", "use"]);
+  if (work && lowCount && cardinalityChange) return true;
+  const numericHours = [...words].some((word) => /^\d+$/.test(word) && Number(word) > 4);
+  const oversized = numericHours || hasAny(words, ["day", "eight", "eleven", "entire", "five", "full", "nine", "seven", "six", "ten", "twelve"]);
+  const durationChange = hasAny(words, ["allow", "can", "increase", "permit", "raise", "set", "take"]);
+  if (work && oversized && durationChange) return true;
+  const dod = words.has("dod") || (words.has("definition") && words.has("done"));
+  if (dod && hasAny(words, ["drop", "make", "omit", "optional", "remove", "skip", "treat"])) return true;
+  const deadline = words.has("deadline") || (words.has("date") && hasAny(words, ["completion", "due", "target"]));
+  const invented = hasPrefix(words, ["assum", "fabricat", "guess", "invent"]);
+  const selected = hasAny(words, ["choose", "pick", "set", "use"]);
+  const relative = hasAny(words, ["asap", "soon", "tomorrow"]);
+  const missingEvidence = hasAny(words, ["no", "unverified", "without"]) && hasPrefix(words, ["confirm", "evidence", "source", "verif"]);
+  return deadline && (invented || (selected && (relative || missingEvidence)));
 }
 
 export function inspectUntrustedContent(source: string, content: string): SecurityFinding | null {
+  const words = contentWords(content);
   const effects: string[] = [];
-  if (matchesAny(content, SCOPE_OVERRIDE_PATTERNS)) effects.push("scope change");
-  if (matchesAny(content, TOOL_OVERRIDE_PATTERNS)) effects.push("tool selection");
-  if (matchesAny(content, APPROVAL_OVERRIDE_PATTERNS)) effects.push("write approval");
-  if (matchesAny(content, SECRET_DISCLOSURE_PATTERNS)) effects.push("secret disclosure");
-  if (matchesAny(content, GOAL_OVERRIDE_PATTERNS)) effects.push("goal policy override");
+  if (scopeOverride(content, words)) effects.push("scope change");
+  if (toolOverride(words)) effects.push("tool selection");
+  if (approvalOverride(words)) effects.push("write approval");
+  if (secretDisclosure(words)) effects.push("secret disclosure");
+  if (goalPolicyOverride(words)) effects.push("goal policy override");
   if (effects.length === 0) return null;
   return { source, category: "instruction-injection", blockedEffect: effects, preservedEvidenceIds: extractStableIds(content) };
 }
