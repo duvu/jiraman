@@ -11,6 +11,12 @@ function stringIds(value: JsonValue | undefined): readonly string[] | null {
   return new Set(ids).size === ids.length ? ids : null;
 }
 
+function stringList(value: JsonValue | undefined): readonly string[] | null {
+  if (!Array.isArray(value) || value.some((item) => typeof item !== "string" || item.length === 0)) return null;
+  const items = value.filter((item): item is string => typeof item === "string");
+  return new Set(items).size === items.length ? items : null;
+}
+
 function traceabilityMapValid(value: JsonValue | undefined, expectedIds: readonly string[], subtaskRefs: ReadonlySet<string>): boolean {
   const map = objectValue(value);
   if (map === null || Object.keys(map).length !== expectedIds.length || expectedIds.some((id) => map[id] === undefined)) return false;
@@ -20,6 +26,19 @@ function traceabilityMapValid(value: JsonValue | undefined, expectedIds: readonl
   });
 }
 
+function dependencyGraphValid(graph: ReadonlyMap<string, readonly string[]>, subtaskRefs: ReadonlySet<string>): boolean {
+  for (const [ref, dependencies] of graph) {
+    if (dependencies.some((dependency) => dependency === ref || !subtaskRefs.has(dependency))) return false;
+  }
+  const remaining = new Set(subtaskRefs);
+  while (remaining.size > 0) {
+    const ready = [...remaining].filter((ref) => graph.get(ref)?.every((dependency) => !remaining.has(dependency)) === true);
+    if (ready.length === 0) return false;
+    for (const ref of ready) remaining.delete(ref);
+  }
+  return true;
+}
+
 function goalChildTraceabilityValid(goal: JsonObject, requirementIds: readonly string[], criterionIds: readonly string[]): boolean {
   if (!Array.isArray(goal.subtasks) || goal.subtasks.length < 2) return false;
   const declaredRequirements = new Set(requirementIds);
@@ -27,23 +46,26 @@ function goalChildTraceabilityValid(goal: JsonObject, requirementIds: readonly s
   const coveredRequirements = new Set<string>();
   const coveredCriteria = new Set<string>();
   const subtaskRefs = new Set<string>();
+  const dependencyGraph = new Map<string, readonly string[]>();
   for (const value of goal.subtasks) {
     const subtask = objectValue(value);
     const requirements = stringIds(subtask?.requirements);
     const criteria = stringIds(subtask?.parent_acceptance_criteria_refs);
-    if (subtask === null || typeof subtask.ref !== "string" || !/^AIPLATFORM-[0-9]+$/.test(subtask.ref) || subtaskRefs.has(subtask.ref) || requirements === null || criteria === null ||
+    const dependencies = stringList(subtask?.dependencies);
+    if (subtask === null || typeof subtask.ref !== "string" || !/^AIPLATFORM-[0-9]+$/.test(subtask.ref) || subtaskRefs.has(subtask.ref) || requirements === null || criteria === null || dependencies === null ||
       requirements.some((id) => !declaredRequirements.has(id)) || criteria.some((id) => !declaredCriteria.has(id)) || typeof subtask.summary !== "string" || subtask.summary.length === 0 ||
-      typeof subtask.outcome !== "string" || subtask.outcome.length === 0 || typeof subtask.validation !== "string" || subtask.validation.length === 0 ||
-      typeof subtask.definition_of_done !== "string" || subtask.definition_of_done.length === 0 || !Array.isArray(subtask.dependencies) ||
-      subtask.dependencies.some((dependency) => typeof dependency !== "string" || dependency.length === 0) || new Set(subtask.dependencies).size !== subtask.dependencies.length ||
+      typeof subtask.outcome !== "string" || subtask.outcome.length === 0 || !Array.isArray(subtask.in_scope) || subtask.in_scope.length === 0 || !Array.isArray(subtask.out_of_scope) ||
+      !Array.isArray(subtask.steps) || subtask.steps.length === 0 || !Array.isArray(subtask.affected_files) || typeof subtask.validation !== "string" || subtask.validation.length === 0 ||
+      typeof subtask.definition_of_done !== "string" || subtask.definition_of_done.length === 0 ||
       typeof subtask.estimate_hours !== "number" || subtask.estimate_hours <= 0 || subtask.estimate_hours > 4 ||
       subtask.content_language !== "vi-VN" || subtask.acceptance_criteria_storage !== "managed-description-section" || acceptanceCriteriaIds(subtask.acceptance_criteria) === null ||
       localAcceptanceCriterionErrors(subtask.acceptance_criteria, "").length > 0) return false;
     subtaskRefs.add(subtask.ref);
+    dependencyGraph.set(subtask.ref, dependencies);
     for (const id of requirements) coveredRequirements.add(id);
     for (const id of criteria) coveredCriteria.add(id);
   }
-  return requirementIds.every((id) => coveredRequirements.has(id)) && criterionIds.every((id) => coveredCriteria.has(id));
+  return dependencyGraphValid(dependencyGraph, subtaskRefs) && requirementIds.every((id) => coveredRequirements.has(id)) && criterionIds.every((id) => coveredCriteria.has(id));
 }
 
 export function sprintHealth(input: JsonObject): "Green" | "Amber" | "Red" | "Not verified" {

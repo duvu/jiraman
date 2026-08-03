@@ -35,8 +35,8 @@ function readyGoal(): JsonObject {
     requirements: ["REQ-1"],
     acceptance_criteria: [criterion()],
     subtasks: [
-      {ref: "AIPLATFORM-101", summary: "Run restore drill", outcome: "Restore is verified", validation: "restore test", definition_of_done: "Evidence is attached", dependencies: [], estimate_hours: 2, requirements: ["REQ-1"], parent_acceptance_criteria_refs: ["AC-1"], content_language: "vi-VN", acceptance_criteria_storage: "managed-description-section", acceptance_criteria: [localCriterion()]},
-      {ref: "AIPLATFORM-102", summary: "Review restore evidence", outcome: "Evidence is accepted", validation: "review checklist", definition_of_done: "Review is recorded", dependencies: [], estimate_hours: 3, requirements: ["REQ-1"], parent_acceptance_criteria_refs: ["AC-1"], content_language: "vi-VN", acceptance_criteria_storage: "managed-description-section", acceptance_criteria: [localCriterion()]},
+      {ref: "AIPLATFORM-101", summary: "Run restore drill", outcome: "Restore is verified", in_scope: ["restore drill"], out_of_scope: ["production restore"], steps: ["run the drill"], affected_files: ["docs/rollback.md"], validation: "restore test", definition_of_done: "Evidence is attached", dependencies: [], estimate_hours: 2, requirements: ["REQ-1"], parent_acceptance_criteria_refs: ["AC-1"], content_language: "vi-VN", acceptance_criteria_storage: "managed-description-section", acceptance_criteria: [localCriterion()]},
+      {ref: "AIPLATFORM-102", summary: "Review restore evidence", outcome: "Evidence is accepted", in_scope: ["restore evidence"], out_of_scope: ["production changes"], steps: ["review the evidence"], affected_files: ["docs/manual-smoke-tests.md"], validation: "review checklist", definition_of_done: "Review is recorded", dependencies: ["AIPLATFORM-101"], estimate_hours: 3, requirements: ["REQ-1"], parent_acceptance_criteria_refs: ["AC-1"], content_language: "vi-VN", acceptance_criteria_storage: "managed-description-section", acceptance_criteria: [localCriterion()]},
     ],
     traceability_complete: true,
     dependencies: [],
@@ -105,14 +105,14 @@ describe("Acceptance Criteria adversarial contract", () => {
     const conciseStory = asObject(asArray(concise.stories, "concise Goal Stories")[0] ?? null, "concise Goal Story");
     const conciseCriterion = asObject(asArray(conciseStory.acceptance_criteria, "concise Acceptance Criteria")[0] ?? null, "concise Acceptance Criterion");
     conciseCriterion.statement = "GET /health 200";
-    const concreteVerifications = ["./verify.sh --source-tree", "https://example.com/evidence", "review [restore evidence](https://example.com/evidence)"].map((verification) => {
+    const concreteVerifications = ["./verify.sh --source-tree", "https://example.com/evidence", "review [restore evidence](https://example.com/evidence)", "test [restore evidence](https://example.com?run=1)", "review [restore evidence](https://example.com#result)", "review [local evidence](./evidence/report.md#result)"].map((verification) => {
       const backlog = structuredClone(source);
       const story = asObject(asArray(backlog.stories, "concrete Goal Stories")[0] ?? null, "concrete Goal Story");
       const item = asObject(asArray(story.acceptance_criteria, "concrete Acceptance Criteria")[0] ?? null, "concrete Acceptance Criterion");
       item.verification = verification;
       return validateJson("backlog-draft.schema.json", backlog);
     });
-    const placeholderStatements = ["[STATEMENT]", "[foo]", "Backup [foo]"].map((statement) => {
+    const placeholderStatements = ["[STATEMENT]", "[foo]", "Backup [foo]", "Backup [foo.bar]", "Backup [foo/bar]", "Backup []"].map((statement) => {
       const backlog = structuredClone(source);
       const story = asObject(asArray(backlog.stories, "placeholder Goal Stories")[0] ?? null, "placeholder Goal Story");
       const item = asObject(asArray(story.acceptance_criteria, "placeholder Acceptance Criteria")[0] ?? null, "placeholder Acceptance Criterion");
@@ -150,7 +150,7 @@ describe("Acceptance Criteria adversarial contract", () => {
     uncovered.acceptance_criteria = [criterion(), {...criterion(), id: "AC-2", statement: "Bằng chứng restore được lưu trong hồ sơ nghiệm thu"}];
     const unresolved = readyGoal();
     delete asObject(asArray(unresolved.subtasks, "unresolved Sub-tasks")[0] ?? null, "unresolved Sub-task").parent_acceptance_criteria_refs;
-    const incompleteChildren = ["summary", "outcome", "validation", "definition_of_done", "dependencies", "acceptance_criteria", "content_language", "acceptance_criteria_storage"].map((field) => {
+    const incompleteChildren = ["summary", "outcome", "in_scope", "out_of_scope", "steps", "affected_files", "validation", "definition_of_done", "dependencies", "acceptance_criteria", "content_language", "acceptance_criteria_storage"].map((field) => {
       const goal = readyGoal();
       delete asObject(asArray(goal.subtasks, "incomplete Sub-tasks")[0] ?? null, "incomplete Sub-task")[field];
       return goal;
@@ -159,10 +159,14 @@ describe("Acceptance Criteria adversarial contract", () => {
     asObject(asArray(asObject(asArray(invalidLocalTrace.subtasks, "invalid-trace Sub-tasks")[0] ?? null, "invalid-trace Sub-task").acceptance_criteria, "invalid local criteria")[0] ?? null, "invalid local criterion").validation_ref = "VAL-999";
     const duplicateDependencies = readyGoal();
     asObject(asArray(duplicateDependencies.subtasks, "duplicate-dependency Sub-tasks")[0] ?? null, "duplicate-dependency Sub-task").dependencies = ["AIPLATFORM-99", "AIPLATFORM-99"];
+    const unresolvedDependency = readyGoal();
+    asObject(asArray(unresolvedDependency.subtasks, "unresolved-dependency Sub-tasks")[0] ?? null, "unresolved-dependency Sub-task").dependencies = ["AIPLATFORM-999"];
+    const cyclicDependencies = readyGoal();
+    asObject(asArray(cyclicDependencies.subtasks, "cyclic-dependency Sub-tasks")[0] ?? null, "cyclic-dependency Sub-task").dependencies = ["AIPLATFORM-102"];
 
     // When / Then
     expect(goalReadinessViolations(readyGoal())).not.toContain("incomplete-acceptance-criteria");
-    for (const goal of [uncovered, unresolved, invalidLocalTrace, duplicateDependencies, ...incompleteChildren]) {
+    for (const goal of [uncovered, unresolved, invalidLocalTrace, duplicateDependencies, unresolvedDependency, cyclicDependencies, ...incompleteChildren]) {
       expect(goalReadinessViolations(goal)).toContain("incomplete-acceptance-criteria");
       expect(goalReadinessViolations(goal)).toContain("incomplete-traceability");
     }

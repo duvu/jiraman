@@ -122,6 +122,10 @@
                       "ref": {"type": "string", "minLength": 1},
                       "summary": {"type": "string", "minLength": 1},
                       "outcome": {"type": "string", "minLength": 1},
+                      "in_scope": {"type": "array", "minItems": 1},
+                      "out_of_scope": {"type": "array"},
+                      "steps": {"type": "array", "minItems": 1},
+                      "affected_files": {"type": "array"},
                       "validation": {"type": "string", "minLength": 1},
                       "definition_of_done": {"type": "string", "minLength": 1},
                       "dependencies": {
@@ -252,14 +256,22 @@
                         "minItems": 2,
                         "items": {
                           "type": "object",
-                          "required": ["ref", "summary", "outcome", "validation", "definition_of_done", "dependencies", "estimate_hours", "requirements", "parent_acceptance_criteria_refs", "content_language", "acceptance_criteria_storage", "acceptance_criteria"],
+                          "required": ["ref", "summary", "outcome", "in_scope", "out_of_scope", "steps", "affected_files", "validation", "definition_of_done", "dependencies", "estimate_hours", "requirements", "parent_acceptance_criteria_refs", "content_language", "acceptance_criteria_storage", "acceptance_criteria"],
                           "properties": {
                             "ref": true,
                             "summary": true,
                             "outcome": true,
+                            "in_scope": true,
+                            "out_of_scope": true,
+                            "steps": true,
+                            "affected_files": true,
                             "validation": true,
                             "definition_of_done": true,
-                            "dependencies": true,
+                            "dependencies": {
+                              "type": "array",
+                              "uniqueItems": true,
+                              "items": {"type": "string", "pattern": "^AIPLATFORM-[0-9]+$"}
+                            },
                             "estimate_hours": true,
                             "requirements": true,
                             "parent_acceptance_criteria_refs": true,

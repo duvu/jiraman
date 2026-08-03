@@ -32,7 +32,7 @@ Sprint Goal and coherent deadline-bound Goal Story scope; accepted-Goal review l
 
 ## Workflow
 
-1. Define the Sprint Goal and deliverables before selecting coherent supporting Goal Stories. Select only Goals with verified name/deadline/DoD, complete structured AC statements/verification and exact traceability, Epic parent, at least two valid Sub-tasks with local ACs, capacity fit, and resolved target-sprint dependencies.
+1. Define the Sprint Goal and deliverables before selecting coherent supporting Goal Stories. Select only Goals with verified name/deadline/DoD, complete structured AC statements/verification and exact traceability, Epic parent, at least two complete Sub-tasks with scope, steps, affected files, validation, DoD, local ACs, capacity fit, and an acyclic same-Goal dependency graph with all other target-sprint dependencies resolved.
 2. Reject scope that exceeds verified capacity, misses its sprint-end deadline without an approved exception, lacks Goal readiness, breaches WIP, or loses outcome coherence.
 3. Review every Goal DoD condition against acceptance criteria, required Sub-tasks, validation, Jira state, repository/CI, and stakeholder outcome evidence. Jira `Done` without complete Goal DoD evidence is `DoD incomplete`, never accepted completion.
 4. Preserve carry-over and scope-change reasons. Retrospective input includes missed Goal deadlines, Goal DoD failures, attempted over-four-hour decomposition, and excessive Sub-task carry-over without scoring individuals.

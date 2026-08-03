@@ -22,8 +22,16 @@ describe("two-week-scenarios and two-week-recommendation", () => {
       ["empty requirements", true, (goal) => { goal.requirements = []; }],
       ["empty acceptance criteria", true, (goal) => { goal.acceptance_criteria = []; }],
       ["missing child outcome", true, (goal) => { delete asObject(asArray(goal.subtasks, "child outcome Sub-tasks")[0] ?? null, "child outcome Sub-task").outcome; }],
+      ["missing child scope", true, (goal) => { delete asObject(asArray(goal.subtasks, "child scope Sub-tasks")[0] ?? null, "child scope Sub-task").in_scope; }],
       ["invalid child local trace", true, (goal) => { asObject(asArray(asObject(asArray(goal.subtasks, "child trace Sub-tasks")[0] ?? null, "child trace Sub-task").acceptance_criteria, "child local criteria")[0] ?? null, "child local criterion").validation_ref = "VAL-999"; }],
       ["duplicate child dependency", true, (goal) => { asObject(asArray(goal.subtasks, "child dependency Sub-tasks")[0] ?? null, "child dependency Sub-task").dependencies = ["AIPLATFORM-99", "AIPLATFORM-99"]; }],
+      ["cross-project child dependency", true, (goal) => { asObject(asArray(goal.subtasks, "cross-project dependency Sub-tasks")[0] ?? null, "cross-project dependency Sub-task").dependencies = ["OTHER-999"]; }],
+      ["unresolved child dependency", false, (goal) => { asObject(asArray(goal.subtasks, "unresolved dependency Sub-tasks")[0] ?? null, "unresolved dependency Sub-task").dependencies = ["AIPLATFORM-999"]; }],
+      ["cyclic child dependency", false, (goal) => {
+        const subtasks = asArray(goal.subtasks, "cyclic dependency Sub-tasks");
+        asObject(subtasks[0] ?? null, "first cyclic dependency Sub-task").dependencies = ["AIPLATFORM-103"];
+        asObject(subtasks[1] ?? null, "second cyclic dependency Sub-task").dependencies = ["AIPLATFORM-102"];
+      }],
       ["missing requirement map", true, (goal) => { asObject(goal.traceability ?? null, "traceability").requirements = {}; }],
       ["surplus acceptance ID", false, (goal) => { asObject(goal.traceability ?? null, "traceability").acceptance_criteria = {"AC-1": ["AIPLATFORM-102"], "AC-9": ["AIPLATFORM-103"]}; }],
       ["unknown DoD Sub-task", false, (goal) => { asObject(goal.traceability ?? null, "traceability").goal_definition_of_done = {"DOD-1": ["AIPLATFORM-999"]}; }],
