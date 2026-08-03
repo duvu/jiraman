@@ -4,8 +4,7 @@ import { asArray, asObject, asString, parseFrontmatter, readJson, readText, vali
 import { inspectUntrustedContent } from "../../src/security-rules.js";
 import { candidateCanCommit, sprintReviewAccepted } from "../../src/workflow-rules.js";
 import { goalPolicyMetadataValid } from "../../src/goal-rules.js";
-
-const GOAL_CONTRACT = "goal-name,target-completion-date,goal-dod,epic-parent,min-two-subtasks,max-four-hours,traceability";
+import { goalContractMetadataViolations, type IndexedGoalDocument } from "../../src/goal-contract-metadata-rules.js";
 
 function goalHierarchyGroup(): JsonObject {
   const goalActions = [
@@ -66,26 +65,36 @@ describe("goal hierarchy contracts", () => {
     expect(missingGoalFieldPolicy.valid).toBe(false);
   });
 
-  test("installed workflow and template metadata declare the machine-checked Goal contract", () => {
+  test("release validation derives Goal metadata coverage from installed indexes", () => {
     // Given
-    const skillPaths = [
-      "jiraman-refinement",
-      "jiraman-apply-actions",
-      "jiraman-next-two-weeks",
-      "jiraman-daily",
-      "jiraman-sprint-health",
-      "jiraman-sprint-cadence",
-      "jiraman-confluence-reporting",
-    ].map((name) => `template/.kilo/skills/${name}/SKILL.md`);
-    const templatePaths = ["epic-brief", "story-specification", "sprint-planning", "next-two-week-plan", "sprint-review", "weekly-status"]
-      .map((name) => `template/docs/project-management/templates/confluence/${name}.md`);
+    const skillIndex = asObject(readJson("template/.kilo/skills/index.json"), "skills index");
+    const templateIndex = asObject(readJson("template/docs/project-management/templates/confluence/index.json"), "template index");
+    const contract = asObject(templateIndex.goal_contract ?? null, "Goal contract");
+    const skillDocuments = asArray(skillIndex.skills, "skills").map((value): IndexedGoalDocument => {
+      const entry = asObject(value, "skill entry");
+      const path = asString(entry.path, "skill path").replace(/^\.kilo\//, "template/.kilo/");
+      return {path, goalContractRequired: entry.goal_contract_required, goalContract: parseFrontmatter(readText(path)).get("goal_contract")};
+    });
+    const templateDocuments = asArray(templateIndex.page_types, "page types").map((value): IndexedGoalDocument => {
+      const entry = asObject(value, "page type");
+      const path = `template/docs/project-management/templates/confluence/${asString(entry.file, "template file")}`;
+      return {path, goalContractRequired: entry.goal_contract_required, goalContract: parseFrontmatter(readText(path)).get("goal_contract")};
+    });
+    const documents = [...skillDocuments, ...templateDocuments];
+    const missingFlag = documents.map((document, index): IndexedGoalDocument => index === 0 ? {...document, goalContractRequired: undefined} : document);
+    const unexpectedMarker = documents.map((document) => document.goalContractRequired === false ? {...document, goalContract: "unexpected"} : document);
 
     // When
-    const contracts = [...skillPaths, ...templatePaths].map((path) => parseFrontmatter(readText(path)).get("goal_contract"));
+    const complete = goalContractMetadataViolations(contract, documents);
+    const invalidCanonical = goalContractMetadataViolations({...contract, minimum_subtasks_per_goal: 1}, documents);
+    const missingFlagViolations = goalContractMetadataViolations(contract, missingFlag);
+    const unexpectedMarkerViolations = goalContractMetadataViolations(contract, unexpectedMarker);
 
     // Then
-    expect(contracts.every((value) => value === GOAL_CONTRACT)).toBe(true);
-    expect(asString(parseFrontmatter(readText(skillPaths[0] ?? "")).get("goal_contract") ?? null, "goal contract")).toBe(GOAL_CONTRACT);
+    expect(complete).toEqual([]);
+    expect(invalidCanonical).toContain("canonical-goal-contract");
+    expect(missingFlagViolations.some((violation) => violation.endsWith(":goal-contract-required-flag"))).toBe(true);
+    expect(unexpectedMarkerViolations.some((violation) => violation.endsWith(":unexpected-goal-contract-marker"))).toBe(true);
   });
 
   test("relational draft validation rejects duplicate and unresolved references", () => {

@@ -18,6 +18,7 @@ import {
   walkFiles,
 } from "./contracts.js";
 import { FIXTURE_DOMAINS, validateFixtures } from "./fixture-validation.js";
+import { goalContractMetadataViolations, type IndexedGoalDocument } from "./goal-contract-metadata-rules.js";
 import { missingChecklistGates } from "./release-rules.js";
 import { goalPolicyMetadataValid } from "./goal-rules.js";
 import { commandTableRoutes } from "./routing-rules.js";
@@ -60,11 +61,20 @@ function validateSkills(): void {
     invariant(frontmatter.get("side_effects") === (name === "jiraman-apply-actions" ? "approved-write" : "none"), `${path} has invalid side-effect metadata`);
   }
   const index = asObject(readJson("template/.kilo/skills/index.json"), "skills index");
-  for (const item of asArray(index.skills, "skills index skills")) {
+  const entries = asArray(index.skills, "skills index skills");
+  const documents: IndexedGoalDocument[] = [];
+  invariant(entries.length === files.length, "skill index must cover every installed skill exactly once");
+  for (const item of entries) {
     const entry = asObject(item, "skill entry");
     invariant(names.has(asString(entry.name, "skill entry name")), "skill index has unresolved name");
-    invariant(existsSync(asString(entry.path, "skill entry path").replace(/^\.kilo\//, "template/.kilo/")), "skill index has unresolved path");
+    const path = asString(entry.path, "skill entry path").replace(/^\.kilo\//, "template/.kilo/");
+    invariant(existsSync(path), "skill index has unresolved path");
+    documents.push({path, goalContractRequired: entry.goal_contract_required, goalContract: parseFrontmatter(readText(path)).get("goal_contract")});
   }
+  const contractIndex = asObject(readJson("template/docs/project-management/templates/confluence/index.json"), "template index");
+  const contract = asObject(contractIndex.goal_contract ?? null, "Goal contract");
+  const violations = goalContractMetadataViolations(contract, documents);
+  invariant(violations.length === 0, `skill Goal contract metadata violations: ${violations.join(", ")}`);
 }
 
 function validateCommands(): void {
@@ -123,16 +133,21 @@ function validateConfluenceMetadata(): void {
 function validateConfluenceTemplates(): void {
   const index = asObject(readJson("template/docs/project-management/templates/confluence/index.json"), "template index");
   const pages = asArray(index.page_types, "page types");
+  const documents: IndexedGoalDocument[] = [];
   invariant(pages.length === 12, `expected 12 page templates, found ${pages.length}`);
   for (const item of pages) {
     const page = asObject(item, "page type");
     const path = `template/docs/project-management/templates/confluence/${asString(page.file, "template file")}`;
     const text = readText(path);
+    documents.push({path, goalContractRequired: page.goal_contract_required, goalContract: parseFrontmatter(text).get("goal_contract")});
     for (const field of ["page_type", "owner", "status", "created", "last_reviewed", "review_due", "jira_project", "related_epics", "related_stories", "deliverable_id", "confidentiality", "managed_by", "ownership"]) {
       invariant(text.includes(`${field}:`), `${path} missing metadata ${field}`);
     }
     invariant(text.includes("JIRAMAN:BEGIN") && text.includes("JIRAMAN:END") && text.includes("HUMAN:BEGIN") && text.includes("HUMAN:END"), `${path} missing ownership markers`);
   }
+  const contract = asObject(index.goal_contract ?? null, "Goal contract");
+  const violations = goalContractMetadataViolations(contract, documents);
+  invariant(violations.length === 0, `template Goal contract metadata violations: ${violations.join(", ")}`);
 }
 
 function validateActions(): void {
