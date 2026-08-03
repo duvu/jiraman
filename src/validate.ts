@@ -21,6 +21,7 @@ import { FIXTURE_DOMAINS, validateFixtures } from "./fixture-validation.js";
 import { goalContractMetadataViolations, goalTemplateSectionViolations, type IndexedGoalDocument, type IndexedGoalTemplate } from "./goal-contract-metadata-rules.js";
 import { missingChecklistGates } from "./release-rules.js";
 import { goalPolicyMetadataValid } from "./goal-rules.js";
+import { namedPathBijectionViolations, type NamedPathEntry } from "./index-rules.js";
 import { commandTableRoutes } from "./routing-rules.js";
 
 const REQUIRED_SKILL_SECTIONS = ["Purpose", "Triggers", "Required Evidence", "Output Contract", "Semantic Capabilities", "Workflow", "Side Effects", "Degraded Mode", "Shared Policy"] as const;
@@ -42,6 +43,7 @@ function validateSchemas(): void {
 
 function validateSkills(): void {
   const names = new Set<string>();
+  const installed: NamedPathEntry[] = [];
   const files = listSkillFiles();
   const expected = new Set(["jiraman-apply-actions", "jiraman-confluence-publish", "jiraman-confluence-reporting", "jiraman-daily", "jiraman-decision-management", "jiraman-meeting-actions", "jiraman-next-two-weeks", "jiraman-refinement", "jiraman-risk-management", "jiraman-sprint-cadence", "jiraman-sprint-health"]);
   invariant(files.length === expected.size, `expected ${expected.size} skills, found ${files.length}`);
@@ -52,6 +54,7 @@ function validateSkills(): void {
     invariant(name !== undefined && name.length > 0, `${path} missing skill name`);
     invariant(!names.has(name), `duplicate skill name: ${name}`);
     names.add(name);
+    installed.push({name, path});
     invariant(frontmatter.get("version") === "5", `${path} must be version 5`);
     invariant(expected.has(name), `unexpected skill contract: ${name}`);
     for (const section of REQUIRED_SKILL_SECTIONS) {
@@ -63,17 +66,17 @@ function validateSkills(): void {
   const index = asObject(readJson("template/.kilo/skills/index.json"), "skills index");
   const entries = asArray(index.skills, "skills index skills");
   const documents: IndexedGoalDocument[] = [];
-  const indexedNames = new Set<string>();
+  const indexed: NamedPathEntry[] = [];
   invariant(entries.length === files.length, "skill index must cover every installed skill exactly once");
   for (const item of entries) {
     const entry = asObject(item, "skill entry");
     const indexedName = asString(entry.name, "skill entry name");
-    invariant(names.has(indexedName) && !indexedNames.has(indexedName), "skill index has unresolved or duplicate name");
-    indexedNames.add(indexedName);
     const path = asString(entry.path, "skill entry path").replace(/^\.kilo\//, "template/.kilo/");
-    invariant(existsSync(path), "skill index has unresolved path");
+    indexed.push({name: indexedName, path});
     documents.push({path, goalContractRequired: entry.goal_contract_required, goalContract: parseFrontmatter(readText(path)).get("goal_contract")});
   }
+  const indexViolations = namedPathBijectionViolations(installed, indexed);
+  invariant(indexViolations.length === 0, `skill index mapping violations: ${indexViolations.join(", ")}`);
   const contractIndex = asObject(readJson("template/docs/project-management/templates/confluence/index.json"), "template index");
   const contract = asObject(contractIndex.goal_contract ?? null, "Goal contract");
   const violations = goalContractMetadataViolations(contract, documents);

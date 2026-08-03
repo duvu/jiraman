@@ -1,5 +1,6 @@
 import { describe, expect, test } from "vitest";
 import { asArray, asObject, asString, listSkillFiles, parseFrontmatter, readJson, readText } from "../../src/contracts.js";
+import { namedPathBijectionViolations, type NamedPathEntry } from "../../src/index-rules.js";
 import { commandTableRoutes, parseRoute } from "../../src/routing-rules.js";
 
 describe("skills", () => {
@@ -13,6 +14,21 @@ describe("skills", () => {
       expect(frontmatter.get("version")).toBe("5");
       expect(frontmatter.get("policy")).toBe(".kilo/policies/jiraman-safety.md");
     }
+  });
+
+  test("the skill index is an exact name-to-path bijection", () => {
+    const installed = listSkillFiles().map((path): NamedPathEntry => ({name: asString(parseFrontmatter(readText(path)).get("name"), "skill name"), path}));
+    const indexed = asArray(asObject(readJson("template/.kilo/skills/index.json"), "skill index").skills, "skills")
+      .map((value): NamedPathEntry => {
+        const entry = asObject(value, "skill entry");
+        return {name: asString(entry.name, "skill name"), path: asString(entry.path, "skill path").replace(/^\.kilo\//, "template/.kilo/")};
+      });
+    const swapped = indexed.map((entry, index) => index < 2 ? {...entry, path: indexed[1 - index]?.path ?? entry.path} : entry);
+    const duplicated = indexed.map((entry, index) => index === 1 ? {...entry, path: indexed[0]?.path ?? entry.path} : entry);
+
+    expect(namedPathBijectionViolations(installed, indexed)).toEqual([]);
+    expect(namedPathBijectionViolations(installed, swapped)).toContain(`index:name-path-mismatch:${indexed[0]?.name}`);
+    expect(namedPathBijectionViolations(installed, duplicated)).toContain(`index:duplicate-path:${indexed[0]?.path}`);
   });
 });
 
