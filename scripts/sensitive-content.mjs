@@ -9,6 +9,7 @@ export const releaseInvariantNames = new Set([
   "SHELL_SYNTAX",
   "TYPE_SAFETY",
   "SECURITY_INVARIANTS",
+  "GOAL_SUITE_ROUTING",
   "CONTRACT_VALIDATION",
   "SECRET_OUTPUT",
   "SOURCE_CONTRACT",
