@@ -14,6 +14,6 @@
 
 ## Release Failure Invariants
 
-`scripts/ci.sh` wraps each release-critical command with a stable identifier: `SHELL_SYNTAX`, `TYPE_SAFETY`, `SECURITY_INVARIANTS`, `CONTRACT_VALIDATION`, `SECRET_OUTPUT`, `SOURCE_CONTRACT`, `CLEAN_INSTALL`, `V4_MIGRATION`, `PACKAGE_BUILD`, `PACKAGE_REPRODUCIBILITY`, or `PACKAGE_INTEGRITY`. A failed command exits non-zero and emits `FAIL invariant=<IDENTIFIER>`.
+`scripts/ci.sh` wraps each release-critical command with a stable identifier: `SHELL_SYNTAX`, `TYPE_SAFETY`, `SECURITY_INVARIANTS`, `GOAL_SUITE_ROUTING`, `CONTRACT_VALIDATION`, `SECRET_OUTPUT`, `SOURCE_CONTRACT`, `CLEAN_INSTALL`, `V4_MIGRATION`, `PACKAGE_BUILD`, `PACKAGE_REPRODUCIBILITY`, or `PACKAGE_INTEGRITY`. A failed command exits non-zero and emits `FAIL invariant=<IDENTIFIER>`.
 
 The CI sanitizer preserves only the recognized identifier, removes all trailing diagnostic content, and redacts unknown invariant-like lines. GitHub Actions publishes the identifier in the job summary and retains only the sanitized failure log.

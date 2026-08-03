@@ -7,7 +7,7 @@
   "scripts": {
     "build": "tsc -p tsconfig.json && mkdir -p dist/scripts && cp scripts/sensitive-content.mjs dist/scripts/sensitive-content.mjs",
     "typecheck": "tsc -p tsconfig.json --noEmit",
-    "test": "vitest run",
+    "test": "./scripts/test.sh",
     "validate": "npm run build --silent && node dist/src/validate.js all",
     "validate:schemas": "npm run build --silent && node dist/src/validate.js schemas",
     "validate:skills": "npm run build --silent && node dist/src/validate.js skills",
