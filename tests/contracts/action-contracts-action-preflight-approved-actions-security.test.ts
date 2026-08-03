@@ -7,6 +7,7 @@ import { describe, expect, test } from "vitest";
 import { approvalSelectionAllowed, canonicalPayloadHash, canTransition, dependencyOrder, dependentWritesAllowed, evaluatePreflight, semanticallyEqual, targetPreflightBlockers, verificationOutcome, type PreflightInput, type TargetPreflightInput } from "../../src/action-rules.js";
 import { asArray, asObject, asString, readJson, requireValid, validDateTime, validateJson, type JsonObject, type JsonValue } from "../../src/contracts.js";
 import { findSensitiveValues } from "../../src/scan-secrets.js";
+import type { JiraLanguageValidationContext } from "../../src/jira-language-rules.js";
 import { releaseInvariantNames, sanitizeSensitiveText } from "../../scripts/sensitive-content.mjs";
 import { goalHierarchyGroup } from "./goal-hierarchy-fixture.js";
 
@@ -204,6 +205,32 @@ describe("action-preflight approved-actions security", () => {
       expect(installedRelabeledValidation.status, installedRelabeledValidation.stderr).toBe(5);
       expect(validateJson("state.schema.json", {...state, pending_action_groups: {[groupId]: relabeledOperation}}).valid).toBe(false);
 
+      const untrustedOverride = structuredClone(group);
+      const overrideAction = asObject(asArray(untrustedOverride.actions, "override actions")[0] ?? null, "override action");
+      const overrideDesired = asObject(overrideAction.desired_state ?? null, "override desired state");
+      overrideDesired.content_language = "en-US";
+      overrideDesired.language_override = {
+        requested_language: "en-US",
+        scope_type: "jira-action",
+        scope_ref: overrideAction.id ?? "",
+        source: "explicit-user-request",
+        evidence_reference: "active-user-authorization",
+      };
+      untrustedOverride.payload_hash = canonicalPayloadHash(asArray(untrustedOverride.actions, "override actions"));
+      const overrideState = {...state, pending_action_groups: {[groupId]: untrustedOverride}};
+      const trustedOverride: JiraLanguageValidationContext = {trustedUserAuthorizations: [{
+        reference: "active-user-authorization",
+        capability: "jira-language-override",
+        scopeType: "jira-action",
+        scopeRef: asString(overrideAction.id, "override action ID"),
+        requestedLanguage: "en-US",
+      }]};
+      expect(validateJson("state.schema.json", overrideState).valid).toBe(false);
+      expect(validateJson("state.schema.json", overrideState, trustedOverride).valid).toBe(true);
+      writeFileSync(statePath, JSON.stringify(overrideState));
+      const installedOverrideValidation = spawnSync("./verify.sh", ["--validate-state-file", statePath], {encoding: "utf8"});
+      expect(installedOverrideValidation.status, installedOverrideValidation.stderr).toBe(5);
+
       const validReuse = goalHierarchyGroup();
       const validReuseAction = asObject(asArray(validReuse.actions, "valid reuse actions")[0] ?? null, "valid reuse action");
       const existingEpic = structuredClone(asObject(validReuseAction.desired_state ?? null, "existing Epic"));
@@ -218,6 +245,39 @@ describe("action-preflight approved-actions security", () => {
       writeFileSync(statePath, JSON.stringify({...state, pending_action_groups: {[validReuseId]: validReuse}}));
       const installedValidReuse = spawnSync("./verify.sh", ["--validate-state-file", statePath], {encoding: "utf8"});
       expect(installedValidReuse.status, installedValidReuse.stderr).toBe(0);
+
+      const translationGroup = goalHierarchyGroup();
+      const translationAction = asObject(asArray(translationGroup.actions, "translation actions")[0] ?? null, "translation action");
+      const existingTranslationState = structuredClone(asObject(translationAction.desired_state ?? null, "translation source state"));
+      translationAction.operation = "issue.update";
+      translationAction.target_ref = "AIPLATFORM-100";
+      translationAction.target_version = "8";
+      translationAction.risk = "high";
+      translationAction.approval_required = "per-action";
+      translationAction.before_state = {...existingTranslationState, issue_key: "AIPLATFORM-100", human_content_language: "en-US", description: "Keep REQ-1."};
+      translationAction.desired_state = {
+        content_language: "vi-VN",
+        literal_preservation: {policy_ref: ".kilo/config/jiraman.json#/language/preserved_literal_kinds", mode: "exact"},
+        existing_content_mode: "approved-full-translation",
+        description_update_mode: "approved-full-translation",
+        description: "Giữ REQ-1.",
+        translation_authorization: {source: "explicit-user-request", evidence_reference: "active-translation-authorization"},
+      };
+      translationGroup.payload_hash = canonicalPayloadHash(asArray(translationGroup.actions, "translation actions"));
+      const translationId = asString(translationGroup.id, "translation group ID");
+      const translationState = {...state, pending_action_groups: {[translationId]: translationGroup}};
+      const trustedTranslation: JiraLanguageValidationContext = {trustedUserAuthorizations: [{
+        reference: "active-translation-authorization",
+        capability: "jira-full-description-translation",
+        scopeType: "jira-action",
+        scopeRef: asString(translationAction.id, "translation action ID"),
+        requestedLanguage: "vi-VN",
+      }]};
+      expect(validateJson("state.schema.json", translationState).valid).toBe(false);
+      expect(validateJson("state.schema.json", translationState, trustedTranslation).valid).toBe(true);
+      writeFileSync(statePath, JSON.stringify(translationState));
+      const installedTranslationValidation = spawnSync("./verify.sh", ["--validate-state-file", statePath], {encoding: "utf8"});
+      expect(installedTranslationValidation.status, installedTranslationValidation.stderr).toBe(5);
       writeFileSync(statePath, JSON.stringify({ ...state, pending_action_groups: { [groupId]: rejectedPartialApproval } }));
       const rejectedPartialState = spawnSync("./verify.sh", ["--validate-state-file", statePath], { encoding: "utf8" });
       expect(rejectedPartialState.status).toBe(5);

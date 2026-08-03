@@ -48,20 +48,14 @@ const languageTag = (value) => {
   if (typeof value !== "string" || !/^[A-Za-z]{2,8}(?:-[A-Za-z0-9]{1,8})*$/.test(value)) return false;
   try { Intl.getCanonicalLocales(value); return true; } catch (error) { if (error instanceof RangeError) return false; throw error; }
 };
-const languageOverride = (value, action) => exact(value, ["requested_language", "scope_type", "scope_ref", "source", "evidence_reference"]) &&
-  value.requested_language === action.desired_state.content_language && value.scope_type === "jira-action" && value.scope_ref === action.id &&
-  value.source === "explicit-user-request" && nonEmpty(value.evidence_reference);
 const onlyFields = (value, fields) => Object.keys(value).every((field) => fields.has(field));
 const managedFields = new Set(["acceptance_criteria", "content_language", "description_update_mode", "existing_content_mode", "language_override", "literal_preservation", "managed_content", "managed_section"]);
-const translationFields = new Set(["content_language", "description", "description_update_mode", "existing_content_mode", "language_override", "literal_preservation", "summary", "translation_authorization"]);
 const commentFields = new Set(["acceptance_criteria", "body", "comment", "content_language", "existing_content_mode", "language_override", "literal_preservation", "managed_content_only", "purpose"]);
 const validJiraLanguageAction = (action) => {
   if (action.system !== "jira" || !["issue.create", "issue.update", "issue.comment"].includes(action.operation)) return true;
   const desired = action.desired_state;
   if (!languageTag(desired.content_language) || !literalPreservation(desired.literal_preservation)) return false;
-  if (desired.content_language === "vi-VN") {
-    if (desired.language_override !== undefined) return false;
-  } else if (!languageOverride(desired.language_override, action)) return false;
+  if (desired.content_language !== "vi-VN" || desired.language_override !== undefined || desired.translation_authorization !== undefined) return false;
   if (!["issue.update", "issue.comment"].includes(action.operation)) return true;
   const before = action.before_state;
   if (before.issue_key !== action.target_ref || !nonEmpty(before.human_content_language)) return false;
@@ -73,11 +67,7 @@ const validJiraLanguageAction = (action) => {
     return desired.description_update_mode === "managed-section" && nonEmpty(desired.managed_section) &&
       desired.description === undefined && desired.summary === undefined && onlyFields(desired, managedFields);
   }
-  const authorization = desired.translation_authorization;
-  return desired.existing_content_mode === "approved-full-translation" && desired.description_update_mode === "approved-full-translation" &&
-    nonEmpty(before.description) && nonEmpty(desired.description) && (desired.summary === undefined || nonEmpty(before.summary)) &&
-    onlyFields(desired, translationFields) && exact(authorization, ["source", "evidence_reference"]) &&
-    authorization.source === "explicit-user-request" && nonEmpty(authorization.evidence_reference) && action.risk === "high" && action.approval_required === "per-action";
+  return false;
 };
 const hierarchyType = (value) => ["Epic", "Story", "Sub-task"].includes(value) ? value : null;
 const criterionIds = (criteria, kind, requirements = []) => {
