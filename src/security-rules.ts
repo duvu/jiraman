@@ -26,16 +26,45 @@ export interface SecurityFinding {
   readonly preservedEvidenceIds: readonly string[];
 }
 
+const SCOPE_OVERRIDE_PATTERNS = [
+  /\b(?:update|edit|modify|move)\s+[A-Z][A-Z0-9_]+-[0-9]+\b/i,
+  /\bchange\s+(?:the\s+)?(?:project|scope)\b/i,
+  /\b(?:work|operate|write|create|move|switch)\s+(?:in|to)\s+(?:project\s+)?[A-Z][A-Z0-9_]{2,}\b/,
+] as const;
+const TOOL_OVERRIDE_PATTERNS = [
+  /\b(?:switch|use|call|invoke|select)\s+(?:to\s+)?(?:the\s+)?(?:[\w.-]*(?:tool|mcp)|jira_[a-z_]+|confluence_[a-z_]+)\b/i,
+  /\bfake\s+mcp\b/i,
+] as const;
+const APPROVAL_OVERRIDE_PATTERNS = [
+  /\bauto-?approve\b/i,
+  /\bapprove\s+(?:the\s+)?write\b/i,
+  /\b(?:consider|treat|mark)\s+(?:this|it)\s+(?:as\s+)?approved\b/i,
+  /\b(?:skip|bypass|ignore)\s+(?:the\s+)?approval\b/i,
+] as const;
+const SECRET_DISCLOSURE_PATTERNS = [
+  /\b(?:reveal|expose|print|show|send)\b.{0,32}\b(?:secret|credential|password|token|api[- ]?key)\b/i,
+] as const;
+const GOAL_OVERRIDE_PATTERNS = [
+  /\b(?:ignore|bypass|override|disregard)\s+(?:the\s+)?(?:goal\s+)?(?:policy|instructions?)\b/i,
+  /\b(?:set|lower|reduce|change|override)\b.{0,40}\b(?:minimum|goal count|child count|sub-?tasks?)\b.{0,24}\b(?:0|1|zero|one)\b/i,
+  /\b(?:allow|permit|raise|increase|set)\b.{0,40}\b(?:[5-9]|[1-9][0-9]+|five|six|seven|eight|nine|ten|eleven|twelve)(?:-|\s*)hours?\b.{0,20}\b(?:tasks?|sub-?tasks?)\b/i,
+  /\b(?:allow|permit|raise|increase|set)\b.{0,40}\b(?:tasks?|sub-?tasks?)\b.{0,24}\b(?:[5-9]|[1-9][0-9]+|five|six|seven|eight|nine|ten|eleven|twelve)(?:-|\s*)hours?\b/i,
+  /\b(?:omit|remove|drop|skip)\b.{0,32}\b(?:goal\s+)?(?:name|deadline|target completion date|dod|definition of done)\b/i,
+  /\b(?:invent|guess|assume|use|set)\b.{0,32}\b(?:tomorrow|next week|soon|asap)\b.{0,24}\b(?:due date|deadline|target completion date)\b/i,
+] as const;
+
+function matchesAny(content: string, patterns: readonly RegExp[]): boolean {
+  return patterns.some((pattern) => pattern.test(content));
+}
+
 export function inspectUntrustedContent(source: string, content: string): SecurityFinding | null {
-  const goalPolicyOverride = /(?:lower|reduce) (?:the )?(?:minimum|child)|raise (?:the )?(?:sub-task )?limit|remove (?:the )?goal (?:name|deadline|dod)|invent (?:a )?deadline/i.test(content);
-  const suspicious = goalPolicyOverride || /ignore (?:policy|instructions)|use (?:the )?tool|reveal (?:a )?secret|auto-approve|update [A-Z]+-[0-9]+/i.test(content);
-  if (!suspicious) return null;
   const effects: string[] = [];
-  if (/update [A-Z]+-[0-9]+|change project/i.test(content)) effects.push("scope change");
-  if (/use (?:the )?tool|fake mcp/i.test(content)) effects.push("tool selection");
-  if (/auto-approve|approve write/i.test(content)) effects.push("write approval");
-  if (/reveal (?:a )?secret|credential/i.test(content)) effects.push("secret disclosure");
-  if (goalPolicyOverride) effects.push("goal policy override");
+  if (matchesAny(content, SCOPE_OVERRIDE_PATTERNS)) effects.push("scope change");
+  if (matchesAny(content, TOOL_OVERRIDE_PATTERNS)) effects.push("tool selection");
+  if (matchesAny(content, APPROVAL_OVERRIDE_PATTERNS)) effects.push("write approval");
+  if (matchesAny(content, SECRET_DISCLOSURE_PATTERNS)) effects.push("secret disclosure");
+  if (matchesAny(content, GOAL_OVERRIDE_PATTERNS)) effects.push("goal policy override");
+  if (effects.length === 0) return null;
   return { source, category: "instruction-injection", blockedEffect: effects, preservedEvidenceIds: extractStableIds(content) };
 }
 

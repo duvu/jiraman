@@ -42,5 +42,15 @@ describe("scope-guards and untrusted-content", () => {
     expect(finding?.preservedEvidenceIds).toEqual(["REQ-1"]);
     expect(finding?.blockedEffect).toEqual(["scope change", "tool selection", "write approval", "secret disclosure", "goal policy override"]);
     expect(inspectUntrustedContent(asString(injection.source, "source"), asString(injection.baseline_content, "baseline"))).toBeNull();
+    const hostileCases = asArray(injection.hostile_cases, "hostile cases").map((value) => asObject(value, "hostile case"));
+    for (const item of hostileCases) {
+      const hostile = inspectUntrustedContent(asString(injection.source, "source"), asString(item.content, "hostile content"));
+      expect(hostile?.blockedEffect, asString(item.content, "hostile content")).toEqual(asArray(item.effects, "effects"));
+      expect(hostile?.preservedEvidenceIds, asString(item.content, "hostile content")).toEqual(asArray(item.evidence_ids, "evidence IDs"));
+    }
+    for (const item of asArray(injection.benign_cases, "benign cases")) {
+      const content = asString(item, "benign content");
+      expect(inspectUntrustedContent(asString(injection.source, "source"), content), content).toBeNull();
+    }
   });
 });
