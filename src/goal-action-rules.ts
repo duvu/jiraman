@@ -1,6 +1,6 @@
 import type { ErrorObject } from "ajv";
 
-import type { JsonObject, JsonValue } from "./contracts.js";
+import { validDate, type JsonObject, type JsonValue } from "./contracts.js";
 
 function objectValue(value: JsonValue | undefined): JsonObject | null {
   return value !== null && typeof value === "object" && !Array.isArray(value) ? value : null;
@@ -18,12 +18,6 @@ function semanticError(index: number, keyword: string, message: string): ErrorOb
 
 function nonEmptyStrings(value: JsonValue | undefined): boolean {
   return Array.isArray(value) && value.length > 0 && value.every((item) => typeof item === "string" && item.length > 0);
-}
-
-function validDate(value: JsonValue | undefined): value is string {
-  if (typeof value !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(value)) return false;
-  const date = new Date(`${value}T00:00:00Z`);
-  return !Number.isNaN(date.valueOf()) && date.toISOString().slice(0, 10) === value;
 }
 
 function isJiraIssueWrite(action: JsonObject): boolean {
@@ -49,7 +43,7 @@ export function goalActionSemanticErrors(value: JsonValue): ErrorObject[] {
       const deadlineEvidence = objectValue(desired.target_completion_date_evidence);
       const fieldsValid = typeof desired.parent_ref === "string" && desired.parent_ref.length > 0 &&
         typeof desired.goal_name === "string" && desired.goal_name.length > 0 && desired.summary === desired.goal_name &&
-        validDate(desired.target_completion_date) && desired.due_date === desired.target_completion_date &&
+        typeof desired.target_completion_date === "string" && validDate(desired.target_completion_date) && desired.due_date === desired.target_completion_date &&
         deadlineEvidence !== null && ["sprint-end", "milestone", "specification", "explicit-user-decision"].includes(String(deadlineEvidence.source)) && typeof deadlineEvidence.reference === "string" && deadlineEvidence.reference.length > 0 && deadlineEvidence.verified === true &&
         nonEmptyStrings(desired.definition_of_done) && typeof desired.canonical_spec === "string" && desired.canonical_spec.length > 0 &&
         nonEmptyStrings(desired.requirements) && nonEmptyStrings(desired.acceptance_criteria) && nonEmptyStrings(desired.validation);

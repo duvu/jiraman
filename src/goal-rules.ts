@@ -1,6 +1,6 @@
 import type { ErrorObject } from "ajv";
 
-import type { JsonObject, JsonValue } from "./contracts.js";
+import { validDate, type JsonObject, type JsonValue } from "./contracts.js";
 
 function objectValue(value: JsonValue | undefined): JsonObject | null {
   return value !== null && typeof value === "object" && !Array.isArray(value) ? value : null;
@@ -14,12 +14,6 @@ function semanticError(instancePath: string, keyword: string, message: string): 
     params: {},
     message,
   };
-}
-
-function validDate(value: JsonValue | undefined): boolean {
-  if (typeof value !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(value)) return false;
-  const date = new Date(`${value}T00:00:00Z`);
-  return !Number.isNaN(date.valueOf()) && date.toISOString().slice(0, 10) === value;
 }
 
 function backlogErrors(value: JsonValue): ErrorObject[] {
@@ -116,7 +110,7 @@ export function confluenceGoalContractViolations(value: JsonObject): string[] {
   for (const [index, item] of value.goal_register.entries()) {
     const goal = objectValue(item);
     if (goal === null || typeof goal.goal_name !== "string" || goal.goal_name.length === 0) violations.push(`goal-${index}:name`);
-    if (goal === null || !validDate(goal.target_completion_date)) violations.push(`goal-${index}:deadline`);
+    if (goal === null || typeof goal.target_completion_date !== "string" || !validDate(goal.target_completion_date)) violations.push(`goal-${index}:deadline`);
     if (goal === null || !Array.isArray(goal.definition_of_done) || goal.definition_of_done.length === 0) violations.push(`goal-${index}:dod`);
     if (goal === null || !Array.isArray(goal.subtasks) || goal.subtasks.length < 2) violations.push(`goal-${index}:subtasks`);
     if (goal !== null && Array.isArray(goal.subtasks) && goal.subtasks.some((item) => {
