@@ -6,9 +6,11 @@ const GENERIC_ASSESSMENT_END = /(?:^|\s)(?:(?:all|everything|it|kết quả|mọ
 
 const VERIFICATION_METHOD = /(?:^|[^\p{L}\p{N}])(?:assert(?:ion)?|audit|benchmark|check(?:list)?|compar(?:e|ison)|demo(?:nstration)?|drill|evidence|inspect(?:ion)?|log|measure(?:ment)?|metric|query|report|review|run|scan|test|validat(?:e|ion)|verif(?:y|ication)|walkthrough|bằng chứng|chạy|đo|đối chiếu|duyệt|ghi nhận|kiểm tra|thử|truy vấn|xác minh)(?=$|[^\p{L}\p{N}])/gu;
 
-const VERIFICATION_FILLER = /(?:^|[^\p{L}\p{N}])(?:all|and|after|anything|before|by|complete(?:d)?|everything|it|or|outcome|output|pass(?:ed|es)?|results?|something|that|them|then|this|using|via|with|bằng|cái này|điều đó|hoàn tất|kết quả|mọi thứ|nó|qua|sau|sử dụng|tất cả|trước|và|xong)(?=$|[^\p{L}\p{N}])/gu;
+const VERIFICATION_FILLER = /(?:^|[^\p{L}\p{N}])(?:a|all|an|and|after|anything|are|be|been|before|behavior|by|complete(?:d)?|details?|everything|features?|functionality|is|it|or|outcome|output|pass(?:ed|es)?|results?|something|stuff|that|the|them|then|thing|this|using|via|was|were|with|bằng|cái này|điều đó|được|hoàn tất|kết quả|là|mọi thứ|nó|qua|sau|sử dụng|tất cả|trước|và|xong)(?=$|[^\p{L}\p{N}])/gu;
 
 const TECHNICAL_VERIFICATION = /(?:^|\s)(?:\.{0,2}\/|--?[a-z0-9]|https?:\/\/)|[\\/][a-z0-9_.-]+/u;
+
+const UNRESOLVED_PLACEHOLDER = /\[[^\]]*(?:command|criterion|evidence|item|method|outcome|result|source|statement|target|value|verification)[^\]]*\]|\b(?:placeholder|tbc|tbd|todo)\b/u;
 
 const IMPLEMENTATION_PREFIXES = [
   "add ",
@@ -43,11 +45,11 @@ function hasSpecificContentBeyondMethod(value: string): boolean {
 }
 
 function isConcreteStatement(value: string): boolean {
-  return !GENERIC_ASSESSMENT_END.test(value) && !IMPLEMENTATION_PREFIXES.some((prefix) => value.startsWith(prefix)) && hasSpecificContentBeyondMethod(value);
+  return !UNRESOLVED_PLACEHOLDER.test(value) && !GENERIC_ASSESSMENT_END.test(value) && !IMPLEMENTATION_PREFIXES.some((prefix) => value.startsWith(prefix)) && hasSpecificContentBeyondMethod(value);
 }
 
 function isConcreteVerification(value: string): boolean {
-  return !GENERIC_ASSESSMENT_END.test(value) && (TECHNICAL_VERIFICATION.test(value) || (value.match(VERIFICATION_METHOD) !== null && hasSpecificContentBeyondMethod(value)));
+  return !UNRESOLVED_PLACEHOLDER.test(value) && !GENERIC_ASSESSMENT_END.test(value) && (TECHNICAL_VERIFICATION.test(value) || (value.match(VERIFICATION_METHOD) !== null && hasSpecificContentBeyondMethod(value)));
 }
 
 function canonicalCriterionValue(value: JsonValue): JsonValue {

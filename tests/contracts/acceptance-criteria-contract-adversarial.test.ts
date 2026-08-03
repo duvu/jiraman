@@ -55,6 +55,12 @@ describe("Acceptance Criteria adversarial contract", () => {
       "test all",
       "check everything",
       "kiểm tra nó",
+      "run [COMMAND]",
+      "test [TARGET]",
+      "check [EVIDENCE]",
+      "the test passes",
+      "the review is complete",
+      "check the results",
     ];
 
     // When
@@ -69,10 +75,15 @@ describe("Acceptance Criteria adversarial contract", () => {
     const conciseStory = asObject(asArray(concise.stories, "concise Goal Stories")[0] ?? null, "concise Goal Story");
     const conciseCriterion = asObject(asArray(conciseStory.acceptance_criteria, "concise Acceptance Criteria")[0] ?? null, "concise Acceptance Criterion");
     conciseCriterion.statement = "GET /health 200";
+    const placeholderStatement = structuredClone(source);
+    const placeholderStory = asObject(asArray(placeholderStatement.stories, "placeholder Goal Stories")[0] ?? null, "placeholder Goal Story");
+    const placeholderCriterion = asObject(asArray(placeholderStory.acceptance_criteria, "placeholder Acceptance Criteria")[0] ?? null, "placeholder Acceptance Criterion");
+    placeholderCriterion.statement = "[STATEMENT]";
 
     // Then
     expect(results.every((result) => result.errors.some((error) => error.keyword === "testableAcceptanceCriterion"))).toBe(true);
     expect(validateJson("backlog-draft.schema.json", concise).valid).toBe(true);
+    expect(validateJson("backlog-draft.schema.json", placeholderStatement).errors.some((error) => error.keyword === "testableAcceptanceCriterion")).toBe(true);
   });
 
   test("requires Ready goals to contain requirements and structured criteria", () => {
@@ -100,6 +111,8 @@ describe("Acceptance Criteria adversarial contract", () => {
     asObject(reorderedReferences[0] ?? null, "reordered references criterion").requirement_refs = ["REQ-2", "REQ-1"];
     const approvedSequence = [criterion(), {...criterion(), id: "AC-2", statement: "Bằng chứng restore được lưu trong hồ sơ nghiệm thu"}];
     const reorderedSequence = [approvedSequence[1] ?? {}, approvedSequence[0] ?? {}];
+    const crlfCriterion = [{...criterion(), statement: "Dòng một\r\nDòng hai"}];
+    const lfCriterion = [{...criterion(), statement: "Dòng một\nDòng hai"}];
     const reorderedFields = [{verification: "Chạy restore drill và đối chiếu byte", requirement_refs: ["REQ-1"], statement: "Bản sao lưu được khôi phục nguyên vẹn", id: "AC-1"}];
     const approvedLocal = [{
       id: "AC-1",
@@ -116,6 +129,7 @@ describe("Acceptance Criteria adversarial contract", () => {
     expect(acceptanceCriteriaReadBackMatches(approvedGoal, changedRequirement)).toBe(false);
     expect(acceptanceCriteriaReadBackMatches(approvedReferences, reorderedReferences)).toBe(false);
     expect(acceptanceCriteriaReadBackMatches(approvedSequence, reorderedSequence)).toBe(false);
+    expect(acceptanceCriteriaReadBackMatches(crlfCriterion, lfCriterion)).toBe(true);
     expect(acceptanceCriteriaReadBackMatches(approvedLocal, changedValidation)).toBe(false);
   });
 
