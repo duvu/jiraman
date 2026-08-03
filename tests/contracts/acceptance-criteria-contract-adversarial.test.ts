@@ -108,7 +108,7 @@ describe("Acceptance Criteria adversarial contract", () => {
     const conciseStory = asObject(asArray(concise.stories, "concise Goal Stories")[0] ?? null, "concise Goal Story");
     const conciseCriterion = asObject(asArray(conciseStory.acceptance_criteria, "concise Acceptance Criteria")[0] ?? null, "concise Acceptance Criterion");
     conciseCriterion.statement = "GET /health 200";
-    const concreteVerifications = ["./verify.sh --source-tree", "https://example.com/evidence", "review [restore evidence](https://example.com/evidence)", "test [restore evidence](https://example.com?run=1)", "review [restore evidence](https://example.com#result)", "review [local evidence](./evidence/report.md#result)", "test [restore evidence](https://example.com/foo(bar))"].map((verification) => {
+    const concreteVerifications = ["./verify.sh --source-tree", "https://example.com/evidence", "review [restore evidence](https://example.com/evidence)", "test [restore evidence](https://example.com?run=1)", "review [restore evidence](https://example.com#result)", "review [local evidence](./evidence/report.md#result)", "test [restore evidence](https://example.com/foo(bar))", "test [local evidence](./docs/a(b).md#result)"].map((verification) => {
       const backlog = structuredClone(source);
       const story = asObject(asArray(backlog.stories, "concrete Goal Stories")[0] ?? null, "concrete Goal Story");
       const item = asObject(asArray(story.acceptance_criteria, "concrete Acceptance Criteria")[0] ?? null, "concrete Acceptance Criterion");
@@ -137,15 +137,19 @@ describe("Acceptance Criteria adversarial contract", () => {
     const source = asObject(asObject(readJson("tests/fixtures/drafts/subtasks.json"), "Sub-task fixture").data ?? null, "Sub-task draft");
     const malformed: ReadonlyArray<readonly [string, JsonValue]> = [
       ["title", "   "],
+      ["title", "\u200B"],
       ["outcome", "\t"],
       ["in_scope", [null]],
       ["in_scope", ["   "]],
+      ["in_scope", ["\u200B"]],
       ["out_of_scope", [false]],
       ["steps", [{}]],
       ["steps", ["\t"]],
+      ["steps", ["\u200B"]],
       ["affected_files", [42]],
       ["dependencies", [null]],
       ["dependencies", ["   "]],
+      ["dependencies", ["\u200B"]],
       ["validation", "   "],
       ["definition_of_done", "\t"],
     ];
@@ -166,11 +170,17 @@ describe("Acceptance Criteria adversarial contract", () => {
     delete missingCriteria.acceptance_criteria;
     const emptyCriteria = readyGoal();
     emptyCriteria.acceptance_criteria = [];
+    const invisibleName = readyGoal();
+    invisibleName.goal_name = "\u200B";
+    const invisibleDefinitionOfDone = readyGoal();
+    invisibleDefinitionOfDone.definition_of_done = ["\u200B"];
 
     // When / Then
     for (const goal of [missingRequirements, missingCriteria, emptyCriteria]) {
       expect(goalReadinessViolations(goal)).toContain("incomplete-acceptance-criteria");
     }
+    expect(goalReadinessViolations(invisibleName)).toContain("missing-goal-name");
+    expect(goalReadinessViolations(invisibleDefinitionOfDone)).toContain("missing-goal-dod");
   });
 
   test("requires Ready goals to prove every Goal criterion through child references", () => {
@@ -195,9 +205,11 @@ describe("Acceptance Criteria adversarial contract", () => {
     const malformedListValues: ReadonlyArray<readonly [string, JsonValue]> = [
       ["in_scope", [null]],
       ["in_scope", ["   "]],
+      ["in_scope", ["\u200B"]],
       ["out_of_scope", [false]],
       ["steps", [{}]],
       ["steps", ["\t"]],
+      ["steps", ["\u200B"]],
       ["affected_files", [42]],
     ];
     const malformedChildLists = malformedListValues.map(([field, value]) => {

@@ -8,7 +8,7 @@ const VERIFICATION_METHOD = /(?:^|[^\p{L}\p{N}])(?:assert(?:ion)?|audit|benchmar
 
 const VERIFICATION_FILLER = /(?:^|[^\p{L}\p{N}])(?:a|all|an|and|after|anything|are|be|been|before|behavior|by|complete(?:d)?|details?|everything|features?|functionality|is|it|or|outcome|output|pass(?:ed|es)?|results?|something|stuff|that|the|them|then|thing|this|using|via|was|were|with|bằng|cái này|điều đó|được|hoàn tất|kết quả|là|mọi thứ|nó|qua|sau|sử dụng|tất cả|trước|và|xong)(?=$|[^\p{L}\p{N}])/gu;
 
-const COMPLETE_LOCATOR = /^(?:https?:\/\/[a-z0-9](?:[a-z0-9.-]*[a-z0-9])?(?::[0-9]+)?(?:[/?#][^\s]*)?|\.{0,2}\/[a-z0-9_.-]+(?:\/[a-z0-9_.-]+)*(?:[?#][^\s]*)?)$/u;
+const COMPLETE_LOCATOR = /^(?:https?:\/\/[a-z0-9](?:[a-z0-9.-]*[a-z0-9])?(?::[0-9]+)?(?:[/?#][^\s]*)?|\.{0,2}\/[a-z0-9_.-][^\s]*)$/u;
 
 const TECHNICAL_VERIFICATION = /(?:^|[^\p{L}\p{N}])(?:https?:\/\/[a-z0-9](?:[a-z0-9.-]*[a-z0-9])?(?::[0-9]+)?(?:\/[^\s)\]]*)?|\.{0,2}\/[a-z0-9_.-]+(?:\/[a-z0-9_.-]+)*)(?=$|[^\p{L}\p{N}._/-])/u;
 

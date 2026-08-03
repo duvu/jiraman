@@ -81,8 +81,8 @@
                 "deadline_exception_approved"
               ],
               "properties": {
-                "story_ref": {"type": "string", "minLength": 1},
-                "goal_name": {"type": "string", "minLength": 1},
+                "story_ref": {"type": "string", "minLength": 1, "pattern": "[^\\s\\u200B\\u200C\\u200D\\u2060\\uFEFF]"},
+                "goal_name": {"type": "string", "minLength": 1, "pattern": "[^\\s\\u200B\\u200C\\u200D\\u2060\\uFEFF]"},
                 "target_completion_date": {"type": ["string", "null"], "format": "date"},
                 "target_completion_date_evidence": {
                   "type": "object",
@@ -90,15 +90,15 @@
                   "required": ["source", "reference", "verified"],
                   "properties": {
                     "source": {"enum": ["sprint-end", "milestone", "specification", "explicit-user-decision"]},
-                    "reference": {"type": "string", "minLength": 1},
+                    "reference": {"type": "string", "minLength": 1, "pattern": "[^\\s\\u200B\\u200C\\u200D\\u2060\\uFEFF]"},
                     "verified": {"const": true}
                   }
                 },
                 "definition_of_done": {
                   "type": "array",
-                  "items": {"type": "string", "minLength": 1}
+                  "items": {"type": "string", "minLength": 1, "pattern": "[^\\s\\u200B\\u200C\\u200D\\u2060\\uFEFF]"}
                 },
-                "canonical_spec": {"type": "string", "minLength": 1},
+                "canonical_spec": {"type": "string", "minLength": 1, "pattern": "[^\\s\\u200B\\u200C\\u200D\\u2060\\uFEFF]"},
                 "requirements": {
                   "type": "array",
                   "minItems": 1,
@@ -110,8 +110,8 @@
                   "minItems": 1,
                   "items": {"$ref": "https://duvu.github.io/jiraman/schemas/acceptance-criterion.schema.json#/definitions/goal-criterion"}
                 },
-                "epic_parent": {"type": "string", "minLength": 1},
-                "readiness": {"type": "string", "minLength": 1},
+                "epic_parent": {"type": "string", "minLength": 1, "pattern": "[^\\s\\u200B\\u200C\\u200D\\u2060\\uFEFF]"},
+                "readiness": {"type": "string", "minLength": 1, "pattern": "[^\\s\\u200B\\u200C\\u200D\\u2060\\uFEFF]"},
                 "subtasks": {
                   "type": "array",
                   "items": {
@@ -120,18 +120,18 @@
                     "required": ["ref", "estimate_hours"],
                     "properties": {
                       "ref": {"type": "string", "minLength": 1},
-                      "summary": {"type": "string", "minLength": 1, "pattern": "\\S"},
-                      "outcome": {"type": "string", "minLength": 1, "pattern": "\\S"},
-                      "in_scope": {"type": "array", "minItems": 1, "items": {"type": "string", "minLength": 1, "pattern": "\\S"}},
-                      "out_of_scope": {"type": "array", "items": {"type": "string", "minLength": 1, "pattern": "\\S"}},
-                      "steps": {"type": "array", "minItems": 1, "items": {"type": "string", "minLength": 1, "pattern": "\\S"}},
-                      "affected_files": {"type": "array", "items": {"type": "string", "minLength": 1, "pattern": "\\S"}},
-                      "validation": {"type": "string", "minLength": 1, "pattern": "\\S"},
-                      "definition_of_done": {"type": "string", "minLength": 1, "pattern": "\\S"},
+                      "summary": {"type": "string", "minLength": 1, "pattern": "[^\\s\\u200B\\u200C\\u200D\\u2060\\uFEFF]"},
+                      "outcome": {"type": "string", "minLength": 1, "pattern": "[^\\s\\u200B\\u200C\\u200D\\u2060\\uFEFF]"},
+                      "in_scope": {"type": "array", "minItems": 1, "items": {"type": "string", "minLength": 1, "pattern": "[^\\s\\u200B\\u200C\\u200D\\u2060\\uFEFF]"}},
+                      "out_of_scope": {"type": "array", "items": {"type": "string", "minLength": 1, "pattern": "[^\\s\\u200B\\u200C\\u200D\\u2060\\uFEFF]"}},
+                      "steps": {"type": "array", "minItems": 1, "items": {"type": "string", "minLength": 1, "pattern": "[^\\s\\u200B\\u200C\\u200D\\u2060\\uFEFF]"}},
+                      "affected_files": {"type": "array", "items": {"type": "string", "minLength": 1, "pattern": "[^\\s\\u200B\\u200C\\u200D\\u2060\\uFEFF]"}},
+                      "validation": {"type": "string", "minLength": 1, "pattern": "[^\\s\\u200B\\u200C\\u200D\\u2060\\uFEFF]"},
+                      "definition_of_done": {"type": "string", "minLength": 1, "pattern": "[^\\s\\u200B\\u200C\\u200D\\u2060\\uFEFF]"},
                       "dependencies": {
                         "type": "array",
                         "uniqueItems": true,
-                        "items": {"type": "string", "minLength": 1, "pattern": "\\S"}
+                        "items": {"type": "string", "minLength": 1, "pattern": "[^\\s\\u200B\\u200C\\u200D\\u2060\\uFEFF]"}
                       },
                       "estimate_hours": {"type": "number", "exclusiveMinimum": 0, "maximum": 4},
                       "requirements": {
@@ -245,6 +245,8 @@
                   "items": {
                     "type": "object",
                     "properties": {
+                      "story_ref": {"type": "string", "pattern": "^AIPLATFORM-[0-9]+$"},
+                      "epic_parent": {"type": "string", "pattern": "^AIPLATFORM-[0-9]+$"},
                       "target_completion_date": {"type": "string", "format": "date"},
                       "target_completion_date_evidence": true,
                       "definition_of_done": {"type": "array", "minItems": 1, "uniqueItems": true},
@@ -258,7 +260,7 @@
                           "type": "object",
                           "required": ["ref", "summary", "outcome", "in_scope", "out_of_scope", "steps", "affected_files", "validation", "definition_of_done", "dependencies", "estimate_hours", "requirements", "parent_acceptance_criteria_refs", "content_language", "acceptance_criteria_storage", "acceptance_criteria"],
                           "properties": {
-                            "ref": true,
+                            "ref": {"type": "string", "pattern": "^AIPLATFORM-[0-9]+$"},
                             "summary": true,
                             "outcome": true,
                             "in_scope": true,

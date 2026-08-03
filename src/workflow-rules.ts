@@ -2,32 +2,53 @@ import { acceptanceCriteriaIds, goalAcceptanceCriterionErrors, localAcceptanceCr
 import { asArray, asObject, asString, invariant, validDate, type JsonObject, type JsonValue } from "./contracts.js";
 import { internalDependencyGraphValid } from "./dependency-rules.js";
 
+const VISIBLE_TEXT = /[^\s\u200B\u200C\u200D\u2060\uFEFF]/u;
+
 function objectValue(value: JsonValue | undefined): JsonObject | null {
   return value !== null && typeof value === "object" && !Array.isArray(value) ? value : null;
 }
 
 function stringIds(value: JsonValue | undefined): readonly string[] | null {
-  if (!Array.isArray(value) || value.length === 0 || value.some((item) => typeof item !== "string" || item.length === 0)) return null;
+  if (!Array.isArray(value) || value.length === 0 || value.some((item) => typeof item !== "string" || !VISIBLE_TEXT.test(item))) return null;
   const ids = value.filter((item): item is string => typeof item === "string");
   return new Set(ids).size === ids.length ? ids : null;
 }
 
 function stringList(value: JsonValue | undefined): readonly string[] | null {
-  if (!Array.isArray(value) || value.some((item) => typeof item !== "string" || item.trim().length === 0)) return null;
+  if (!Array.isArray(value) || value.some((item) => typeof item !== "string" || !VISIBLE_TEXT.test(item))) return null;
   const items = value.filter((item): item is string => typeof item === "string");
   return new Set(items).size === items.length ? items : null;
 }
 
 function stringArrayValid(value: JsonValue | undefined, minimumItems: number): boolean {
-  return Array.isArray(value) && value.length >= minimumItems && value.every((item) => typeof item === "string" && item.trim().length > 0);
+  return Array.isArray(value) && value.length >= minimumItems && value.every((item) => typeof item === "string" && VISIBLE_TEXT.test(item));
 }
 
-function traceabilityMapValid(value: JsonValue | undefined, expectedIds: readonly string[], subtaskRefs: ReadonlySet<string>): boolean {
+function childRelations(subtasks: JsonValue | undefined, field: "requirements" | "parent_acceptance_criteria_refs"): ReadonlyMap<string, ReadonlySet<string>> {
+  const relations = new Map<string, Set<string>>();
+  if (!Array.isArray(subtasks)) return relations;
+  for (const value of subtasks) {
+    const subtask = objectValue(value);
+    if (typeof subtask?.ref !== "string" || !Array.isArray(subtask[field])) continue;
+    for (const id of subtask[field]) {
+      if (typeof id !== "string") continue;
+      const refs = relations.get(id) ?? new Set<string>();
+      refs.add(subtask.ref);
+      relations.set(id, refs);
+    }
+  }
+  return relations;
+}
+
+function traceabilityMapValid(value: JsonValue | undefined, expectedIds: readonly string[], subtaskRefs: ReadonlySet<string>, expectedRelations?: ReadonlyMap<string, ReadonlySet<string>>): boolean {
   const map = objectValue(value);
   if (map === null || Object.keys(map).length !== expectedIds.length || expectedIds.some((id) => map[id] === undefined)) return false;
-  return Object.values(map).every((refs) => {
-    const ids = stringIds(refs);
-    return ids !== null && ids.every((ref) => subtaskRefs.has(ref));
+  return expectedIds.every((id) => {
+    const refs = stringIds(map[id]);
+    if (refs === null || refs.some((ref) => !subtaskRefs.has(ref))) return false;
+    if (expectedRelations === undefined) return true;
+    const expected = expectedRelations.get(id);
+    return expected !== undefined && refs.length === expected.size && refs.every((ref) => expected.has(ref));
   });
 }
 
@@ -45,10 +66,10 @@ function goalChildTraceabilityValid(goal: JsonObject, requirementIds: readonly s
     const criteria = stringIds(subtask?.parent_acceptance_criteria_refs);
     const dependencies = stringList(subtask?.dependencies);
     if (subtask === null || typeof subtask.ref !== "string" || !/^AIPLATFORM-[0-9]+$/.test(subtask.ref) || subtaskRefs.has(subtask.ref) || requirements === null || criteria === null || dependencies === null ||
-      requirements.some((id) => !declaredRequirements.has(id)) || criteria.some((id) => !declaredCriteria.has(id)) || typeof subtask.summary !== "string" || subtask.summary.trim().length === 0 ||
-      typeof subtask.outcome !== "string" || subtask.outcome.trim().length === 0 || !stringArrayValid(subtask.in_scope, 1) || !stringArrayValid(subtask.out_of_scope, 0) ||
-      !stringArrayValid(subtask.steps, 1) || !stringArrayValid(subtask.affected_files, 0) || typeof subtask.validation !== "string" || subtask.validation.trim().length === 0 ||
-      typeof subtask.definition_of_done !== "string" || subtask.definition_of_done.trim().length === 0 ||
+      requirements.some((id) => !declaredRequirements.has(id)) || criteria.some((id) => !declaredCriteria.has(id)) || typeof subtask.summary !== "string" || !VISIBLE_TEXT.test(subtask.summary) ||
+      typeof subtask.outcome !== "string" || !VISIBLE_TEXT.test(subtask.outcome) || !stringArrayValid(subtask.in_scope, 1) || !stringArrayValid(subtask.out_of_scope, 0) ||
+      !stringArrayValid(subtask.steps, 1) || !stringArrayValid(subtask.affected_files, 0) || typeof subtask.validation !== "string" || !VISIBLE_TEXT.test(subtask.validation) ||
+      typeof subtask.definition_of_done !== "string" || !VISIBLE_TEXT.test(subtask.definition_of_done) ||
       typeof subtask.estimate_hours !== "number" || subtask.estimate_hours <= 0 || subtask.estimate_hours > 4 ||
       subtask.content_language !== "vi-VN" || subtask.acceptance_criteria_storage !== "managed-description-section" || acceptanceCriteriaIds(subtask.acceptance_criteria) === null ||
       localAcceptanceCriterionErrors(subtask.acceptance_criteria, "").length > 0) return false;
@@ -103,9 +124,9 @@ export function candidateCanCommit(candidate: JsonObject): boolean {
   const sprintEnd = candidate.target_sprint_end;
   return candidate.goals.every((value) => {
     if (value === null || typeof value !== "object" || Array.isArray(value)) return false;
-    if (typeof value.goal_name !== "string" || value.goal_name.length === 0 || typeof value.target_completion_date !== "string" || !validDate(value.target_completion_date)) return false;
+    if (typeof value.goal_name !== "string" || !VISIBLE_TEXT.test(value.goal_name) || typeof value.target_completion_date !== "string" || !validDate(value.target_completion_date)) return false;
     const deadlineEvidence = objectValue(value.target_completion_date_evidence);
-    if (deadlineEvidence === null || !["sprint-end", "milestone", "specification", "explicit-user-decision"].includes(String(deadlineEvidence.source)) || typeof deadlineEvidence.reference !== "string" || deadlineEvidence.reference.length === 0 || deadlineEvidence.verified !== true) return false;
+    if (deadlineEvidence === null || !["sprint-end", "milestone", "specification", "explicit-user-decision"].includes(String(deadlineEvidence.source)) || typeof deadlineEvidence.reference !== "string" || !VISIBLE_TEXT.test(deadlineEvidence.reference) || deadlineEvidence.verified !== true) return false;
     const deadlineFits = value.target_completion_date <= sprintEnd || value.deadline_exception_approved === true;
     const subtaskRefs = new Set<string>();
     const subtasksValid = Array.isArray(value.subtasks) && value.subtasks.length >= 2 && value.subtasks.every((subtask) => {
@@ -118,14 +139,16 @@ export function candidateCanCommit(candidate: JsonObject): boolean {
     const acceptanceCriteria = acceptanceCriteriaIds(value.acceptance_criteria);
     const definitionOfDone = stringIds(value.definition_of_done);
     const traceability = objectValue(value.traceability);
+    const requirementRelations = childRelations(value.subtasks, "requirements");
+    const acceptanceRelations = childRelations(value.subtasks, "parent_acceptance_criteria_refs");
     const dodIds = definitionOfDone?.map((_, index) => `DOD-${index + 1}`) ?? [];
     const traceabilityValid = requirements !== null && acceptanceCriteria !== null && definitionOfDone !== null && traceability !== null &&
       goalAcceptanceCriterionErrors(value.requirements, value.acceptance_criteria, "/acceptance_criteria").length === 0 &&
-      traceabilityMapValid(traceability.requirements, requirements, subtaskRefs) &&
-      traceabilityMapValid(traceability.acceptance_criteria, acceptanceCriteria, subtaskRefs) &&
+      traceabilityMapValid(traceability.requirements, requirements, subtaskRefs, requirementRelations) &&
+      traceabilityMapValid(traceability.acceptance_criteria, acceptanceCriteria, subtaskRefs, acceptanceRelations) &&
       traceabilityMapValid(traceability.goal_definition_of_done, dodIds, subtaskRefs);
     const childTraceabilityValid = requirements !== null && acceptanceCriteria !== null && goalChildTraceabilityValid(value, requirements, acceptanceCriteria);
-    return deadlineFits && typeof value.story_ref === "string" && value.story_ref.startsWith("AIPLATFORM-") && typeof value.canonical_spec === "string" && value.canonical_spec.length > 0 && typeof value.epic_parent === "string" && value.epic_parent.startsWith("AIPLATFORM-") && value.traceability_complete === true && traceabilityValid && childTraceabilityValid && value.readiness === "ready" && subtasksValid;
+    return deadlineFits && typeof value.story_ref === "string" && value.story_ref.startsWith("AIPLATFORM-") && typeof value.canonical_spec === "string" && VISIBLE_TEXT.test(value.canonical_spec) && typeof value.epic_parent === "string" && value.epic_parent.startsWith("AIPLATFORM-") && value.traceability_complete === true && traceabilityValid && childTraceabilityValid && value.readiness === "ready" && subtasksValid;
   });
 }
 
@@ -149,9 +172,9 @@ export function goalHealthState(goal: JsonObject): GoalHealthState {
 
 export function goalReadinessViolations(goal: JsonObject): string[] {
   const violations: string[] = [];
-  if (typeof goal.goal_name !== "string" || goal.goal_name.length === 0) violations.push("missing-goal-name");
+  if (typeof goal.goal_name !== "string" || !VISIBLE_TEXT.test(goal.goal_name)) violations.push("missing-goal-name");
   if (typeof goal.target_completion_date !== "string" || !validDate(goal.target_completion_date) || goal.deadline_evidence_verified !== true) violations.push("unverified-goal-deadline");
-  if (!Array.isArray(goal.definition_of_done) || goal.definition_of_done.length === 0) violations.push("missing-goal-dod");
+  if (stringIds(goal.definition_of_done) === null) violations.push("missing-goal-dod");
   const requirementIds = stringIds(goal.requirements);
   const criterionIds = acceptanceCriteriaIds(goal.acceptance_criteria);
   const criteriaValid = requirementIds !== null && criterionIds !== null && goalAcceptanceCriterionErrors(goal.requirements, goal.acceptance_criteria, "/acceptance_criteria").length === 0;
