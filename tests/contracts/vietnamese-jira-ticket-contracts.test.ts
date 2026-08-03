@@ -1,6 +1,7 @@
 import { describe, expect, test } from "vitest";
 
 import { asArray, asObject, readJson, validateJson, type JsonObject } from "../../src/contracts.js";
+import type { JiraLanguageValidationContext } from "../../src/jira-language-rules.js";
 
 const POLICY_REF = ".kilo/config/jiraman.json#/language/preserved_literal_kinds";
 
@@ -49,7 +50,18 @@ describe("Vietnamese Jira ticket contracts", () => {
       evidence_reference: "user-request-2026-08-03",
     };
 
-    expect(validateJson("backlog-draft.schema.json", overridden).valid).toBe(true);
+    const trustedAuthorization: JiraLanguageValidationContext = {
+      trustedUserAuthorizations: [{
+        reference: "user-request-2026-08-03",
+        capability: "jira-language-override",
+        scopeType: "jira-draft",
+        scopeRef: typeof story.draft_ref === "string" ? story.draft_ref : "",
+        requestedLanguage: "en-US",
+      }],
+    };
+
+    expect(validateJson("backlog-draft.schema.json", overridden).valid).toBe(false);
+    expect(validateJson("backlog-draft.schema.json", overridden, trustedAuthorization).valid).toBe(true);
     expect(validateJson("backlog-draft.schema.json", leaked).valid).toBe(false);
   });
 

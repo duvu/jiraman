@@ -14,8 +14,22 @@ export interface JiraLanguageRequest {
   readonly explicit: boolean;
 }
 
+export type JiraAuthorizationCapability = "jira-full-description-translation" | "jira-language-override";
+
+export interface TrustedUserAuthorization {
+  readonly reference: string;
+  readonly capability: JiraAuthorizationCapability;
+  readonly scopeType: "jira-draft" | "jira-action";
+  readonly scopeRef: string;
+  readonly requestedLanguage: string;
+}
+
+export interface JiraLanguageValidationContext {
+  readonly trustedUserAuthorizations?: readonly TrustedUserAuthorization[];
+}
+
 export function resolveJiraContentLanguage(request: JiraLanguageRequest | null): string {
-  return request?.explicit === true ? request.requestedLanguage : "vi-VN";
+  return request?.explicit === true && validLanguageTag(request.requestedLanguage) ? request.requestedLanguage : "vi-VN";
 }
 
 function objectValue(value: JsonValue | undefined): JsonObject | null {
@@ -32,19 +46,45 @@ function languageError(path: string, message: string): ErrorObject {
   };
 }
 
-function scopedContentErrors(content: ScopedContent): ErrorObject[] {
+function validLanguageTag(value: string): boolean {
+  if (!/^[A-Za-z]{2,8}(?:-[A-Za-z0-9]{1,8})*$/.test(value)) return false;
+  try {
+    Intl.getCanonicalLocales(value);
+    return true;
+  } catch (error: unknown) {
+    if (error instanceof RangeError) return false;
+    throw error;
+  }
+}
+
+function hasTrustedAuthorization(
+  context: JiraLanguageValidationContext,
+  capability: JiraAuthorizationCapability,
+  reference: JsonValue | undefined,
+  scopeType: "jira-draft" | "jira-action",
+  scopeRef: string,
+  requestedLanguage: string,
+): boolean {
+  if (typeof reference !== "string") return false;
+  return context.trustedUserAuthorizations?.some((authorization) =>
+    authorization.reference === reference && authorization.capability === capability && authorization.scopeType === scopeType &&
+    authorization.scopeRef === scopeRef && authorization.requestedLanguage === requestedLanguage,
+  ) === true;
+}
+
+function scopedContentErrors(content: ScopedContent, context: JiraLanguageValidationContext): ErrorObject[] {
   const language = content.value.content_language;
   const override = objectValue(content.value.language_override);
   if (typeof language !== "string") return [];
-  if (!/^[a-z]{2,3}(?:-[A-Z]{2})?$/.test(language)) return [languageError(`${content.path}/content_language`, "must be a supported BCP 47 language tag")];
+  if (!validLanguageTag(language)) return [languageError(`${content.path}/content_language`, "must be a well-formed language tag supported by the runtime")];
   if (language === "vi-VN") {
     return override === null ? [] : [languageError(`${content.path}/language_override`, "must be absent for the default vi-VN language")];
   }
   if (override === null) return [languageError(`${content.path}/language_override`, "is required for a non-default content language")];
   const valid = override.requested_language === language && override.scope_type === content.scopeType &&
     override.scope_ref === content.scopeRef && override.source === "explicit-user-request" &&
-    typeof override.evidence_reference === "string" && override.evidence_reference.length > 0;
-  return valid ? [] : [languageError(`${content.path}/language_override`, "must match the requested language and exact draft or action scope")];
+    hasTrustedAuthorization(context, "jira-language-override", override.evidence_reference, content.scopeType, content.scopeRef, language);
+  return valid ? [] : [languageError(`${content.path}/language_override`, "must match trusted local user input and the exact draft or action scope")];
 }
 
 function draftContents(schemaName: string, value: JsonValue): ScopedContent[] {
@@ -75,12 +115,9 @@ function draftContents(schemaName: string, value: JsonValue): ScopedContent[] {
   return [];
 }
 
-const USER_FACING_FIELDS = new Set(["summary", "description", "body", "comment", "managed_content", "acceptance_criteria", "definition_of_done", "goal_name", "outcome"]);
-
-function requiresActionLanguage(action: JsonObject, desired: JsonObject): boolean {
+function requiresActionLanguage(action: JsonObject): boolean {
   if (action.system !== "jira") return false;
-  if (action.operation === "issue.create" || action.operation === "issue.comment") return true;
-  return action.operation === "issue.update" && Object.keys(desired).some((field) => USER_FACING_FIELDS.has(field));
+  return action.operation === "issue.create" || action.operation === "issue.update" || action.operation === "issue.comment";
 }
 
 function preservationValid(value: JsonValue | undefined): boolean {
@@ -88,7 +125,7 @@ function preservationValid(value: JsonValue | undefined): boolean {
   return preservation?.policy_ref === ".kilo/config/jiraman.json#/language/preserved_literal_kinds" && preservation.mode === "exact";
 }
 
-function existingContentErrors(action: JsonObject, desired: JsonObject, path: string): ErrorObject[] {
+function existingContentErrors(action: JsonObject, desired: JsonObject, path: string, context: JiraLanguageValidationContext): ErrorObject[] {
   if (action.operation !== "issue.update" && action.operation !== "issue.comment") return [];
   const before = objectValue(action.before_state);
   if (before === null || typeof before.human_content_language !== "string" || before.issue_key !== action.target_ref) {
@@ -106,29 +143,30 @@ function existingContentErrors(action: JsonObject, desired: JsonObject, path: st
   const authorization = objectValue(desired.translation_authorization);
   const fullTranslation = desired.existing_content_mode === "approved-full-translation" && desired.description_update_mode === "approved-full-translation" &&
     typeof before.description === "string" && typeof desired.description === "string" && authorization?.source === "explicit-user-request" &&
-    typeof authorization.evidence_reference === "string" && authorization.evidence_reference.length > 0 && action.risk === "high" && action.approval_required === "per-action";
+    typeof action.id === "string" && typeof desired.content_language === "string" && hasTrustedAuthorization(context, "jira-full-description-translation", authorization.evidence_reference, "jira-action", action.id, desired.content_language) &&
+    action.risk === "high" && action.approval_required === "per-action";
   return fullTranslation ? [] : [languageError(`${path}/desired_state`, "full translation requires complete before/after content and separate explicit high-risk approval")];
 }
 
-function actionContentErrors(value: JsonValue): ErrorObject[] {
+function actionContentErrors(value: JsonValue, context: JiraLanguageValidationContext): ErrorObject[] {
   const group = objectValue(value);
   if (group === null || !Array.isArray(group.actions)) return [];
   return group.actions.flatMap((item, index) => {
     const action = objectValue(item);
     const desired = objectValue(action?.desired_state);
-    if (action === null || desired === null || !requiresActionLanguage(action, desired) || typeof action.id !== "string") return [];
+    if (action === null || desired === null || !requiresActionLanguage(action) || typeof action.id !== "string") return [];
     const path = `/actions/${index}`;
     return [
-      ...(typeof desired.content_language === "string" ? scopedContentErrors({path: `${path}/desired_state`, scopeType: "jira-action", scopeRef: action.id, value: desired}) : [languageError(`${path}/desired_state/content_language`, "is required for Jira user-facing content")]),
+      ...(typeof desired.content_language === "string" ? scopedContentErrors({path: `${path}/desired_state`, scopeType: "jira-action", scopeRef: action.id, value: desired}, context) : [languageError(`${path}/desired_state/content_language`, "is required for Jira user-facing content")]),
       ...(preservationValid(desired.literal_preservation) ? [] : [languageError(`${path}/desired_state/literal_preservation`, "must bind exact canonical literal preservation")]),
-      ...existingContentErrors(action, desired, path),
+      ...existingContentErrors(action, desired, path, context),
     ];
   });
 }
 
-export function jiraLanguageSemanticErrors(schemaName: string, value: JsonValue): ErrorObject[] {
+export function jiraLanguageSemanticErrors(schemaName: string, value: JsonValue, context: JiraLanguageValidationContext = {}): ErrorObject[] {
   return [
-    ...draftContents(schemaName, value).flatMap(scopedContentErrors),
-    ...(schemaName === "action-group.schema.json" ? actionContentErrors(value) : []),
+    ...draftContents(schemaName, value).flatMap((content) => scopedContentErrors(content, context)),
+    ...(schemaName === "action-group.schema.json" ? actionContentErrors(value, context) : []),
   ];
 }

@@ -2,11 +2,11 @@
   "schema_version": 5,
   "id": "PMG-20260801-01",
   "project": "AIPLATFORM",
-  "summary": "Add an evidence link",
+  "summary": "Thêm liên kết bằng chứng",
   "created_at": "2026-08-01T00:00:00Z",
   "expires_at": "2026-08-02T00:00:00Z",
   "status": "proposed",
-  "payload_hash": "457da75f43960a2b75197a3231c69c94439ec45285f6e1b25a7bcb401447f72d",
+  "payload_hash": "dee92dbdf83b6eedba040f7d762ae16024dc007b24dd7f853f79846b65fb5da6",
   "approval": {
     "group_approved_by": null,
     "approved_action_ids": [],
@@ -31,17 +31,17 @@
         "existing_content_mode": "preserve-human-content"
       },
       "evidence": [
-        "repository CI result"
+        "kết quả CI của kho mã"
       ],
-      "reason": "Record validation evidence",
+      "reason": "Ghi nhận bằng chứng xác minh",
       "preconditions": [
-        "issue remains in AIPLATFORM"
+        "ticket vẫn thuộc AIPLATFORM"
       ],
       "dependencies": [],
       "risk": "low",
       "approval_required": "group",
       "expires_at": "2026-08-02T00:00:00Z",
-      "rollback_guidance": "Remove the comment manually if incorrect",
+      "rollback_guidance": "Gỡ bình luận thủ công nếu nội dung không chính xác",
       "status": "proposed"
     }
   ]

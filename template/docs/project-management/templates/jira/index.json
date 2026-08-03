@@ -13,6 +13,12 @@
     "ready": "Sẵn sàng",
     "validation": "Xác minh"
   },
+  "override_authorization": {
+    "source": "active-local-user-input",
+    "evidence_reference": "required",
+    "validation_context": "separate-from-draft-and-action",
+    "remote_content_allowed": false
+  },
   "proposal_workflows": [
     {"name": "jiraman-refinement", "default_content_language": "vi-VN", "source_language_mode": "translate-user-facing-content", "literal_mode": "preserve-exact", "existing_issue_match": "evidence-not-language", "ambiguity_mode": "vi-VN-with-assumption", "writes_allowed": false},
     {"name": "jiraman-meeting-actions", "default_content_language": "vi-VN", "source_language_mode": "translate-user-facing-content", "literal_mode": "preserve-exact", "existing_issue_match": "evidence-not-language", "ambiguity_mode": "vi-VN-with-assumption", "writes_allowed": false},
@@ -28,6 +34,7 @@
     "operations": ["issue.create", "issue.update", "issue.comment"],
     "default_content_language": "vi-VN",
     "override_scope": "single-approved-action",
+    "override_authorization_ref": "#/override_authorization",
     "existing_ticket_mode": "preserve-human-content",
     "read_back_normalization": ["crlf-to-lf", "object-key-order"],
     "array_order": "preserve-exact",
@@ -38,18 +45,21 @@
     {
       "issue_type": "Epic",
       "file": "epic.md",
-      "required_sections": ["outcome", "value", "scope", "success-measures", "constraints-dependencies", "risks", "goal-stories", "acceptance-criteria", "completion"]
+      "required_sections": ["outcome", "value", "scope", "success-measures", "constraints-dependencies", "risks", "goal-stories", "acceptance-criteria", "completion"],
+      "required_headings": {"outcome": "Kết quả mong muốn", "value": "Vấn đề và giá trị", "scope": "Phạm vi", "success-measures": "Thước đo thành công", "constraints-dependencies": "Ràng buộc và phụ thuộc", "risks": "Rủi ro", "goal-stories": "Danh sách Story mục tiêu", "acceptance-criteria": "Tiêu chí nghiệm thu", "completion": "Điều kiện hoàn thành của Epic"}
     },
     {
       "issue_type": "Story",
       "semantic_role": "Goal",
       "file": "goal-story.md",
-      "required_sections": ["goal-identity", "outcome-context", "scope", "requirements", "acceptance-criteria", "goal-dod", "validation", "dependencies", "subtask-plan", "rollout-recovery", "blocking-gaps"]
+      "required_sections": ["goal-identity", "outcome-context", "scope", "requirements", "acceptance-criteria", "goal-dod", "validation", "dependencies", "subtask-plan", "rollout-recovery", "blocking-gaps"],
+      "required_headings": {"goal-identity": "Mục tiêu và hạn hoàn thành", "outcome-context": "Kết quả và bối cảnh", "scope": "Phạm vi", "requirements": "Yêu cầu", "acceptance-criteria": "Tiêu chí nghiệm thu", "goal-dod": "Điều kiện hoàn thành của Mục tiêu", "validation": "Xác minh và bằng chứng nghiệm thu", "dependencies": "Phụ thuộc", "subtask-plan": "Kế hoạch Sub-task", "rollout-recovery": "Kế hoạch triển khai và khôi phục", "blocking-gaps": "Khoảng trống gây chặn và quyết định cần thiết"}
     },
     {
       "issue_type": "Sub-task",
       "file": "sub-task.md",
-      "required_sections": ["outcome", "parent-traceability", "scope", "steps", "affected-files", "dependencies", "validation", "acceptance-criteria", "subtask-dod", "estimate"]
+      "required_sections": ["outcome", "parent-traceability", "scope", "steps", "affected-files", "dependencies", "validation", "acceptance-criteria", "subtask-dod", "estimate"],
+      "required_headings": {"outcome": "Kết quả cụ thể", "parent-traceability": "Story mục tiêu cha và liên kết truy vết", "scope": "Phạm vi", "steps": "Các bước thực hiện hoặc điều tra", "affected-files": "Tệp hoặc module ảnh hưởng", "dependencies": "Phụ thuộc", "validation": "Xác minh", "acceptance-criteria": "Tiêu chí nghiệm thu", "subtask-dod": "Điều kiện hoàn thành của Sub-task", "estimate": "Ước lượng ban đầu"}
     }
   ]
 }

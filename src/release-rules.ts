@@ -7,12 +7,12 @@ export const REQUIRED_RELEASE_GATE_CHECKS: Readonly<Record<(typeof REQUIRED_RELE
   schemas: ["config", "state", "action", "run-record", "exact-traceability", "structured-ac", "jira-language"],
   skills: ["primary-agent", "named-skills", "installed-goal-metadata", "jira-ticket-templates", "jira-language-routes"],
   aliases: ["canonical", "v4-aliases", "exact-write"],
-  migration: ["clean-install", "v4-migration", "mcp-preservation"],
-  fixtures: ["mcp", "workflow", "sanitized", "ready-evidence", "acceptance-boundaries", "vietnamese-jira-content", "unicode-literals"],
-  security: ["scope", "injection", "approval", "replay", "symlink", "secrets", "hostile-paraphrases", "language-injection"],
+  migration: ["clean-install", "v4-migration", "mcp-preservation", "utf8-install", "utf8-state"],
+  fixtures: ["mcp", "workflow", "sanitized", "ready-evidence", "acceptance-boundaries", "vietnamese-jira-content", "unicode-literals", "literal-categories", "english-source-translation"],
+  security: ["scope", "injection", "approval", "replay", "symlink", "secrets", "hostile-paraphrases", "language-injection", "trusted-language-authorization", "update-field-coverage", "utf8-sanitized-log"],
   reproducibility: ["manifest", "tar", "zip"],
-  "package-verification": ["tar", "zip", "no-state", "no-backup", "no-runtime"],
-  "manual-smoke": ["read", "degraded", "proposal", "reject", "apply", "failure", "read-after-write", "jira-authority", "managed-ac", "acceptance-read-back", "vietnamese-jira", "language-override", "existing-english", "unicode-read-back"],
+  "package-verification": ["tar", "zip", "no-state", "no-backup", "no-runtime", "utf8-content"],
+  "manual-smoke": ["read", "degraded", "proposal", "reject", "apply", "failure", "read-after-write", "jira-authority", "managed-ac", "acceptance-read-back", "vietnamese-jira", "language-override", "existing-english", "unicode-read-back", "cleanup"],
   rollback: ["package", "managed-files", "action-state"],
 };
 

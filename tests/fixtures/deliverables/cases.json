@@ -15,7 +15,7 @@
       {
         "id": "DLV-20260801-01",
         "class": "Ready-backed",
-        "outcome": "Operators restore v5 safely",
+        "outcome": "Nhân viên vận hành khôi phục v5 an toàn",
         "primary_epic": "AIPLATFORM-100",
         "stories": [
           "AIPLATFORM-101"
@@ -23,21 +23,21 @@
         "goals": [
           {
             "story_ref": "AIPLATFORM-101",
-            "goal_name": "Restore v5 upgrades safely",
+            "goal_name": "Khôi phục an toàn bản nâng cấp v5",
             "target_completion_date": "2026-08-07",
             "target_completion_date_evidence": {
               "source": "sprint-end",
-              "reference": "AIPLATFORM Sprint 7 ends 2026-08-07",
+              "reference": "Sprint 7 của AIPLATFORM kết thúc ngày 2026-08-07",
               "verified": true
             },
-            "definition_of_done": ["Rollback drill evidence is accepted"],
+            "definition_of_done": ["Bằng chứng diễn tập quay lui được chấp nhận"],
             "canonical_spec": "Confluence page-200",
             "requirements": ["REQ-1"],
             "acceptance_criteria": [
               {
                 "id": "AC-1",
-                "statement": "Bản nâng cấp v5 được khôi phục an toàn trong rollback drill",
-                "verification": "rollback drill passes",
+                "statement": "Bản nâng cấp v5 được khôi phục an toàn trong diễn tập quay lui",
+                "verification": "Chạy diễn tập quay lui và đối chiếu kết quả với tiêu chí nghiệm thu",
                 "requirement_refs": ["REQ-1"]
               }
             ],
@@ -46,14 +46,14 @@
             "subtasks": [
               {
                 "ref": "AIPLATFORM-102",
-                "summary": "Run rollback drill",
-                "outcome": "Rollback behavior is verified",
-                "in_scope": ["rollback drill"],
-                "out_of_scope": ["production rollback"],
-                "steps": ["run the rollback drill", "record the result"],
+                "summary": "Chạy diễn tập quay lui",
+                "outcome": "Hành vi quay lui được xác minh",
+                "in_scope": ["diễn tập quay lui"],
+                "out_of_scope": ["quay lui môi trường sản xuất"],
+                "steps": ["chạy diễn tập quay lui", "ghi nhận kết quả"],
                 "affected_files": ["docs/rollback.md"],
-                "validation": "rollback drill",
-                "definition_of_done": "Drill evidence is attached",
+                "validation": "diễn tập quay lui",
+                "definition_of_done": "Bằng chứng diễn tập được đính kèm",
                 "dependencies": [],
                 "estimate_hours": 3,
                 "requirements": ["REQ-1"],
@@ -63,8 +63,8 @@
                 "acceptance_criteria": [
                   {
                     "id": "AC-1",
-                    "statement": "Bằng chứng rollback drill được lưu trong hồ sơ nghiệm thu",
-                    "verification": "review rollback drill evidence checklist",
+                    "statement": "Bằng chứng diễn tập quay lui được lưu trong hồ sơ nghiệm thu",
+                    "verification": "Rà soát danh sách kiểm tra bằng chứng diễn tập quay lui",
                     "validation_ref": "VAL-1",
                     "definition_of_done_ref": "DOD-1"
                   }
@@ -72,14 +72,14 @@
               },
               {
                 "ref": "AIPLATFORM-103",
-                "summary": "Review rollback evidence",
-                "outcome": "Rollback evidence is accepted",
-                "in_scope": ["rollback evidence"],
-                "out_of_scope": ["production changes"],
-                "steps": ["review the rollback evidence", "record the decision"],
+                "summary": "Rà soát bằng chứng quay lui",
+                "outcome": "Bằng chứng quay lui được chấp nhận",
+                "in_scope": ["bằng chứng quay lui"],
+                "out_of_scope": ["thay đổi môi trường sản xuất"],
+                "steps": ["rà soát bằng chứng quay lui", "ghi nhận quyết định"],
                 "affected_files": ["docs/manual-smoke-tests.md"],
-                "validation": "review rollback evidence checklist",
-                "definition_of_done": "Review is recorded",
+                "validation": "rà soát danh sách kiểm tra bằng chứng quay lui",
+                "definition_of_done": "Kết quả rà soát được ghi nhận",
                 "dependencies": ["AIPLATFORM-102"],
                 "estimate_hours": 2,
                 "requirements": ["REQ-1"],
@@ -89,8 +89,8 @@
                 "acceptance_criteria": [
                   {
                     "id": "AC-1",
-                    "statement": "Kết quả review rollback được ghi nhận đầy đủ",
-                    "verification": "review rollback evidence checklist",
+                    "statement": "Kết quả rà soát quay lui được ghi nhận đầy đủ",
+                    "verification": "Rà soát danh sách kiểm tra bằng chứng quay lui",
                     "validation_ref": "VAL-1",
                     "definition_of_done_ref": "DOD-1"
                   }
@@ -108,19 +108,19 @@
         ],
         "target_sprint": "N+1",
         "target_sprint_end": "2026-08-07",
-        "week_1_outcome": "Backup verified",
-        "week_2_outcome": "Rollback drill accepted",
-        "acceptance_signal": "drill passes",
-        "rationale": "reduce release risk",
+        "week_1_outcome": "Bản sao lưu được xác minh",
+        "week_2_outcome": "Diễn tập quay lui được chấp nhận",
+        "acceptance_signal": "diễn tập đạt yêu cầu",
+        "rationale": "giảm rủi ro phát hành",
         "evidence": [
-          "ready Story"
+          "Story ở trạng thái Ready"
         ],
         "assumptions": [],
         "hypotheses": [],
         "readiness": "ready",
         "capacity_fit": "verified",
         "dependencies": [],
-        "wip_impact": "within limit",
+        "wip_impact": "trong giới hạn",
         "risk": "medium",
         "confidence": "high"
       },

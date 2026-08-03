@@ -7,6 +7,11 @@ import { goalPolicyMetadataValid } from "../../src/goal-rules.js";
 import { goalContractMetadataViolations, type IndexedGoalDocument } from "../../src/goal-contract-metadata-rules.js";
 import { goalHierarchyGroup } from "./goal-hierarchy-fixture.js";
 
+const VIETNAMESE_ACTION_METADATA = {
+  content_language: "vi-VN",
+  literal_preservation: {policy_ref: ".kilo/config/jiraman.json#/language/preserved_literal_kinds", mode: "exact"},
+};
+
 describe("goal hierarchy contracts", () => {
   test("configuration and draft schemas reject incomplete Goal hierarchies", () => {
     // Given
@@ -174,13 +179,16 @@ describe("goal hierarchy contracts", () => {
     const validUpdateAction: JsonObject = structuredClone(updateEnvelope);
     validUpdateAction.before_state = {
       ...Object.fromEntries(Object.entries(story).filter(([key]) => key !== "draft_ref")),
+      issue_key: "AIPLATFORM-101",
+      human_content_language: "vi-VN",
       parent_ref: "AIPLATFORM-100",
       parent_state: {issue_key: "AIPLATFORM-100", issue_type: "Epic", project: "AIPLATFORM"},
     };
     validUpdateAction.desired_state = {
       target_completion_date: "2026-08-08",
       due_date: "2026-08-08",
-      target_completion_date_evidence: {source: "explicit-user-decision", reference: "approved date change", verified: true},
+      target_completion_date_evidence: {source: "explicit-user-decision", reference: "thay đổi ngày đã được phê duyệt", verified: true},
+      ...VIETNAMESE_ACTION_METADATA,
     };
     const validUpdateChildren = completeActions.slice(2, 4).map((action) => structuredClone(action));
     for (const action of validUpdateChildren) {
@@ -224,8 +232,8 @@ describe("goal hierarchy contracts", () => {
       action.operation = "issue.update";
       action.target_ref = targetRef;
       action.target_version = "1";
-      action.before_state = {...Object.fromEntries(Object.entries(desired).filter(([key]) => key !== "draft_ref")), parent_ref: "AIPLATFORM-OLD"};
-      action.desired_state = {parent_ref: "epic-1"};
+      action.before_state = {...Object.fromEntries(Object.entries(desired).filter(([key]) => key !== "draft_ref")), issue_key: targetRef, human_content_language: "vi-VN", parent_ref: "AIPLATFORM-OLD"};
+      action.desired_state = {parent_ref: "epic-1", ...VIETNAMESE_ACTION_METADATA};
     }
     for (const [indexes, parentRef] of [[[2, 3], "AIPLATFORM-201"], [[5, 6], "AIPLATFORM-202"]] as const) {
       for (const index of indexes) asObject(epicActions[index]?.desired_state ?? null, "Sub-task desired state").parent_ref = parentRef;
@@ -239,8 +247,8 @@ describe("goal hierarchy contracts", () => {
       action.operation = "issue.update";
       action.target_ref = targetRef;
       action.target_version = "1";
-      action.before_state = {...Object.fromEntries(Object.entries(desired).filter(([key]) => key !== "draft_ref")), parent_ref: "AIPLATFORM-OLD"};
-      action.desired_state = {parent_ref: "goal-1"};
+      action.before_state = {...Object.fromEntries(Object.entries(desired).filter(([key]) => key !== "draft_ref")), issue_key: targetRef, human_content_language: "vi-VN", parent_ref: "AIPLATFORM-OLD"};
+      action.desired_state = {parent_ref: "goal-1", ...VIETNAMESE_ACTION_METADATA};
     }
 
     // When

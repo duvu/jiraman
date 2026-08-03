@@ -20,6 +20,14 @@ for relative in \
   "docs/project-management/templates/jira/sub-task.md"; do
   [[ -f "$TARGET/$relative" ]] || { echo "missing installed Jira template: $relative" >&2; exit 1; }
 done
+for relative in \
+  "docs/project-management/templates/jira/index.json" \
+  "docs/project-management/templates/jira/epic.md" \
+  "docs/project-management/templates/jira/goal-story.md" \
+  "docs/project-management/templates/jira/sub-task.md"; do
+  cmp "$ROOT/template/$relative" "$TARGET/$relative"
+done
+cmp "$ROOT/template/.kilo/config/jiraman.json" "$TARGET/.kilo/config/jiraman.json"
 grep -q '## Tiêu chí nghiệm thu' "$TARGET/docs/project-management/templates/jira/epic.md"
 grep -q '## Tiêu chí nghiệm thu' "$TARGET/docs/project-management/templates/jira/goal-story.md"
 grep -q '## Tiêu chí nghiệm thu' "$TARGET/docs/project-management/templates/jira/sub-task.md"

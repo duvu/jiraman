@@ -1,7 +1,8 @@
 import { describe, expect, test } from "vitest";
 
 import { jiraReadBackMatches } from "../../src/action-rules.js";
-import { asArray, asObject, parseFrontmatter, readJson, readText, validateJson, type JsonObject } from "../../src/contracts.js";
+import { asArray, asObject, asString, parseFrontmatter, readJson, readText, validateJson, type JsonObject } from "../../src/contracts.js";
+import { jiraLanguageSemanticErrors, type JiraLanguageValidationContext } from "../../src/jira-language-rules.js";
 import { goalHierarchyGroup } from "./goal-hierarchy-fixture.js";
 
 const PRESERVATION = {policy_ref: ".kilo/config/jiraman.json#/language/preserved_literal_kinds", mode: "exact"};
@@ -28,6 +29,15 @@ describe("Vietnamese Jira apply contract", () => {
     expect(validateJson("action-group.schema.json", missingPreservation).valid).toBe(false);
   });
 
+  test("cannot bypass update metadata through a managed narrative field", () => {
+    const update = actionGroup();
+    const action = firstAction(update);
+    action.operation = "issue.update";
+    action.desired_state = {validation: "Chạy `npm run ci` và lưu bằng chứng."};
+
+    expect(jiraLanguageSemanticErrors("action-group.schema.json", update).some((error) => error.instancePath.endsWith("/content_language"))).toBe(true);
+  });
+
   test("binds an English override to one immutable action ID", () => {
     const overridden = actionGroup();
     const action = firstAction(overridden);
@@ -49,8 +59,46 @@ describe("Vietnamese Jira apply contract", () => {
       evidence_reference: "user-request-2026-08-03",
     };
 
-    expect(validateJson("action-group.schema.json", overridden).valid).toBe(true);
+    const trustedAuthorization: JiraLanguageValidationContext = {
+      trustedUserAuthorizations: [{
+        reference: "user-request-2026-08-03",
+        capability: "jira-language-override",
+        scopeType: "jira-action",
+        scopeRef: asString(action.id, "action ID"),
+        requestedLanguage: "en-US",
+      }],
+    };
+
+    expect(validateJson("action-group.schema.json", overridden).valid).toBe(false);
+    expect(validateJson("action-group.schema.json", overridden, trustedAuthorization).valid).toBe(true);
     expect(validateJson("action-group.schema.json", leaked).valid).toBe(false);
+  });
+
+  test("accepts well-formed BCP 47 override tags only with matching trusted input", () => {
+    for (const language of ["zh-Hant", "de-DE-1996", "en-001"]) {
+      const overridden = actionGroup();
+      const action = firstAction(overridden);
+      const desired = asObject(action.desired_state ?? null, "desired state");
+      desired.content_language = language;
+      desired.language_override = {
+        requested_language: language,
+        scope_type: "jira-action",
+        scope_ref: action.id ?? "",
+        source: "explicit-user-request",
+        evidence_reference: `local-user-input-${language}`,
+      };
+      const trustedAuthorization: JiraLanguageValidationContext = {
+        trustedUserAuthorizations: [{
+          reference: `local-user-input-${language}`,
+          capability: "jira-language-override",
+          scopeType: "jira-action",
+          scopeRef: asString(action.id, "action ID"),
+          requestedLanguage: language,
+        }],
+      };
+
+      expect(validateJson("action-group.schema.json", overridden, trustedAuthorization).valid, language).toBe(true);
+    }
   });
 
   test("protects existing English descriptions unless full translation is separately approved", () => {
@@ -94,7 +142,28 @@ describe("Vietnamese Jira apply contract", () => {
     unsafeAction.approval_required = "group";
 
     expect(validateJson("action-group.schema.json", managed).valid).toBe(true);
-    expect(validateJson("action-group.schema.json", translated).valid).toBe(true);
+    const trustedTranslation: JiraLanguageValidationContext = {
+      trustedUserAuthorizations: [{
+        reference: "user-request-2026-08-03",
+        capability: "jira-full-description-translation",
+        scopeType: "jira-action",
+        scopeRef: asString(translatedAction.id, "translated action ID"),
+        requestedLanguage: "vi-VN",
+      }],
+    };
+    const wrongCapability: JiraLanguageValidationContext = {
+      trustedUserAuthorizations: [{
+        reference: "user-request-2026-08-03",
+        capability: "jira-language-override",
+        scopeType: "jira-action",
+        scopeRef: asString(translatedAction.id, "translated action ID"),
+        requestedLanguage: "vi-VN",
+      }],
+    };
+
+    expect(validateJson("action-group.schema.json", translated).valid).toBe(false);
+    expect(validateJson("action-group.schema.json", translated, wrongCapability).valid).toBe(false);
+    expect(validateJson("action-group.schema.json", translated, trustedTranslation).valid).toBe(true);
     expect(validateJson("action-group.schema.json", unsafe).valid).toBe(false);
   });
 
@@ -120,6 +189,7 @@ describe("Vietnamese Jira apply contract", () => {
       operations: ["issue.create", "issue.update", "issue.comment"],
       default_content_language: "vi-VN",
       override_scope: "single-approved-action",
+      override_authorization_ref: "#/override_authorization",
       existing_ticket_mode: "preserve-human-content",
       read_back_normalization: ["crlf-to-lf", "object-key-order"],
       array_order: "preserve-exact",

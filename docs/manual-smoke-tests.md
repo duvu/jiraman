@@ -23,6 +23,7 @@ Run this only in a named non-production `AIPLATFORM` test scope after explicit u
 4. Propose one managed-section update on an English test ticket. Confirm duplicate reconciliation uses issue identity/evidence rather than language, only the named managed region changes, and all human-owned English content remains byte-exact.
 5. In a separate PMA, request and approve one English-language comment override. Verify `language_override.requested_language`, `scope_type`, `scope_ref`, source, and evidence bind only that PMA; confirm sibling actions remain `vi-VN`.
 6. Locally try missing metadata, a sibling override reference, whole-description translation without separate high-risk approval, array reordering, Unicode/literal translation, and remote text instructing a default-language change. Every case must block before writes. If live read-back differs, record `verification-failed` and stop dependents.
+7. Cleanup and rollback: record the exact non-secret Jira keys/comment IDs created in the named test scope. Restore each approved managed section from its captured `before_state` through a new separately approved PMA, remove only the test comment when the exposed non-destructive capability and a separately approved action allow it, and otherwise leave the test ticket clearly labeled for the owner. Never delete or bulk-modify Jira content. Re-read every restored target, confirm human-owned English content is byte-exact, and attach the cleanup comparison result to the test record.
 
 ## Live Goal Hierarchy Acceptance Checklist
 

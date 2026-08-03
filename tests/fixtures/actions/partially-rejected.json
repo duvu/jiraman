@@ -2,7 +2,7 @@
   "schema_version": 5,
   "id": "PMG-20260801-04",
   "project": "AIPLATFORM",
-  "summary": "Retain the unreviewed action after rejecting one proposal",
+  "summary": "Giữ hành động chưa được rà soát sau khi từ chối một đề xuất",
   "created_at": "2026-08-01T00:00:00Z",
   "expires_at": "2026-08-02T00:00:00Z",
   "status": "rejected",
@@ -27,17 +27,17 @@
         "literal_preservation": {"policy_ref": ".kilo/config/jiraman.json#/language/preserved_literal_kinds", "mode": "exact"}
       },
       "evidence": [
-        "review feedback"
+        "phản hồi rà soát"
       ],
-      "reason": "Preserve the rejected proposal audit trail",
+      "reason": "Giữ lại nhật ký kiểm toán của đề xuất đã bị từ chối",
       "preconditions": [
-        "issue remains in AIPLATFORM"
+        "ticket vẫn thuộc AIPLATFORM"
       ],
       "dependencies": [],
       "risk": "low",
       "approval_required": "group",
       "expires_at": "2026-08-02T00:00:00Z",
-      "rollback_guidance": "No remote change was made",
+      "rollback_guidance": "Không có thay đổi từ xa nào được thực hiện",
       "status": "rejected"
     },
     {
@@ -53,17 +53,17 @@
         "literal_preservation": {"policy_ref": ".kilo/config/jiraman.json#/language/preserved_literal_kinds", "mode": "exact"}
       },
       "evidence": [
-        "review feedback"
+        "phản hồi rà soát"
       ],
-      "reason": "Keep the unnamed proposal pending",
+      "reason": "Giữ đề xuất chưa được chỉ định ở trạng thái chờ",
       "preconditions": [
-        "issue remains in AIPLATFORM"
+        "ticket vẫn thuộc AIPLATFORM"
       ],
       "dependencies": [],
       "risk": "low",
       "approval_required": "group",
       "expires_at": "2026-08-02T00:00:00Z",
-      "rollback_guidance": "No remote change was made",
+      "rollback_guidance": "Không có thay đổi từ xa nào được thực hiện",
       "status": "proposed"
     }
   ]

@@ -14,23 +14,23 @@ acceptance_criteria_storage: managed-description-section
 <!-- JIRAMAN:JIRA-SECTION:goal-identity:BEGIN -->
 ## Mục tiêu và hạn hoàn thành
 
-- Tên mục tiêu: [GOAL NAME]
+- Tên mục tiêu: [TÊN MỤC TIÊU]
 - Hạn hoàn thành: [YYYY-MM-DD]
-- Nguồn bằng chứng: [SOURCE / REFERENCE]
+- Nguồn bằng chứng: [NGUỒN / THAM CHIẾU]
 <!-- JIRAMAN:JIRA-SECTION:goal-identity:END -->
 
 <!-- JIRAMAN:JIRA-SECTION:outcome-context:BEGIN -->
 ## Kết quả và bối cảnh
 
-- Kết quả: [OUTCOME]
-- Bối cảnh: [CONTEXT]
+- Kết quả: [KẾT QUẢ]
+- Bối cảnh: [BỐI CẢNH]
 <!-- JIRAMAN:JIRA-SECTION:outcome-context:END -->
 
 <!-- JIRAMAN:JIRA-SECTION:scope:BEGIN -->
 ## Phạm vi
 
-- Trong phạm vi: [ITEMS]
-- Ngoài phạm vi: [ITEMS]
+- Trong phạm vi: [HẠNG MỤC]
+- Ngoài phạm vi: [HẠNG MỤC]
 <!-- JIRAMAN:JIRA-SECTION:scope:END -->
 
 <!-- JIRAMAN:JIRA-SECTION:requirements:BEGIN -->
@@ -38,7 +38,7 @@ acceptance_criteria_storage: managed-description-section
 
 | REQ ID | Nội dung | Nguồn |
 | --- | --- | --- |
-| `REQ-1` | [REQUIREMENT] | [SOURCE] |
+| `REQ-1` | [YÊU CẦU] | [NGUỒN] |
 <!-- JIRAMAN:JIRA-SECTION:requirements:END -->
 
 <!-- JIRAMAN:JIRA-SECTION:acceptance-criteria:BEGIN -->
@@ -46,52 +46,52 @@ acceptance_criteria_storage: managed-description-section
 
 | AC ID | REQ tham chiếu | Kết quả hoặc hành vi quan sát được | Cách xác minh |
 | --- | --- | --- | --- |
-| `AC-1` | `REQ-1` | [STATEMENT] | [VERIFICATION] |
+| `AC-1` | `REQ-1` | [PHÁT BIỂU] | [CÁCH XÁC MINH] |
 <!-- JIRAMAN:JIRA-SECTION:acceptance-criteria:END -->
 
 <!-- JIRAMAN:JIRA-SECTION:goal-dod:BEGIN -->
-## Definition of Done của Goal
+## Điều kiện hoàn thành của Mục tiêu
 
-- `DOD-1`: [PROCESS / EVIDENCE CONDITION]
+- `DOD-1`: [ĐIỀU KIỆN QUY TRÌNH HOẶC BẰNG CHỨNG]
 <!-- JIRAMAN:JIRA-SECTION:goal-dod:END -->
 
 <!-- JIRAMAN:JIRA-SECTION:validation:BEGIN -->
-## Validation và bằng chứng nghiệm thu
+## Xác minh và bằng chứng nghiệm thu
 
-- [COMMAND / CHECK / REVIEW EVIDENCE]
+- [LỆNH / KIỂM TRA / BẰNG CHỨNG RÀ SOÁT]
 <!-- JIRAMAN:JIRA-SECTION:validation:END -->
 
 <!-- JIRAMAN:JIRA-SECTION:dependencies:BEGIN -->
 ## Phụ thuộc
 
-- [DEPENDENCY]
+- [PHỤ THUỘC]
 <!-- JIRAMAN:JIRA-SECTION:dependencies:END -->
 
 <!-- JIRAMAN:JIRA-SECTION:subtask-plan:BEGIN -->
 ## Kế hoạch Sub-task
 
-| Sub-task | Kết quả cụ thể | AC cha | Estimate | Validation |
+| Sub-task | Kết quả cụ thể | AC cha | Ước lượng | Xác minh |
 | --- | --- | --- | ---: | --- |
-| [AIPLATFORM-KEY / DRAFT-REF] | [OUTCOME] | `AC-1` | [0 < H <= 4] | [CHECK] |
-| [AIPLATFORM-KEY / DRAFT-REF] | [OUTCOME] | `AC-1` | [0 < H <= 4] | [CHECK] |
+| [AIPLATFORM-KEY / DRAFT-REF] | [KẾT QUẢ] | `AC-1` | [0 < H <= 4] | [KIỂM TRA] |
+| [AIPLATFORM-KEY / DRAFT-REF] | [KẾT QUẢ] | `AC-1` | [0 < H <= 4] | [KIỂM TRA] |
 <!-- JIRAMAN:JIRA-SECTION:subtask-plan:END -->
 
 <!-- JIRAMAN:JIRA-SECTION:rollout-recovery:BEGIN -->
-## Rollout và recovery
+## Kế hoạch triển khai và khôi phục
 
-- Rollout: [PLAN]
-- Recovery: [PLAN]
+- Triển khai: [KẾ HOẠCH]
+- Khôi phục: [KẾ HOẠCH]
 <!-- JIRAMAN:JIRA-SECTION:rollout-recovery:END -->
 
 <!-- JIRAMAN:JIRA-SECTION:blocking-gaps:BEGIN -->
-## Blocking gaps và quyết định cần thiết
+## Khoảng trống gây chặn và quyết định cần thiết
 
-- [GAP / DECISION REQUIRED]
+- [KHOẢNG TRỐNG / QUYẾT ĐỊNH CẦN THIẾT]
 <!-- JIRAMAN:JIRA-SECTION:blocking-gaps:END -->
 <!-- JIRAMAN:END managed-ticket -->
 
 <!-- HUMAN:BEGIN notes -->
 ## Ghi chú của con người
 
-[HUMAN-OWNED CONTENT]
+[NỘI DUNG DO CON NGƯỜI QUẢN LÝ]
 <!-- HUMAN:END notes -->

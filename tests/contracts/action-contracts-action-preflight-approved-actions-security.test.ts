@@ -159,8 +159,20 @@ describe("action-preflight approved-actions security", () => {
         migration: { legacy_state_file: null, reapproval_required_ids: [] },
       };
       writeFileSync(statePath, JSON.stringify(state));
+      expect(readFileSync(statePath, "utf8")).toContain("Bản nháp đã bị từ chối");
       const installedValidation = spawnSync("./verify.sh", ["--validate-state-file", statePath], { encoding: "utf8" });
       expect(installedValidation.status, installedValidation.stderr).toBe(0);
+      const reuseGroup = structuredClone(group);
+      const reuseAction = asObject(asArray(reuseGroup.actions, "reuse actions")[0] ?? null, "reuse action");
+      reuseAction.operation = "issue.reuse";
+      reuseAction.target_version = "7";
+      reuseAction.before_state = {project: "AIPLATFORM", issue_type: "Bug", summary: "Sự cố đã tồn tại"};
+      reuseAction.desired_state = {reuse: true};
+      reuseGroup.payload_hash = canonicalPayloadHash(asArray(reuseGroup.actions, "reuse actions"));
+      const reuseState = {...state, pending_action_groups: {[groupId]: reuseGroup}};
+      writeFileSync(statePath, JSON.stringify(reuseState));
+      const installedReuseValidation = spawnSync("./verify.sh", ["--validate-state-file", statePath], { encoding: "utf8" });
+      expect(installedReuseValidation.status, installedReuseValidation.stderr).toBe(0);
       writeFileSync(statePath, JSON.stringify({ ...state, pending_action_groups: { [groupId]: rejectedPartialApproval } }));
       const rejectedPartialState = spawnSync("./verify.sh", ["--validate-state-file", statePath], { encoding: "utf8" });
       expect(rejectedPartialState.status).toBe(5);
@@ -254,7 +266,8 @@ describe("action-preflight approved-actions security", () => {
 
       const raw = join(directory, "raw.log");
       const sanitized = join(directory, "sanitized.log");
-      writeFileSync(raw, canaries.map(([, canary]) => canary).join("\n\n") + "\n\nsafe diagnostic\n");
+      const safeVietnameseDiagnostic = "Xác minh tiếng Việt: khôi phục `REQ-1` bằng `npm run ci`.";
+      writeFileSync(raw, canaries.map(([, canary]) => canary).join("\n\n") + `\n\nsafe diagnostic\n${safeVietnameseDiagnostic}\n`);
       const sanitize = spawnSync("./scripts/sanitize_ci_log.sh", [raw, sanitized], { encoding: "utf8" });
       expect(sanitize.status).toBe(0);
       const output = readFileSync(sanitized, "utf8");
@@ -262,6 +275,12 @@ describe("action-preflight approved-actions security", () => {
       expect(output).not.toContain(privateKeyBody);
       expect(output).not.toContain(opaque);
       expect(output.match(/\[REDACTED SENSITIVE LINE\]/g)?.length ?? 0).toBeGreaterThanOrEqual(canaries.length);
+      const unicodeRaw = join(directory, "unicode-raw.log");
+      const unicodeSanitized = join(directory, "unicode-sanitized.log");
+      writeFileSync(unicodeRaw, `${safeVietnameseDiagnostic}\n`);
+      const unicodeSanitize = spawnSync("./scripts/sanitize_ci_log.sh", [unicodeRaw, unicodeSanitized], { encoding: "utf8" });
+      expect(unicodeSanitize.status).toBe(0);
+      expect(readFileSync(unicodeSanitized, "utf8")).toBe(`${safeVietnameseDiagnostic}\n`);
       const combined = sanitizeSensitiveText([
         "prefixAuthor",
         "ization: Bearer\n",
@@ -288,6 +307,7 @@ describe("action-preflight approved-actions security", () => {
       expect(failedGateOutput).not.toContain("untrusted suffix");
       expect(failedGateOutput).not.toContain(opaque);
       expect(sanitizeSensitiveText("safe diagnostic\nordinary output")).toBe("safe diagnostic\nordinary output");
+      expect(sanitizeSensitiveText(safeVietnameseDiagnostic)).toBe(safeVietnameseDiagnostic);
     } finally {
       rmSync(directory, { recursive: true, force: true });
     }

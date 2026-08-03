@@ -11,7 +11,8 @@
     "mcp_schema_and_query": "preserve",
     "explicit_override_allowed": true,
     "existing_ticket_mode": "preserve-human-content",
-    "preserved_literal_kinds": ["jira-key", "req-id", "ac-id", "code", "path", "command", "url", "issue-type", "status", "json-key", "jql", "log"]
+    "preserved_literal_kinds": ["jira-key", "req-id", "ac-id", "pmg-id", "pma-id", "dlv-id", "issue-type", "status", "custom-field", "jql", "json-key", "mcp-tool", "mcp-schema", "technical-term", "code-symbol", "path", "command", "url", "code-block", "stack-trace", "log"],
+    "preserved_technical_terms": ["API", "CI/CD", "Kubernetes", "OAuth", "OpenID Connect"]
   },
   "confluence": {
     "allowed_space_keys": ["AIPLATFORM"],

@@ -19,11 +19,13 @@ describe("Vietnamese Jira proposal workflows", () => {
     expect(resolveJiraContentLanguage(null)).toBe("vi-VN");
     expect(resolveJiraContentLanguage({requestedLanguage: "en-US", explicit: true})).toBe("en-US");
     expect(resolveJiraContentLanguage({requestedLanguage: "en-US", explicit: false})).toBe("vi-VN");
+    expect(resolveJiraContentLanguage({requestedLanguage: "en_US", explicit: true})).toBe("vi-VN");
   });
 
   test("routes every Jira proposal workflow through the canonical language contract", () => {
     const index = asObject(readJson("template/docs/project-management/templates/jira/index.json"), "Jira template index");
     const routes = asArray(index.proposal_workflows, "proposal workflows").map((value) => asObject(value, "proposal workflow"));
+    expect(asObject(index.override_authorization ?? null, "override authorization").validation_context).toBe("separate-from-draft-and-action");
 
     expect(routes.map((route) => asString(route.name, "workflow name")).sort()).toEqual([...WORKFLOWS].sort());
     for (const route of routes) {
@@ -36,6 +38,24 @@ describe("Vietnamese Jira proposal workflows", () => {
         writes_allowed: false,
       });
     }
+  });
+
+  test("translates the canonical English-source hierarchy fixture to Vietnamese", () => {
+    const backlogFixture = asObject(readJson("tests/fixtures/drafts/backlog.json"), "backlog fixture");
+    const metadata = asObject(backlogFixture.metadata ?? null, "backlog metadata");
+    const backlog = asObject(backlogFixture.data ?? null, "backlog data");
+    const epic = asObject(backlog.epic ?? null, "Epic");
+    const goal = asObject(asArray(backlog.stories, "Goal Stories")[0] ?? null, "Goal Story");
+    const subtaskFixture = asObject(readJson("tests/fixtures/drafts/subtasks.json"), "Sub-task fixture");
+    const subtaskData = asObject(subtaskFixture.data ?? null, "Sub-task data");
+    const subtask = asObject(asArray(subtaskData.subtasks, "Sub-tasks")[0] ?? null, "Sub-task");
+
+    expect(metadata.source).toBe("synthetic-english-source-translated");
+    expect(epic.outcome).toBe("Nâng cấp an toàn");
+    expect(goal.goal_name).toBe("Khôi phục an toàn bản sao lưu v4");
+    expect(subtask.title).toBe("Xác minh việc khôi phục bản sao lưu v4");
+    expect(JSON.stringify({backlog, subtaskData})).toContain("./tests/install/run-v4-upgrade.sh");
+    expect(JSON.stringify({backlog, subtaskData})).toContain("REQ-1");
   });
 
   test("binds every proposal skill to its exact indexed route", () => {

@@ -13,13 +13,13 @@ acceptance_criteria_storage: managed-description-section
 <!-- JIRAMAN:JIRA-SECTION:outcome:BEGIN -->
 ## Kết quả cụ thể
 
-[OUTCOME]
+[KẾT QUẢ]
 <!-- JIRAMAN:JIRA-SECTION:outcome:END -->
 
 <!-- JIRAMAN:JIRA-SECTION:parent-traceability:BEGIN -->
-## Goal Story cha và traceability
+## Story mục tiêu cha và liên kết truy vết
 
-- Goal Story cha: [AIPLATFORM-KEY / DRAFT-REF]
+- Story mục tiêu cha: [AIPLATFORM-KEY / DRAFT-REF]
 - REQ cha: [`REQ-1`]
 - Tiêu chí nghiệm thu của Goal cha: [`AC-1`]
 <!-- JIRAMAN:JIRA-SECTION:parent-traceability:END -->
@@ -27,57 +27,57 @@ acceptance_criteria_storage: managed-description-section
 <!-- JIRAMAN:JIRA-SECTION:scope:BEGIN -->
 ## Phạm vi
 
-- Trong phạm vi: [ITEMS]
-- Ngoài phạm vi: [ITEMS]
+- Trong phạm vi: [HẠNG MỤC]
+- Ngoài phạm vi: [HẠNG MỤC]
 <!-- JIRAMAN:JIRA-SECTION:scope:END -->
 
 <!-- JIRAMAN:JIRA-SECTION:steps:BEGIN -->
 ## Các bước thực hiện hoặc điều tra
 
-1. [STEP]
+1. [BƯỚC]
 <!-- JIRAMAN:JIRA-SECTION:steps:END -->
 
 <!-- JIRAMAN:JIRA-SECTION:affected-files:BEGIN -->
-## File hoặc module ảnh hưởng
+## Tệp hoặc module ảnh hưởng
 
-- [PATH / MODULE / NOT VERIFIED]
+- [ĐƯỜNG DẪN / MODULE / CHƯA XÁC MINH]
 <!-- JIRAMAN:JIRA-SECTION:affected-files:END -->
 
 <!-- JIRAMAN:JIRA-SECTION:dependencies:BEGIN -->
 ## Phụ thuộc
 
-- [DEPENDENCY]
+- [PHỤ THUỘC]
 <!-- JIRAMAN:JIRA-SECTION:dependencies:END -->
 
 <!-- JIRAMAN:JIRA-SECTION:validation:BEGIN -->
-## Validation
+## Xác minh
 
-- `VAL-1`: [EXACT COMMAND / CHECK]
+- `VAL-1`: [LỆNH HOẶC KIỂM TRA CHÍNH XÁC]
 <!-- JIRAMAN:JIRA-SECTION:validation:END -->
 
 <!-- JIRAMAN:JIRA-SECTION:acceptance-criteria:BEGIN -->
 ## Tiêu chí nghiệm thu
 
-| AC ID | Kết quả hoặc hành vi quan sát được | Cách xác minh | Validation | Sub-task DoD |
+| AC ID | Kết quả hoặc hành vi quan sát được | Cách xác minh | Xác minh | Điều kiện hoàn thành của Sub-task |
 | --- | --- | --- | --- | --- |
-| `AC-1` | [STATEMENT] | [VERIFICATION] | `VAL-1` | `DOD-1` |
+| `AC-1` | [PHÁT BIỂU] | [CÁCH XÁC MINH] | `VAL-1` | `DOD-1` |
 <!-- JIRAMAN:JIRA-SECTION:acceptance-criteria:END -->
 
 <!-- JIRAMAN:JIRA-SECTION:subtask-dod:BEGIN -->
-## Definition of Done của Sub-task
+## Điều kiện hoàn thành của Sub-task
 
-- `DOD-1`: [PROCESS / EVIDENCE CONDITION]
+- `DOD-1`: [ĐIỀU KIỆN QUY TRÌNH HOẶC BẰNG CHỨNG]
 <!-- JIRAMAN:JIRA-SECTION:subtask-dod:END -->
 
 <!-- JIRAMAN:JIRA-SECTION:estimate:BEGIN -->
-## Original estimate
+## Ước lượng ban đầu
 
-- [0h < ESTIMATE <= 4h]
+- [0h < ƯỚC LƯỢNG <= 4h]
 <!-- JIRAMAN:JIRA-SECTION:estimate:END -->
 <!-- JIRAMAN:END managed-ticket -->
 
 <!-- HUMAN:BEGIN notes -->
 ## Ghi chú của con người
 
-[HUMAN-OWNED CONTENT]
+[NỘI DUNG DO CON NGƯỜI QUẢN LÝ]
 <!-- HUMAN:END notes -->

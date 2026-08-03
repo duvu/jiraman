@@ -28,7 +28,7 @@ const groupId = (value) => typeof value === "string" && /^PMG-[0-9]{8}-[0-9]{2}$
 const actionId = (value) => typeof value === "string" && /^PMA-[0-9]{8}-[0-9]{2}$/.test(value);
 const stateId = (value) => typeof value === "string" && /^PM[AG]-[0-9]{8}-[0-9]{2}$/.test(value);
 const statuses = new Set(["proposed", "approved", "rejected", "stale", "applying", "applied", "failed", "verification-failed"]);
-const operations = new Set(["issue.create", "issue.update", "issue.comment", "issue.link", "issue.transition", "page.create", "page.update", "page.section-update", "page.comment"]);
+const operations = new Set(["issue.create", "issue.update", "issue.reuse", "issue.comment", "issue.link", "issue.transition", "page.create", "page.update", "page.section-update", "page.comment"]);
 const updateOperations = new Set(["issue.update", "page.update", "page.section-update"]);
 const hash = (value) => typeof value === "string" && /^[a-f0-9]{64}$/.test(value);
 const canonical = (value) => {
@@ -48,11 +48,12 @@ const validAction = (value) => {
   const targetVersion = value.target_version;
   const validTargetVersion = targetVersion === null || typeof targetVersion === "string" || Number.isInteger(targetVersion);
   const updateTarget = !updateOperations.has(value.operation) || (targetVersion !== null || (object(value.before_state) && Object.keys(value.before_state).length > 0));
+  const reuseTarget = value.operation !== "issue.reuse" || (value.system === "jira" && targetVersion !== null && object(value.before_state) && Object.keys(value.before_state).length > 0 && exact(value.desired_state, ["reuse"]) && value.desired_state.reuse === true);
   return actionId(value.id) && ["jira", "confluence"].includes(value.system) && operations.has(value.operation) && nonEmpty(value.target_ref) && validTargetVersion &&
     object(value.before_state) && object(value.desired_state) && Object.keys(value.desired_state).length > 0 && stringArray(value.evidence, true) && nonEmpty(value.reason) &&
     stringArray(value.preconditions, true) && stringArray(value.dependencies) && unique(value.dependencies) && value.dependencies.every(actionId) &&
     ["low", "medium", "high"].includes(value.risk) && ["group", "per-action"].includes(value.approval_required) &&
-    (value.risk !== "high" || value.approval_required === "per-action") && validDateTime(value.expires_at) && nonEmpty(value.rollback_guidance) && statuses.has(value.status) && updateTarget;
+    (value.risk !== "high" || value.approval_required === "per-action") && validDateTime(value.expires_at) && nonEmpty(value.rollback_guidance) && statuses.has(value.status) && updateTarget && reuseTarget;
 };
 const validApproval = (value) => exact(value, ["group_approved_by", "approved_action_ids", "approved_at", "payload_hash"]) &&
   (value.group_approved_by === null || nonEmpty(value.group_approved_by)) && Array.isArray(value.approved_action_ids) && unique(value.approved_action_ids) && value.approved_action_ids.every(actionId) &&
@@ -149,7 +150,10 @@ const object=(value)=>value!==null&&typeof value==="object"&&!Array.isArray(valu
 const config=JSON.parse(fs.readFileSync(path.join(configRoot,"jiraman.json"),"utf8"));
 const router=JSON.parse(fs.readFileSync(path.join(configRoot,"command-router.json"),"utf8"));
 const mcp=JSON.parse(fs.readFileSync(path.join(configRoot,"mcp-atlassian.json"),"utf8"));
-if(config.schema_version!==5||config.project?.key!=="AIPLATFORM"||!object(config.confluence)||!object(config.delivery)||!object(config.actions)||!object(config.state)) throw new Error("invalid config contract");
+const literalKinds=["jira-key","req-id","ac-id","pmg-id","pma-id","dlv-id","issue-type","status","custom-field","jql","json-key","mcp-tool","mcp-schema","technical-term","code-symbol","path","command","url","code-block","stack-trace","log"];
+const technicalTerms=["API","CI/CD","Kubernetes","OAuth","OpenID Connect"];
+const language=config.language;
+if(config.schema_version!==5||config.project?.key!=="AIPLATFORM"||!object(language)||language.jira_ticket_content!=="vi-VN"||language.user_response!=="vi-VN"||language.mcp_schema_and_query!=="preserve"||language.explicit_override_allowed!==true||language.existing_ticket_mode!=="preserve-human-content"||JSON.stringify(language.preserved_literal_kinds)!==JSON.stringify(literalKinds)||JSON.stringify(language.preserved_technical_terms)!==JSON.stringify(technicalTerms)||!object(config.confluence)||!object(config.delivery)||!object(config.actions)||!object(config.state)) throw new Error("invalid config contract");
 if(router.schema_version!==5||router.default_mode!=="daily"||!object(router.canonical)||!object(router.aliases)||router.canonical.apply!=="jiraman-apply-actions") throw new Error("invalid router contract");
 if(mcp.schema_version!==5||mcp.server_ownership!=="external-user-owned"||!Array.isArray(mcp.capabilities)||!object(mcp.profiles)||!Array.isArray(mcp.denied)) throw new Error("invalid MCP contract");
 NODE
