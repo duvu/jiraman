@@ -1,7 +1,7 @@
 import { describe, expect, test } from "vitest";
 
 import { asArray, asObject, asString, invariant, readJson, validateJson, type JsonObject } from "../../src/contracts.js";
-import { confluenceGoalContractViolations } from "../../src/goal-rules.js";
+import { confluenceGoalContractViolations, goalPackageSetViolations } from "../../src/goal-rules.js";
 import { goalPackageFixtureViolations } from "../../src/goal-release-rules.js";
 
 describe("Goal contract boundaries", () => {
@@ -90,5 +90,55 @@ describe("Goal contract boundaries", () => {
 
     // Then
     expect(violations).toEqual([]);
+  });
+
+  test("rejects omitted and surplus Sub-task traceability relations", () => {
+    // Given
+    const valid = asObject(asObject(readJson("tests/fixtures/drafts/subtasks.json"), "subtask fixture").data ?? null, "subtask package");
+    const omitted: JsonObject = structuredClone(valid);
+    const omittedTraceability = asObject(omitted.traceability ?? null, "omitted traceability");
+    omittedTraceability.requirements = {"REQ-1": ["subtask-1"]};
+    const surplus: JsonObject = structuredClone(valid);
+    const surplusSubtasks = asArray(surplus.subtasks, "surplus Sub-tasks").map((value) => asObject(value, "surplus Sub-task"));
+    const surplusSecond = surplusSubtasks[1];
+    invariant(surplusSecond !== undefined, "second Sub-task is required");
+    surplusSecond.requirements = ["REQ-2"];
+    asObject(surplus.traceability ?? null, "surplus traceability").requirements = {
+      "REQ-1": ["subtask-1", "subtask-2"],
+      "REQ-2": ["subtask-2"],
+    };
+
+    // When
+    const omittedResult = validateJson("subtask-draft.schema.json", omitted);
+    const surplusResult = validateJson("subtask-draft.schema.json", surplus);
+
+    // Then
+    expect(omittedResult.valid).toBe(false);
+    expect(omittedResult.errors.some((error) => error.keyword === "exactTraceability")).toBe(true);
+    expect(surplusResult.valid).toBe(false);
+    expect(surplusResult.errors.some((error) => error.keyword === "exactTraceability")).toBe(true);
+  });
+
+  test("rejects backlog and package REQ or AC identifier drift", () => {
+    // Given
+    const backlog = asObject(asObject(readJson("tests/fixtures/drafts/backlog.json"), "backlog fixture").data ?? null, "backlog");
+    const first = asObject(asObject(readJson("tests/fixtures/drafts/subtasks.json"), "first package").data ?? null, "first package data");
+    const second = asObject(asObject(readJson("tests/fixtures/drafts/subtasks.story-2.json"), "second package").data ?? null, "second package data");
+    const requirementDrift: JsonObject = structuredClone(first);
+    const requirementSubtasks = asArray(requirementDrift.subtasks, "requirement Sub-tasks").map((value) => asObject(value, "requirement Sub-task"));
+    for (const subtask of requirementSubtasks) subtask.requirements = ["REQ-999"];
+    asObject(requirementDrift.traceability ?? null, "requirement traceability").requirements = {"REQ-999": requirementSubtasks.map((subtask) => asString(subtask.draft_ref, "Sub-task ref"))};
+    const acceptanceDrift: JsonObject = structuredClone(first);
+    const acceptanceSubtasks = asArray(acceptanceDrift.subtasks, "acceptance Sub-tasks").map((value) => asObject(value, "acceptance Sub-task"));
+    for (const subtask of acceptanceSubtasks) subtask.acceptance_criteria = ["AC-999"];
+    asObject(acceptanceDrift.traceability ?? null, "acceptance traceability").acceptance_criteria = {"AC-999": acceptanceSubtasks.map((subtask) => asString(subtask.draft_ref, "Sub-task ref"))};
+
+    // When
+    const requirementViolations = goalPackageSetViolations(backlog, [requirementDrift, second]);
+    const acceptanceViolations = goalPackageSetViolations(backlog, [acceptanceDrift, second]);
+
+    // Then
+    expect(requirementViolations).toContain("story-1:requirements-traceability-mismatch");
+    expect(acceptanceViolations).toContain("story-1:acceptance-criteria-traceability-mismatch");
   });
 });

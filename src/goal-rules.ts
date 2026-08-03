@@ -34,15 +34,21 @@ function backlogErrors(value: JsonValue): ErrorObject[] {
   return errors;
 }
 
-function traceabilityIds(subtasks: readonly JsonValue[], field: "requirements" | "acceptance_criteria"): Set<string> {
-  const ids = new Set<string>();
+function traceabilityRelations(subtasks: readonly JsonValue[], field: "requirements" | "acceptance_criteria"): ReadonlyMap<string, ReadonlySet<string>> {
+  const relations = new Map<string, Set<string>>();
   for (const value of subtasks) {
     const subtask = objectValue(value);
+    const ref = subtask?.draft_ref;
     const entries = subtask?.[field];
-    if (!Array.isArray(entries)) continue;
-    for (const entry of entries) if (typeof entry === "string") ids.add(entry);
+    if (typeof ref !== "string" || !Array.isArray(entries)) continue;
+    for (const entry of entries) {
+      if (typeof entry !== "string") continue;
+      const refs = relations.get(entry) ?? new Set<string>();
+      refs.add(ref);
+      relations.set(entry, refs);
+    }
   }
-  return ids;
+  return relations;
 }
 
 function subtaskErrors(value: JsonValue): ErrorObject[] {
@@ -55,20 +61,26 @@ function subtaskErrors(value: JsonValue): ErrorObject[] {
   if (new Set(refs).size !== refs.length) errors.push(semanticError("/subtasks", "uniqueSubtaskRefs", "must contain unique Sub-task draft_ref values"));
   const traceability = objectValue(packageValue.traceability);
   if (traceability === null) return errors;
-  const expectedByField: Readonly<Record<"requirements" | "acceptance_criteria", ReadonlySet<string>>> = {
-    requirements: traceabilityIds(packageValue.subtasks, "requirements"),
-    acceptance_criteria: traceabilityIds(packageValue.subtasks, "acceptance_criteria"),
+  const expectedByField: Readonly<Record<"requirements" | "acceptance_criteria", ReadonlyMap<string, ReadonlySet<string>>>> = {
+    requirements: traceabilityRelations(packageValue.subtasks, "requirements"),
+    acceptance_criteria: traceabilityRelations(packageValue.subtasks, "acceptance_criteria"),
   };
   for (const field of ["requirements", "acceptance_criteria"] as const) {
     const map = objectValue(traceability[field]);
     if (map === null) continue;
+    const expected = expectedByField[field];
     const mappedIds = new Set(Object.keys(map));
-    for (const id of new Set([...expectedByField[field], ...mappedIds])) {
-      if (!expectedByField[field].has(id) || !mappedIds.has(id)) errors.push(semanticError(`/traceability/${field}`, "completeTraceability", `${id} must be declared by a Sub-task and mapped exactly once`));
-    }
-    for (const [id, mappedRefs] of Object.entries(map)) {
-      if (!Array.isArray(mappedRefs) || mappedRefs.some((ref) => typeof ref !== "string" || !refs.includes(ref))) {
-        errors.push(semanticError(`/traceability/${field}/${id}`, "resolvedTraceability", "must reference only declared Sub-tasks"));
+    for (const id of new Set([...expected.keys(), ...mappedIds])) {
+      const expectedRefs = expected.get(id);
+      const mappedRefs = map[id];
+      if (expectedRefs === undefined || !mappedIds.has(id)) {
+        errors.push(semanticError(`/traceability/${field}`, "completeTraceability", `${id} must be declared by a Sub-task and mapped exactly once`));
+        continue;
+      }
+      const mapped = Array.isArray(mappedRefs) ? mappedRefs.filter((ref): ref is string => typeof ref === "string") : [];
+      const mappedSet = new Set(mapped);
+      if (mapped.length !== mappedSet.size || mapped.some((ref) => !refs.includes(ref)) || mappedSet.size !== expectedRefs.size || [...expectedRefs].some((ref) => !mappedSet.has(ref))) {
+        errors.push(semanticError(`/traceability/${field}/${id}`, "exactTraceability", "must reference exactly the Sub-tasks declaring this identifier"));
       }
     }
   }
@@ -135,8 +147,17 @@ export function goalPackageSetViolations(backlog: JsonObject, packages: readonly
       violations.push(`${ref}:package-count`);
       continue;
     }
-    const goal = objectValue(matchingPackages[0]?.goal);
+    const packageValue = matchingPackages[0];
+    const goal = objectValue(packageValue?.goal);
     if (goal === null || goal.goal_name !== story.goal_name || goal.target_completion_date !== story.target_completion_date || JSON.stringify(goal.definition_of_done) !== JSON.stringify(story.definition_of_done)) violations.push(`${ref}:goal-contract-mismatch`);
+    const traceability = objectValue(packageValue?.traceability);
+    for (const field of ["requirements", "acceptance_criteria"] as const) {
+      const declared = story[field];
+      const map = objectValue(traceability?.[field]);
+      const declaredIds = Array.isArray(declared) ? declared.filter((id): id is string => typeof id === "string") : [];
+      const mappedIds = map === null ? [] : Object.keys(map);
+      if (new Set(declaredIds).size !== declaredIds.length || declaredIds.length !== mappedIds.length || declaredIds.some((id) => !mappedIds.includes(id))) violations.push(`${ref}:${field.replace("_", "-")}-traceability-mismatch`);
+    }
   }
   return violations;
 }
