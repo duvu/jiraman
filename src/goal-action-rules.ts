@@ -27,6 +27,16 @@ function nonEmptyStrings(value: JsonValue | undefined): boolean {
   return Array.isArray(value) && value.length > 0 && value.every((item) => typeof item === "string" && item.length > 0);
 }
 
+function stringSet(value: JsonValue | undefined): ReadonlySet<string> | null {
+  if (!nonEmptyStrings(value) || !Array.isArray(value)) return null;
+  const values = value.filter((item): item is string => typeof item === "string");
+  return new Set(values).size === values.length ? new Set(values) : null;
+}
+
+function sameSet(left: ReadonlySet<string>, right: ReadonlySet<string>): boolean {
+  return left.size === right.size && [...left].every((value) => right.has(value));
+}
+
 function isJiraHierarchyAction(action: JsonObject): boolean {
   return action.system === "jira" && (action.operation === "issue.create" || action.operation === "issue.update" || action.operation === "issue.reuse");
 }
@@ -36,7 +46,6 @@ type HierarchyIssueType = "Epic" | "Story" | "Sub-task";
 interface ValidHierarchyAction {
   readonly index: number;
   readonly isCreate: boolean;
-  readonly requiresChildCoverage: boolean;
   readonly issueType: HierarchyIssueType;
   readonly ref: string;
   readonly parentRef: string | null;
@@ -70,7 +79,8 @@ function hierarchyFieldsValid(issueType: HierarchyIssueType, state: JsonObject, 
         typeof state.summary === "string" && state.summary.length > 0 && typeof state.outcome === "string" && state.outcome.length > 0 &&
         typeof state.validation === "string" && state.validation.length > 0 && typeof state.definition_of_done === "string" && state.definition_of_done.length > 0 &&
         typeof state.original_estimate_hours === "number" && state.original_estimate_hours > 0 && state.original_estimate_hours <= 4 &&
-        nonEmptyStrings(state.requirements) && nonEmptyStrings(state.parent_acceptance_criteria_refs) &&
+        stringSet(state.requirements) !== null && stringSet(state.parent_acceptance_criteria_refs) !== null &&
+        stringSet(state.parent_requirement_ids) !== null && stringSet(state.parent_acceptance_criteria_ids) !== null &&
         state.content_language === "vi-VN" && state.acceptance_criteria_storage === "managed-description-section" &&
         localAcceptanceCriterionErrors(state.acceptance_criteria, "").length === 0 && acceptanceCriteriaIds(state.acceptance_criteria) !== null;
   }
@@ -102,9 +112,11 @@ export function goalActionSemanticErrors(value: JsonValue): ErrorObject[] {
     if (action === null) continue;
     if (action.system === "jira" && action.operation === "issue.comment") {
       const comment = objectValue(action.desired_state);
-      if (comment?.purpose === "acceptance-criteria-gap") {
-        const commentErrors = acceptanceCriterionSemanticErrors(comment.acceptance_criteria, "");
-        if (comment.content_language !== "vi-VN" || comment.managed_content_only !== true || acceptanceCriteriaIds(comment.acceptance_criteria) === null || commentErrors.length > 0) {
+      const before = objectValue(action.before_state);
+      const targetMissingAcceptance = hierarchyIssueType(before?.issue_type) !== null && acceptanceCriteriaIds(before?.acceptance_criteria) === null;
+      if (targetMissingAcceptance || comment?.purpose === "acceptance-criteria-gap") {
+        const commentErrors = acceptanceCriterionSemanticErrors(comment?.acceptance_criteria, "");
+        if (comment === null || comment.purpose !== "acceptance-criteria-gap" || comment.content_language !== "vi-VN" || comment.managed_content_only !== true || acceptanceCriteriaIds(comment.acceptance_criteria) === null || commentErrors.length > 0) {
           errors.push(semanticError(index, "acceptanceCriteriaComment", "Acceptance Criteria gap comments require complete approved Vietnamese managed content"));
         }
       }
@@ -159,7 +171,6 @@ export function goalActionSemanticErrors(value: JsonValue): ErrorObject[] {
       validActions.push({
         index,
         isCreate,
-        requiresChildCoverage: isCreate || isReuse || desired.acceptance_criteria !== undefined,
         issueType,
         ref,
         parentRef: typeof effective.parent_ref === "string" ? effective.parent_ref : null,
@@ -182,14 +193,35 @@ export function goalActionSemanticErrors(value: JsonValue): ErrorObject[] {
       errors.push(semanticError(action.index, "parentAuthority", `${action.issueType} external parent requires authoritative AIPLATFORM ${expected} state`));
       invalidParentage.add(action.index);
     }
+    if (action.issueType === "Sub-task") {
+      const parentRequirementIds = stringSet(action.state.parent_requirement_ids);
+      const parentCriterionIds = stringSet(action.state.parent_acceptance_criteria_ids);
+      const requirementRefs = stringSet(action.state.requirements);
+      const criterionRefs = stringSet(action.state.parent_acceptance_criteria_refs);
+      if (parentRequirementIds === null || requirementRefs === null || [...requirementRefs].some((ref) => !parentRequirementIds.has(ref))) {
+        errors.push(semanticError(action.index, "resolvedParentRequirementReference", "Sub-task requirements must resolve to the authoritative parent Goal requirements"));
+        invalidParentage.add(action.index);
+      }
+      if (parentCriterionIds === null || criterionRefs === null || [...criterionRefs].some((ref) => !parentCriterionIds.has(ref))) {
+        errors.push(semanticError(action.index, "resolvedParentAcceptanceReference", "Sub-task parent Acceptance Criteria references must resolve to the authoritative parent Goal criteria"));
+        invalidParentage.add(action.index);
+      }
+      if (parent?.issueType === "Story" && parentRequirementIds !== null && parentCriterionIds !== null) {
+        const actualRequirementIds = stringSet(parent.state.requirements);
+        const actualCriterionIds = new Set(acceptanceCriteriaIds(parent.state.acceptance_criteria) ?? []);
+        if (actualRequirementIds === null || !sameSet(parentRequirementIds, actualRequirementIds) || !sameSet(parentCriterionIds, actualCriterionIds)) {
+          errors.push(semanticError(action.index, "parentContractAuthority", "Sub-task parent contract IDs must match the resolved Goal Story"));
+          invalidParentage.add(action.index);
+        }
+      }
+    }
   }
   const countable = validActions.filter((candidate) => !invalidParentage.has(candidate.index));
-  const createdEpicRefs = new Set(countable.filter((candidate) => candidate.isCreate && candidate.issueType === "Epic").map((candidate) => candidate.ref));
   for (const parent of countable.filter((candidate) => candidate.isCreate && candidate.issueType === "Epic")) {
     const goalCount = countable.filter((candidate) => candidate.issueType === "Story" && candidate.parentRef === parent.ref).length;
     if (goalCount < 2) errors.push(semanticError(parent.index, "minimumGoals", "an Epic create group requires at least two valid Goal Story writes"));
   }
-  for (const parent of countable.filter((candidate) => candidate.issueType === "Story" && (candidate.requiresChildCoverage || (candidate.parentRef !== null && createdEpicRefs.has(candidate.parentRef))))) {
+  for (const parent of countable.filter((candidate) => candidate.issueType === "Story")) {
     const children = countable.filter((candidate) => candidate.issueType === "Sub-task" && candidate.parentRef === parent.ref);
     if (parent.isCreate && children.length < 2) errors.push(semanticError(parent.index, "minimumSubtasks", "a Goal Story create group requires at least two valid Sub-task writes"));
     const goalRequirementIds = new Set(Array.isArray(parent.state.requirements) ? parent.state.requirements.filter((ref): ref is string => typeof ref === "string") : []);

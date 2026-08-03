@@ -33,16 +33,20 @@ function readyGoal(): JsonObject {
 describe("Acceptance Criteria adversarial contract", () => {
   test("rejects vague variants instead of only exact blacklist phrases", () => {
     // Given
-    const backlog = structuredClone(asObject(asObject(readJson("tests/fixtures/drafts/backlog.json"), "backlog fixture").data ?? null, "backlog"));
-    const story = asObject(asArray(backlog.stories, "Goal Stories")[0] ?? null, "Goal Story");
-    const item = asObject(asArray(story.acceptance_criteria, "Acceptance Criteria")[0] ?? null, "Acceptance Criterion");
-    item.verification = "đạt yêu cầu hoàn toàn";
+    const source = asObject(asObject(readJson("tests/fixtures/drafts/backlog.json"), "backlog fixture").data ?? null, "backlog");
+    const values = ["đạt yêu cầu hoàn toàn", "looks good", "acceptable", "tốt", "đúng"];
 
     // When
-    const result = validateJson("backlog-draft.schema.json", backlog);
+    const results = values.map((verification) => {
+      const backlog = structuredClone(source);
+      const story = asObject(asArray(backlog.stories, "Goal Stories")[0] ?? null, "Goal Story");
+      const item = asObject(asArray(story.acceptance_criteria, "Acceptance Criteria")[0] ?? null, "Acceptance Criterion");
+      item.verification = verification;
+      return validateJson("backlog-draft.schema.json", backlog);
+    });
 
     // Then
-    expect(result.errors.some((error) => error.keyword === "testableAcceptanceCriterion")).toBe(true);
+    expect(results.every((result) => result.errors.some((error) => error.keyword === "testableAcceptanceCriterion"))).toBe(true);
   });
 
   test("requires Ready goals to contain requirements and structured criteria", () => {
@@ -118,5 +122,63 @@ describe("Acceptance Criteria adversarial contract", () => {
     expect(descriptionErrors.some((error) => error.keyword === "managedAcceptanceSection")).toBe(true);
     expect(coverageErrors.some((error) => error.keyword === "goalAcceptanceSubtaskCoverage")).toBe(true);
     expect(requirementErrors.some((error) => error.keyword === "resolvedParentRequirementReference")).toBe(true);
+  });
+
+  test("requires child proof for ordinary Story updates and authoritative external parent IDs", () => {
+    // Given
+    const ordinaryUpdate = goalHierarchyGroup();
+    const ordinaryAction = structuredClone(asObject(asArray(ordinaryUpdate.actions, "ordinary actions")[1] ?? null, "Story action"));
+    const ordinaryBefore = asObject(ordinaryAction.desired_state ?? null, "Story state");
+    ordinaryAction.operation = "issue.update";
+    ordinaryAction.target_ref = "AIPLATFORM-101";
+    ordinaryAction.target_version = 7;
+    ordinaryAction.dependencies = [];
+    ordinaryAction.before_state = {...Object.fromEntries(Object.entries(ordinaryBefore).filter(([key]) => key !== "draft_ref")), parent_issue_type: "Epic", parent_project: "AIPLATFORM"};
+    ordinaryAction.desired_state = {summary: "Restore backups"};
+    ordinaryUpdate.actions = [ordinaryAction];
+
+    const externalSubtask = goalHierarchyGroup();
+    const subtaskAction = structuredClone(asObject(asArray(externalSubtask.actions, "external actions")[2] ?? null, "Sub-task action"));
+    const subtaskState = asObject(subtaskAction.desired_state ?? null, "Sub-task state");
+    subtaskAction.target_ref = "external-task";
+    subtaskAction.dependencies = [];
+    subtaskAction.desired_state = {
+      ...Object.fromEntries(Object.entries(subtaskState).filter(([key]) => key !== "draft_ref")),
+      parent_ref: "AIPLATFORM-101",
+      parent_issue_type: "Story",
+      parent_project: "AIPLATFORM",
+      parent_requirement_ids: ["REQ-1"],
+      parent_acceptance_criteria_ids: ["AC-1"],
+      requirements: ["REQ-999"],
+    };
+    externalSubtask.actions = [subtaskAction];
+
+    // When / Then
+    expect(goalActionSemanticErrors(ordinaryUpdate).some((error) => error.keyword === "goalAcceptanceSubtaskCoverage")).toBe(true);
+    expect(goalActionSemanticErrors(externalSubtask).some((error) => error.keyword === "resolvedParentRequirementReference")).toBe(true);
+  });
+
+  test("derives AC-gap comment safeguards from an authoritative missing-AC target", () => {
+    // Given
+    const desiredStates = [
+      {body: "Acceptance criteria are okay", managed_content_only: false},
+      {purpose: "ordinary-note", body: "Acceptance criteria are okay", managed_content_only: false},
+      {purpose: "acceptance-criteria-gap", content_language: "en-US", managed_content_only: false, acceptance_criteria: [criterion()]},
+    ];
+
+    // When
+    const results = desiredStates.map((desiredState) => {
+      const group = goalHierarchyGroup();
+      const action = structuredClone(asObject(asArray(group.actions, "comment actions")[0] ?? null, "comment action"));
+      action.operation = "issue.comment";
+      action.target_ref = "AIPLATFORM-101";
+      action.before_state = {project: "AIPLATFORM", issue_type: "Story", description: "human-authored text"};
+      action.desired_state = desiredState;
+      group.actions = [action];
+      return goalActionSemanticErrors(group);
+    });
+
+    // Then
+    expect(results.every((errors) => errors.some((error) => error.keyword === "acceptanceCriteriaComment"))).toBe(true);
   });
 });

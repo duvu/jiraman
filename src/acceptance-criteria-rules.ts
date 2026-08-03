@@ -11,6 +11,8 @@ const VAGUE_TEXT_PATTERNS = [
   /^stable(?: (?:enough|fully))*$/u,
   /^tested(?: (?:fully|completely))*$/u,
   /^works?(?: correctly| as expected)?(?: (?:fully|properly))*$/u,
+  /^(?:looks? good|acceptable|fine|satisfactory)$/u,
+  /^(?:tốt|đúng|chấp nhận được)$/u,
 ] as const;
 
 const IMPLEMENTATION_PREFIXES = [
