@@ -3,6 +3,7 @@ import type { ErrorObject } from "ajv";
 import {
   acceptanceCriteriaIds,
   acceptanceCriterionSemanticErrors,
+  epicAcceptanceCriterionErrors,
   goalAcceptanceCriterionErrors,
   localAcceptanceCriterionErrors,
 } from "./acceptance-criteria-rules.js";
@@ -35,6 +36,7 @@ type HierarchyIssueType = "Epic" | "Story" | "Sub-task";
 interface ValidHierarchyAction {
   readonly index: number;
   readonly isCreate: boolean;
+  readonly requiresChildCoverage: boolean;
   readonly issueType: HierarchyIssueType;
   readonly ref: string;
   readonly parentRef: string | null;
@@ -52,7 +54,7 @@ function hierarchyFieldsValid(issueType: HierarchyIssueType, state: JsonObject, 
   switch (issueType) {
     case "Epic":
       return ref !== null && typeof state.summary === "string" && state.summary.length > 0 && state.content_language === "vi-VN" &&
-        state.acceptance_criteria_storage === "managed-description-section" && acceptanceCriterionSemanticErrors(state.acceptance_criteria, "").length === 0 && acceptanceCriteriaIds(state.acceptance_criteria) !== null;
+        state.acceptance_criteria_storage === "managed-description-section" && epicAcceptanceCriterionErrors(state.acceptance_criteria, "").length === 0 && acceptanceCriteriaIds(state.acceptance_criteria) !== null;
     case "Story": {
       const deadlineEvidence = objectValue(state.target_completion_date_evidence);
       return typeof state.parent_ref === "string" && state.parent_ref.length > 0 &&
@@ -76,14 +78,16 @@ function hierarchyFieldsValid(issueType: HierarchyIssueType, state: JsonObject, 
 
 function hierarchyAcceptanceErrors(issueType: HierarchyIssueType, state: JsonObject): ErrorObject[] {
   switch (issueType) {
-    case "Epic": return acceptanceCriterionSemanticErrors(state.acceptance_criteria, "");
+    case "Epic": return epicAcceptanceCriterionErrors(state.acceptance_criteria, "");
     case "Story": return goalAcceptanceCriterionErrors(state.requirements, state.acceptance_criteria, "");
     case "Sub-task": return localAcceptanceCriterionErrors(state.acceptance_criteria, "");
   }
 }
 
 function acceptanceUpdateModeValid(operation: JsonValue | undefined, desired: JsonObject): boolean {
-  if (operation !== "issue.update" || desired.acceptance_criteria === undefined) return true;
+  if (operation !== "issue.update") return true;
+  if (desired.description !== undefined) return false;
+  if (desired.acceptance_criteria === undefined) return true;
   return desired.description_update_mode === "managed-section" && desired.managed_section === "acceptance-criteria" && desired.description === undefined;
 }
 
@@ -155,6 +159,7 @@ export function goalActionSemanticErrors(value: JsonValue): ErrorObject[] {
       validActions.push({
         index,
         isCreate,
+        requiresChildCoverage: isCreate || isReuse || desired.acceptance_criteria !== undefined,
         issueType,
         ref,
         parentRef: typeof effective.parent_ref === "string" ? effective.parent_ref : null,
@@ -179,29 +184,34 @@ export function goalActionSemanticErrors(value: JsonValue): ErrorObject[] {
     }
   }
   const countable = validActions.filter((candidate) => !invalidParentage.has(candidate.index));
-  for (const parent of countable.filter((candidate) => candidate.isCreate)) {
-    if (parent.issueType === "Epic") {
-      const goalCount = countable.filter((candidate) => candidate.issueType === "Story" && candidate.parentRef === parent.ref).length;
-      if (goalCount < 2) errors.push(semanticError(parent.index, "minimumGoals", "an Epic create group requires at least two valid Goal Story writes"));
+  const createdEpicRefs = new Set(countable.filter((candidate) => candidate.isCreate && candidate.issueType === "Epic").map((candidate) => candidate.ref));
+  for (const parent of countable.filter((candidate) => candidate.isCreate && candidate.issueType === "Epic")) {
+    const goalCount = countable.filter((candidate) => candidate.issueType === "Story" && candidate.parentRef === parent.ref).length;
+    if (goalCount < 2) errors.push(semanticError(parent.index, "minimumGoals", "an Epic create group requires at least two valid Goal Story writes"));
+  }
+  for (const parent of countable.filter((candidate) => candidate.issueType === "Story" && (candidate.requiresChildCoverage || (candidate.parentRef !== null && createdEpicRefs.has(candidate.parentRef))))) {
+    const children = countable.filter((candidate) => candidate.issueType === "Sub-task" && candidate.parentRef === parent.ref);
+    if (parent.isCreate && children.length < 2) errors.push(semanticError(parent.index, "minimumSubtasks", "a Goal Story create group requires at least two valid Sub-task writes"));
+    const goalRequirementIds = new Set(Array.isArray(parent.state.requirements) ? parent.state.requirements.filter((ref): ref is string => typeof ref === "string") : []);
+    const goalCriterionIds = new Set(acceptanceCriteriaIds(parent.state.acceptance_criteria) ?? []);
+    const implemented = new Set<string>();
+    for (const child of children) {
+      const requirementRefs = Array.isArray(child.state.requirements)
+        ? child.state.requirements.filter((ref): ref is string => typeof ref === "string")
+        : [];
+      if (requirementRefs.some((ref) => !goalRequirementIds.has(ref))) {
+        errors.push(semanticError(child.index, "resolvedParentRequirementReference", "Sub-task requirements must resolve to its Goal Story"));
+      }
+      const parentRefs = Array.isArray(child.state.parent_acceptance_criteria_refs)
+        ? child.state.parent_acceptance_criteria_refs.filter((ref): ref is string => typeof ref === "string")
+        : [];
+      if (parentRefs.some((ref) => !goalCriterionIds.has(ref))) {
+        errors.push(semanticError(child.index, "resolvedParentAcceptanceReference", "Sub-task parent Acceptance Criteria references must resolve to its Goal Story"));
+      }
+      for (const ref of parentRefs) implemented.add(ref);
     }
-    if (parent.issueType === "Story") {
-      const children = countable.filter((candidate) => candidate.issueType === "Sub-task" && candidate.parentRef === parent.ref);
-      const subtaskCount = children.length;
-      if (subtaskCount < 2) errors.push(semanticError(parent.index, "minimumSubtasks", "a Goal Story create group requires at least two valid Sub-task writes"));
-      const goalCriterionIds = new Set(acceptanceCriteriaIds(parent.state.acceptance_criteria) ?? []);
-      const implemented = new Set<string>();
-      for (const child of children) {
-        const parentRefs = Array.isArray(child.state.parent_acceptance_criteria_refs)
-          ? child.state.parent_acceptance_criteria_refs.filter((ref): ref is string => typeof ref === "string")
-          : [];
-        if (parentRefs.some((ref) => !goalCriterionIds.has(ref))) {
-          errors.push(semanticError(child.index, "resolvedParentAcceptanceReference", "Sub-task parent Acceptance Criteria references must resolve to its Goal Story"));
-        }
-        for (const ref of parentRefs) implemented.add(ref);
-      }
-      if ([...goalCriterionIds].some((id) => !implemented.has(id))) {
-        errors.push(semanticError(parent.index, "goalAcceptanceSubtaskCoverage", "every Goal Acceptance Criterion must be implemented or verified by at least one Sub-task"));
-      }
+    if ([...goalCriterionIds].some((id) => !implemented.has(id))) {
+      errors.push(semanticError(parent.index, "goalAcceptanceSubtaskCoverage", "every Goal Acceptance Criterion must be implemented or verified by at least one Sub-task"));
     }
   }
   return errors;

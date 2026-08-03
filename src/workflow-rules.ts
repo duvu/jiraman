@@ -111,7 +111,8 @@ export function goalReadinessViolations(goal: JsonObject): string[] {
   if (typeof goal.goal_name !== "string" || goal.goal_name.length === 0) violations.push("missing-goal-name");
   if (typeof goal.target_completion_date !== "string" || !validDate(goal.target_completion_date) || goal.deadline_evidence_verified !== true) violations.push("unverified-goal-deadline");
   if (!Array.isArray(goal.definition_of_done) || goal.definition_of_done.length === 0) violations.push("missing-goal-dod");
-  if (goalAcceptanceCriterionErrors(goal.requirements, goal.acceptance_criteria, "/acceptance_criteria").length > 0) violations.push("incomplete-acceptance-criteria");
+  const requirementsPresent = Array.isArray(goal.requirements) && goal.requirements.length > 0 && goal.requirements.every((value) => typeof value === "string" && value.length > 0);
+  if (!requirementsPresent || acceptanceCriteriaIds(goal.acceptance_criteria) === null || goalAcceptanceCriterionErrors(goal.requirements, goal.acceptance_criteria, "/acceptance_criteria").length > 0) violations.push("incomplete-acceptance-criteria");
   if (typeof goal.epic_parent !== "string" || !goal.epic_parent.startsWith("AIPLATFORM-")) violations.push("unverified-epic-parent");
   if (!Array.isArray(goal.subtasks) || goal.subtasks.length < 2) violations.push("insufficient-subtasks");
   if (Array.isArray(goal.subtasks) && goal.subtasks.some((value) => value === null || typeof value !== "object" || Array.isArray(value) || typeof value.estimate_hours !== "number" || value.estimate_hours <= 0 || value.estimate_hours > 4)) violations.push("invalid-subtask-estimate");

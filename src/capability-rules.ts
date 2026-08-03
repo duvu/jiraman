@@ -79,7 +79,7 @@ export function goalSchemaExpectationViolations(contract: JsonObject): string[] 
   };
   const violations: string[] = [];
   const acceptanceMapping = asObject(contract.acceptance_criteria_mapping ?? null, "Acceptance Criteria mapping");
-  if (acceptanceMapping.mode !== "managed-description-section" || acceptanceMapping.section_id !== "acceptance-criteria" || acceptanceMapping.heading !== "## Tiêu chí nghiệm thu" || acceptanceMapping.read_back_field !== "description" || acceptanceMapping.custom_field !== null || acceptanceMapping.comparison !== "id-statement-verification-exact") violations.push("acceptance-criteria-mapping");
+  if (acceptanceMapping.mode !== "managed-description-section" || acceptanceMapping.section_id !== "acceptance-criteria" || acceptanceMapping.heading !== "## Tiêu chí nghiệm thu" || acceptanceMapping.read_back_field !== "description" || acceptanceMapping.custom_field !== null || acceptanceMapping.comparison !== "all-approved-criterion-fields-exact") violations.push("acceptance-criteria-mapping");
   for (const [semantic, fields] of Object.entries(required)) {
     const expectation = asObject(expectations[semantic] ?? null, semantic);
     const configured = semantic === "jira.issue.read"

@@ -2,16 +2,16 @@ import type { ErrorObject } from "ajv";
 
 import type { JsonObject, JsonValue } from "./contracts.js";
 
-const VAGUE_TEXT = new Set([
-  "đã kiểm tra",
-  "đạt yêu cầu",
-  "hoạt động đúng",
-  "ổn định",
-  "ok",
-  "stable",
-  "tested",
-  "works correctly",
-]);
+const VAGUE_TEXT_PATTERNS = [
+  /^(?:đã )?kiểm tra(?: (?:xong|hoàn tất|hoàn toàn|đầy đủ))*$/u,
+  /^đạt yêu cầu(?: (?:hoàn toàn|đầy đủ|cơ bản|chung|mong đợi))*$/u,
+  /^hoạt động đúng(?: (?:hoàn toàn|ổn định|như mong đợi))*$/u,
+  /^ổn định(?: (?:hoàn toàn|đầy đủ))*$/u,
+  /^ok(?: (?:hoàn toàn|đầy đủ))*$/u,
+  /^stable(?: (?:enough|fully))*$/u,
+  /^tested(?: (?:fully|completely))*$/u,
+  /^works?(?: correctly| as expected)?(?: (?:fully|properly))*$/u,
+] as const;
 
 const IMPLEMENTATION_PREFIXES = [
   "add ",
@@ -40,6 +40,15 @@ function normalizedText(value: string): string {
   return value.toLocaleLowerCase("vi").trim().replace(/\s+/g, " ").replace(/[.!?]+$/g, "");
 }
 
+function canonicalCriterionValue(value: JsonValue): JsonValue {
+  if (typeof value === "string") return value.replace(/\r\n/g, "\n");
+  if (Array.isArray(value)) return value.map(canonicalCriterionValue).sort((left, right) => JSON.stringify(left).localeCompare(JSON.stringify(right)));
+  if (value !== null && typeof value === "object") {
+    return Object.fromEntries(Object.entries(value).sort(([left], [right]) => left.localeCompare(right)).map(([key, item]) => [key, canonicalCriterionValue(item)]));
+  }
+  return value;
+}
+
 function semanticError(instancePath: string, keyword: string, message: string): ErrorObject {
   return {
     instancePath,
@@ -56,6 +65,18 @@ function criterionObjects(value: JsonValue | undefined): readonly JsonObject[] |
   return criteria.every((criterion) => criterion !== null)
     ? criteria.filter((criterion): criterion is JsonObject => criterion !== null)
     : null;
+}
+
+function acceptanceCriterionShapeErrors(value: JsonValue | undefined, instancePath: string, fields: readonly string[]): ErrorObject[] {
+  const criteria = criterionObjects(value);
+  if (criteria === null) return [];
+  const expected = new Set(fields);
+  return criteria.flatMap((criterion, index) => {
+    const actual = Object.keys(criterion);
+    return actual.length === expected.size && actual.every((field) => expected.has(field))
+      ? []
+      : [semanticError(`${instancePath}/${index}`, "acceptanceCriterionShape", `must contain exactly ${fields.join(", ")}`)];
+  });
 }
 
 function stringIds(value: JsonValue | undefined): readonly string[] | null {
@@ -79,6 +100,16 @@ export function acceptanceCriteriaIds(value: JsonValue | undefined): readonly st
   return acceptanceCriterionSnapshots(value)?.map((criterion) => criterion.id) ?? null;
 }
 
+export function acceptanceCriteriaEqual(left: JsonValue | undefined, right: JsonValue | undefined): boolean {
+  const leftSnapshots = acceptanceCriterionSnapshots(left);
+  const rightSnapshots = acceptanceCriterionSnapshots(right);
+  if (leftSnapshots === null || rightSnapshots === null || leftSnapshots.length !== rightSnapshots.length || !Array.isArray(left) || !Array.isArray(right)) return false;
+  const normalized = (criteria: readonly JsonValue[]): JsonValue => criteria
+    .map(canonicalCriterionValue)
+    .sort((first, second) => JSON.stringify(first).localeCompare(JSON.stringify(second)));
+  return JSON.stringify(normalized(left)) === JSON.stringify(normalized(right));
+}
+
 export function acceptanceCriterionSemanticErrors(value: JsonValue | undefined, instancePath: string): ErrorObject[] {
   const criteria = criterionObjects(value);
   if (criteria === null) return [];
@@ -95,7 +126,7 @@ export function acceptanceCriterionSemanticErrors(value: JsonValue | undefined, 
       const text = criterion[field];
       if (typeof text !== "string" || text.trim().length === 0) continue;
       const normalized = normalizedText(text);
-      if (VAGUE_TEXT.has(normalized) || (field === "statement" && IMPLEMENTATION_PREFIXES.some((prefix) => normalized.startsWith(prefix)))) {
+      if (VAGUE_TEXT_PATTERNS.some((pattern) => pattern.test(normalized)) || (field === "statement" && IMPLEMENTATION_PREFIXES.some((prefix) => normalized.startsWith(prefix)))) {
         errors.push(semanticError(`${instancePath}/${index}/${field}`, "testableAcceptanceCriterion", `${field} must describe a concrete observable outcome or verification method`));
       }
     }
@@ -103,8 +134,18 @@ export function acceptanceCriterionSemanticErrors(value: JsonValue | undefined, 
   return errors;
 }
 
-export function goalAcceptanceCriterionErrors(requirements: JsonValue | undefined, criteriaValue: JsonValue | undefined, instancePath: string): ErrorObject[] {
-  const errors = acceptanceCriterionSemanticErrors(criteriaValue, instancePath);
+export function epicAcceptanceCriterionErrors(criteriaValue: JsonValue | undefined, instancePath: string): ErrorObject[] {
+  return [
+    ...acceptanceCriterionSemanticErrors(criteriaValue, instancePath),
+    ...acceptanceCriterionShapeErrors(criteriaValue, instancePath, ["id", "statement", "verification"]),
+  ];
+}
+
+function goalAcceptanceCriterionErrorsForFields(requirements: JsonValue | undefined, criteriaValue: JsonValue | undefined, instancePath: string, fields: readonly string[]): ErrorObject[] {
+  const errors = [
+    ...acceptanceCriterionSemanticErrors(criteriaValue, instancePath),
+    ...acceptanceCriterionShapeErrors(criteriaValue, instancePath, fields),
+  ];
   const criteria = criterionObjects(criteriaValue);
   const requirementIds = stringIds(requirements);
   if (criteria === null || requirementIds === null) return errors;
@@ -126,8 +167,17 @@ export function goalAcceptanceCriterionErrors(requirements: JsonValue | undefine
   return errors;
 }
 
+export function goalAcceptanceCriterionErrors(requirements: JsonValue | undefined, criteriaValue: JsonValue | undefined, instancePath: string): ErrorObject[] {
+  return goalAcceptanceCriterionErrorsForFields(requirements, criteriaValue, instancePath, ["id", "statement", "verification", "requirement_refs"]);
+}
+
+export function sourceAcceptanceCriterionErrors(requirements: JsonValue | undefined, criteriaValue: JsonValue | undefined, instancePath: string): ErrorObject[] {
+  return goalAcceptanceCriterionErrorsForFields(requirements, criteriaValue, instancePath, ["id", "statement", "verification", "requirement_refs", "source_section"]);
+}
+
 export function localAcceptanceCriterionErrors(criteriaValue: JsonValue | undefined, instancePath: string): ErrorObject[] {
   const errors = acceptanceCriterionSemanticErrors(criteriaValue, instancePath);
+  errors.push(...acceptanceCriterionShapeErrors(criteriaValue, instancePath, ["id", "statement", "verification", "validation_ref", "definition_of_done_ref"]));
   const criteria = criterionObjects(criteriaValue);
   if (criteria === null) return errors;
   for (const [index, criterion] of criteria.entries()) {

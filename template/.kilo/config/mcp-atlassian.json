@@ -27,7 +27,7 @@
     "heading": "## Tiêu chí nghiệm thu",
     "read_back_field": "description",
     "custom_field": null,
-    "comparison": "id-statement-verification-exact"
+    "comparison": "all-approved-criterion-fields-exact"
   },
   "capabilities": [
     {

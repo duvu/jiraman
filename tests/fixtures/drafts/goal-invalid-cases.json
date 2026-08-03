@@ -27,6 +27,7 @@
       {"case": "zero-estimate", "schema": "subtask-draft.schema.json", "expected_keyword": "exclusiveMinimum"},
       {"case": "oversized-estimate", "schema": "subtask-draft.schema.json", "expected_keyword": "maximum"},
       {"case": "invalid-parent-acceptance", "schema": "subtask-draft.schema.json", "expected_keyword": "resolvedParentAcceptanceReference"},
+      {"case": "invalid-parent-requirement", "schema": "subtask-draft.schema.json", "expected_keyword": "resolvedParentRequirementReference"},
       {"case": "unimplemented-goal-acceptance", "schema": "subtask-draft.schema.json", "expected_keyword": "goalAcceptanceSubtaskCoverage"},
       {"case": "missing-local-verification", "schema": "subtask-draft.schema.json", "expected_keyword": "required"},
       {"case": "duplicate-local-acceptance", "schema": "subtask-draft.schema.json", "expected_keyword": "uniqueAcceptanceCriterionIds"},

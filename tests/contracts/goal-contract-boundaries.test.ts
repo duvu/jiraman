@@ -78,6 +78,10 @@ describe("Goal contract boundaries", () => {
         case "invalid-parent-acceptance":
           if (subtask !== null) subtask.parent_acceptance_criteria_refs = ["AC-999"];
           break;
+        case "invalid-parent-requirement":
+          for (const value of subtasks) asObject(value, "Sub-task").requirements = ["REQ-999"];
+          asObject(value.traceability ?? null, "traceability").requirements = {"REQ-999": subtasks.map((value) => asString(asObject(value, "Sub-task").draft_ref, "Sub-task ref"))};
+          break;
         case "unimplemented-goal-acceptance": {
           const goal = asObject(value.goal ?? null, "Goal");
           const criteria = asArray(goal.acceptance_criteria, "Goal Acceptance Criteria");

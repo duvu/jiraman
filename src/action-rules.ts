@@ -1,6 +1,6 @@
 import { createHash } from "node:crypto";
 
-import { acceptanceCriterionSnapshots } from "./acceptance-criteria-rules.js";
+import { acceptanceCriteriaEqual } from "./acceptance-criteria-rules.js";
 import { type JsonValue } from "./contracts.js";
 
 export interface PreflightInput {
@@ -86,17 +86,7 @@ export function verificationOutcome(writeResult: "success" | "failure", readAfte
 }
 
 export function acceptanceCriteriaReadBackMatches(approved: JsonValue, readBack: JsonValue): boolean {
-  const approvedCriteria = acceptanceCriterionSnapshots(approved);
-  const readBackCriteria = acceptanceCriterionSnapshots(readBack);
-  if (approvedCriteria === null || readBackCriteria === null || approvedCriteria.length !== readBackCriteria.length) return false;
-  const normalized = (criteria: typeof approvedCriteria): JsonValue => criteria
-    .map((criterion) => ({
-      id: criterion.id,
-      statement: criterion.statement.replace(/\r\n/g, "\n"),
-      verification: criterion.verification.replace(/\r\n/g, "\n"),
-    }))
-    .sort((left, right) => left.id.localeCompare(right.id));
-  return JSON.stringify(normalized(approvedCriteria)) === JSON.stringify(normalized(readBackCriteria));
+  return acceptanceCriteriaEqual(approved, readBack);
 }
 
 export interface TargetPreflightInput {
