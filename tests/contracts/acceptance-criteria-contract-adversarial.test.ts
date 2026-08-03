@@ -51,6 +51,10 @@ describe("Acceptance Criteria adversarial contract", () => {
       "checklist",
       "test passes",
       "run test",
+      "review it",
+      "test all",
+      "check everything",
+      "kiểm tra nó",
     ];
 
     // When
@@ -91,6 +95,11 @@ describe("Acceptance Criteria adversarial contract", () => {
     const approvedGoal = [criterion()];
     const changedRequirement = structuredClone(approvedGoal);
     asObject(changedRequirement[0] ?? null, "changed Goal criterion").requirement_refs = ["REQ-999"];
+    const approvedReferences = [{...criterion(), requirement_refs: ["REQ-1", "REQ-2"]}];
+    const reorderedReferences = structuredClone(approvedReferences);
+    asObject(reorderedReferences[0] ?? null, "reordered references criterion").requirement_refs = ["REQ-2", "REQ-1"];
+    const approvedSequence = [criterion(), {...criterion(), id: "AC-2", statement: "Bằng chứng restore được lưu trong hồ sơ nghiệm thu"}];
+    const reorderedSequence = [approvedSequence[1] ?? {}, approvedSequence[0] ?? {}];
     const reorderedFields = [{verification: "Chạy restore drill và đối chiếu byte", requirement_refs: ["REQ-1"], statement: "Bản sao lưu được khôi phục nguyên vẹn", id: "AC-1"}];
     const approvedLocal = [{
       id: "AC-1",
@@ -105,6 +114,8 @@ describe("Acceptance Criteria adversarial contract", () => {
     // When / Then
     expect(acceptanceCriteriaReadBackMatches(approvedGoal, reorderedFields)).toBe(true);
     expect(acceptanceCriteriaReadBackMatches(approvedGoal, changedRequirement)).toBe(false);
+    expect(acceptanceCriteriaReadBackMatches(approvedReferences, reorderedReferences)).toBe(false);
+    expect(acceptanceCriteriaReadBackMatches(approvedSequence, reorderedSequence)).toBe(false);
     expect(acceptanceCriteriaReadBackMatches(approvedLocal, changedValidation)).toBe(false);
   });
 
@@ -193,12 +204,20 @@ describe("Acceptance Criteria adversarial contract", () => {
     forgedState.parent_acceptance_criteria_refs = ["AC-999"];
     forgedState.parent_requirement_ids = ["REQ-999"];
     forgedState.parent_acceptance_criteria_ids = ["AC-999"];
+    const invalidParentKeys = ["OTHER-999", "not-a-jira-key"].map((parentRef) => {
+      const invalid = structuredClone(validExternalSubtask);
+      const invalidAction = asObject(asArray(invalid.actions, "invalid parent-key actions")[0] ?? null, "invalid parent-key action");
+      asObject(invalidAction.desired_state ?? null, "invalid parent-key desired state").parent_ref = parentRef;
+      asObject(asObject(invalidAction.before_state ?? null, "invalid parent-key before state").parent_state ?? null, "invalid parent snapshot").issue_key = parentRef;
+      return invalid;
+    });
 
     // When / Then
     expect(goalActionSemanticErrors(ordinaryUpdate).some((error) => error.keyword === "goalAcceptanceSubtaskCoverage")).toBe(true);
     expect(goalActionSemanticErrors(externalSubtask).some((error) => error.keyword === "resolvedParentRequirementReference")).toBe(true);
     expect(goalActionSemanticErrors(validExternalSubtask)).toEqual([]);
     expect(goalActionSemanticErrors(forgedAuthority).some((error) => error.keyword === "parentAuthorityPlacement")).toBe(true);
+    expect(invalidParentKeys.every((group) => goalActionSemanticErrors(group).some((error) => error.keyword === "parentAuthority"))).toBe(true);
   });
 
   test("derives AC-gap comment safeguards from an authoritative missing-AC target", () => {

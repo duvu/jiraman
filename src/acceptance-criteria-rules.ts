@@ -6,7 +6,7 @@ const GENERIC_ASSESSMENT_END = /(?:^|\s)(?:(?:all|everything|it|kết quả|mọ
 
 const VERIFICATION_METHOD = /(?:^|[^\p{L}\p{N}])(?:assert(?:ion)?|audit|benchmark|check(?:list)?|compar(?:e|ison)|demo(?:nstration)?|drill|evidence|inspect(?:ion)?|log|measure(?:ment)?|metric|query|report|review|run|scan|test|validat(?:e|ion)|verif(?:y|ication)|walkthrough|bằng chứng|chạy|đo|đối chiếu|duyệt|ghi nhận|kiểm tra|thử|truy vấn|xác minh)(?=$|[^\p{L}\p{N}])/gu;
 
-const VERIFICATION_FILLER = /(?:^|[^\p{L}\p{N}])(?:and|after|before|by|complete(?:d)?|or|pass(?:ed|es)?|then|using|via|with|bằng|hoàn tất|qua|sau|sử dụng|trước|và|xong)(?=$|[^\p{L}\p{N}])/gu;
+const VERIFICATION_FILLER = /(?:^|[^\p{L}\p{N}])(?:all|and|after|anything|before|by|complete(?:d)?|everything|it|or|outcome|output|pass(?:ed|es)?|results?|something|that|them|then|this|using|via|with|bằng|cái này|điều đó|hoàn tất|kết quả|mọi thứ|nó|qua|sau|sử dụng|tất cả|trước|và|xong)(?=$|[^\p{L}\p{N}])/gu;
 
 const TECHNICAL_VERIFICATION = /(?:^|\s)(?:\.{0,2}\/|--?[a-z0-9]|https?:\/\/)|[\\/][a-z0-9_.-]+/u;
 
@@ -52,7 +52,7 @@ function isConcreteVerification(value: string): boolean {
 
 function canonicalCriterionValue(value: JsonValue): JsonValue {
   if (typeof value === "string") return value.replace(/\r\n/g, "\n");
-  if (Array.isArray(value)) return value.map(canonicalCriterionValue).sort((left, right) => JSON.stringify(left).localeCompare(JSON.stringify(right)));
+  if (Array.isArray(value)) return value.map(canonicalCriterionValue);
   if (value !== null && typeof value === "object") {
     return Object.fromEntries(Object.entries(value).sort(([left], [right]) => left.localeCompare(right)).map(([key, item]) => [key, canonicalCriterionValue(item)]));
   }
@@ -114,9 +114,7 @@ export function acceptanceCriteriaEqual(left: JsonValue | undefined, right: Json
   const leftSnapshots = acceptanceCriterionSnapshots(left);
   const rightSnapshots = acceptanceCriterionSnapshots(right);
   if (leftSnapshots === null || rightSnapshots === null || leftSnapshots.length !== rightSnapshots.length || !Array.isArray(left) || !Array.isArray(right)) return false;
-  const normalized = (criteria: readonly JsonValue[]): JsonValue => criteria
-    .map(canonicalCriterionValue)
-    .sort((first, second) => JSON.stringify(first).localeCompare(JSON.stringify(second)));
+  const normalized = (criteria: readonly JsonValue[]): JsonValue => criteria.map(canonicalCriterionValue);
   return JSON.stringify(normalized(left)) === JSON.stringify(normalized(right));
 }
 

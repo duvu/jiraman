@@ -190,7 +190,7 @@ export function goalActionSemanticErrors(value: JsonValue): ErrorObject[] {
     if (parent !== undefined && parent.issueType !== expected) {
       errors.push(semanticError(action.index, "parentType", `${action.issueType} parent must resolve to ${expected}`));
       invalidParentage.add(action.index);
-    } else if (parent === undefined && (action.parentState?.issue_key !== action.parentRef || action.parentState.issue_type !== expected || action.parentState.project !== "AIPLATFORM")) {
+    } else if (parent === undefined && (action.parentRef === null || !/^AIPLATFORM-[0-9]+$/.test(action.parentRef) || action.parentState?.issue_key !== action.parentRef || action.parentState.issue_type !== expected || action.parentState.project !== "AIPLATFORM")) {
       errors.push(semanticError(action.index, "parentAuthority", `${action.issueType} external parent requires authoritative AIPLATFORM ${expected} state`));
       invalidParentage.add(action.index);
     }
