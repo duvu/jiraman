@@ -13,7 +13,7 @@
     "content_language": {"const": "vi-VN"},
     "story_ref": {
       "type": "string",
-      "minLength": 1
+      "pattern": "^(?:story-[0-9]+|AIPLATFORM-[0-9]+)$"
     },
     "goal": {
       "type": "object",
@@ -26,13 +26,13 @@
         "acceptance_criteria"
       ],
       "properties": {
-        "goal_name": {"type": "string", "minLength": 1},
+        "goal_name": {"type": "string", "minLength": 1, "pattern": "[^\\p{White_Space}\\p{Default_Ignorable_Code_Point}]"},
         "target_completion_date": {"type": "string", "format": "date"},
         "definition_of_done": {
           "type": "array",
           "minItems": 1,
           "uniqueItems": true,
-          "items": {"type": "string", "minLength": 1}
+          "items": {"type": "string", "minLength": 1, "pattern": "[^\\p{White_Space}\\p{Default_Ignorable_Code_Point}]"}
         },
         "requirements": {
           "type": "array",
@@ -73,50 +73,50 @@
           "draft_ref": {
             "type": "string",
             "minLength": 1,
-            "pattern": "[^\\s\\u200B\\u200C\\u200D\\u2060\\uFEFF]"
+            "pattern": "[^\\p{White_Space}\\p{Default_Ignorable_Code_Point}]"
           },
           "title": {
             "type": "string",
             "minLength": 1,
-            "pattern": "[^\\s\\u200B\\u200C\\u200D\\u2060\\uFEFF]"
+            "pattern": "[^\\p{White_Space}\\p{Default_Ignorable_Code_Point}]"
           },
           "outcome": {
             "type": "string",
             "minLength": 1,
-            "pattern": "[^\\s\\u200B\\u200C\\u200D\\u2060\\uFEFF]"
+            "pattern": "[^\\p{White_Space}\\p{Default_Ignorable_Code_Point}]"
           },
           "in_scope": {
             "type": "array",
             "minItems": 1,
-            "items": {"type": "string", "minLength": 1, "pattern": "[^\\s\\u200B\\u200C\\u200D\\u2060\\uFEFF]"}
+            "items": {"type": "string", "minLength": 1, "pattern": "[^\\p{White_Space}\\p{Default_Ignorable_Code_Point}]"}
           },
           "out_of_scope": {
             "type": "array",
-            "items": {"type": "string", "minLength": 1, "pattern": "[^\\s\\u200B\\u200C\\u200D\\u2060\\uFEFF]"}
+            "items": {"type": "string", "minLength": 1, "pattern": "[^\\p{White_Space}\\p{Default_Ignorable_Code_Point}]"}
           },
           "steps": {
             "type": "array",
             "minItems": 1,
-            "items": {"type": "string", "minLength": 1, "pattern": "[^\\s\\u200B\\u200C\\u200D\\u2060\\uFEFF]"}
+            "items": {"type": "string", "minLength": 1, "pattern": "[^\\p{White_Space}\\p{Default_Ignorable_Code_Point}]"}
           },
           "affected_files": {
             "type": "array",
-            "items": {"type": "string", "minLength": 1, "pattern": "[^\\s\\u200B\\u200C\\u200D\\u2060\\uFEFF]"}
+            "items": {"type": "string", "minLength": 1, "pattern": "[^\\p{White_Space}\\p{Default_Ignorable_Code_Point}]"}
           },
           "dependencies": {
             "type": "array",
             "uniqueItems": true,
-            "items": {"type": "string", "minLength": 1, "pattern": "[^\\s\\u200B\\u200C\\u200D\\u2060\\uFEFF]"}
+            "items": {"type": "string", "minLength": 1, "pattern": "[^\\p{White_Space}\\p{Default_Ignorable_Code_Point}]"}
           },
           "validation": {
             "type": "string",
             "minLength": 1,
-            "pattern": "[^\\s\\u200B\\u200C\\u200D\\u2060\\uFEFF]"
+            "pattern": "[^\\p{White_Space}\\p{Default_Ignorable_Code_Point}]"
           },
           "definition_of_done": {
             "type": "string",
             "minLength": 1,
-            "pattern": "[^\\s\\u200B\\u200C\\u200D\\u2060\\uFEFF]"
+            "pattern": "[^\\p{White_Space}\\p{Default_Ignorable_Code_Point}]"
           },
           "estimate_hours": {
             "type": "number",

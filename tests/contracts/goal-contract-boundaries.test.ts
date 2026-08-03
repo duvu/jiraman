@@ -66,6 +66,15 @@ describe("Goal contract boundaries", () => {
         case "one-subtask":
           value.subtasks = [subtasks[0] ?? null];
           break;
+        case "invalid-story-ref":
+          value.story_ref = "OTHER-101";
+          break;
+        case "invisible-parent-goal-name":
+          asObject(value.goal ?? null, "parent Goal").goal_name = "\u00AD";
+          break;
+        case "invisible-parent-goal-dod":
+          asObject(value.goal ?? null, "parent Goal").definition_of_done = ["\u200E"];
+          break;
         case "duplicate-subtask-ref":
           asObject(subtasks[1] ?? null, "second Sub-task").draft_ref = "subtask-1";
           break;

@@ -138,6 +138,7 @@ describe("Acceptance Criteria adversarial contract", () => {
     const malformed: ReadonlyArray<readonly [string, JsonValue]> = [
       ["title", "   "],
       ["title", "\u200B"],
+      ["title", "\u00AD"],
       ["outcome", "\t"],
       ["in_scope", [null]],
       ["in_scope", ["   "]],
@@ -146,6 +147,7 @@ describe("Acceptance Criteria adversarial contract", () => {
       ["steps", [{}]],
       ["steps", ["\t"]],
       ["steps", ["\u200B"]],
+      ["steps", ["\u200E"]],
       ["affected_files", [42]],
       ["dependencies", [null]],
       ["dependencies", ["   "]],
@@ -174,6 +176,8 @@ describe("Acceptance Criteria adversarial contract", () => {
     invisibleName.goal_name = "\u200B";
     const invisibleDefinitionOfDone = readyGoal();
     invisibleDefinitionOfDone.definition_of_done = ["\u200B"];
+    const malformedEpicParent = readyGoal();
+    malformedEpicParent.epic_parent = "AIPLATFORM-X";
 
     // When / Then
     for (const goal of [missingRequirements, missingCriteria, emptyCriteria]) {
@@ -181,6 +185,7 @@ describe("Acceptance Criteria adversarial contract", () => {
     }
     expect(goalReadinessViolations(invisibleName)).toContain("missing-goal-name");
     expect(goalReadinessViolations(invisibleDefinitionOfDone)).toContain("missing-goal-dod");
+    expect(goalReadinessViolations(malformedEpicParent)).toContain("unverified-epic-parent");
   });
 
   test("requires Ready goals to prove every Goal criterion through child references", () => {
@@ -210,6 +215,7 @@ describe("Acceptance Criteria adversarial contract", () => {
       ["steps", [{}]],
       ["steps", ["\t"]],
       ["steps", ["\u200B"]],
+      ["steps", ["\u200E"]],
       ["affected_files", [42]],
     ];
     const malformedChildLists = malformedListValues.map(([field, value]) => {

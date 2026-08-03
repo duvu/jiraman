@@ -2,7 +2,8 @@ import { acceptanceCriteriaIds, goalAcceptanceCriterionErrors, localAcceptanceCr
 import { asArray, asObject, asString, invariant, validDate, type JsonObject, type JsonValue } from "./contracts.js";
 import { internalDependencyGraphValid } from "./dependency-rules.js";
 
-const VISIBLE_TEXT = /[^\s\u200B\u200C\u200D\u2060\uFEFF]/u;
+const VISIBLE_TEXT = /[^\p{White_Space}\p{Default_Ignorable_Code_Point}]/u;
+const JIRA_ISSUE_KEY = /^AIPLATFORM-[0-9]+$/;
 
 function objectValue(value: JsonValue | undefined): JsonObject | null {
   return value !== null && typeof value === "object" && !Array.isArray(value) ? value : null;
@@ -65,7 +66,7 @@ function goalChildTraceabilityValid(goal: JsonObject, requirementIds: readonly s
     const requirements = stringIds(subtask?.requirements);
     const criteria = stringIds(subtask?.parent_acceptance_criteria_refs);
     const dependencies = stringList(subtask?.dependencies);
-    if (subtask === null || typeof subtask.ref !== "string" || !/^AIPLATFORM-[0-9]+$/.test(subtask.ref) || subtaskRefs.has(subtask.ref) || requirements === null || criteria === null || dependencies === null ||
+    if (subtask === null || typeof subtask.ref !== "string" || !JIRA_ISSUE_KEY.test(subtask.ref) || subtaskRefs.has(subtask.ref) || requirements === null || criteria === null || dependencies === null ||
       requirements.some((id) => !declaredRequirements.has(id)) || criteria.some((id) => !declaredCriteria.has(id)) || typeof subtask.summary !== "string" || !VISIBLE_TEXT.test(subtask.summary) ||
       typeof subtask.outcome !== "string" || !VISIBLE_TEXT.test(subtask.outcome) || !stringArrayValid(subtask.in_scope, 1) || !stringArrayValid(subtask.out_of_scope, 0) ||
       !stringArrayValid(subtask.steps, 1) || !stringArrayValid(subtask.affected_files, 0) || typeof subtask.validation !== "string" || !VISIBLE_TEXT.test(subtask.validation) ||
@@ -104,12 +105,12 @@ export function runwayRecoveryViolations(input: JsonObject): string[] {
   const gaps = asArray(input.readiness_gaps, "readiness gaps").map((item) => asObject(item, "readiness gap"));
   const violations: string[] = [];
   for (const gap of gaps) {
-    if (typeof gap.story !== "string" || !gap.story.startsWith("AIPLATFORM-")) violations.push("missing-story");
+    if (typeof gap.story !== "string" || !JIRA_ISSUE_KEY.test(gap.story)) violations.push("missing-story");
     if (typeof gap.goal_name !== "string" || gap.goal_name.length === 0) violations.push("missing-goal-name");
     if (typeof gap.goal_deadline !== "string" || !validDate(gap.goal_deadline)) violations.push("missing-goal-deadline");
     if (typeof gap.goal_dod_gap !== "string" || gap.goal_dod_gap.length === 0) violations.push("missing-goal-dod-gap");
     if (typeof gap.valid_subtask_count !== "number" || gap.valid_subtask_count < 2) violations.push("insufficient-subtasks");
-    if (typeof gap.subtask !== "string" || !gap.subtask.startsWith("AIPLATFORM-")) violations.push("missing-subtask");
+    if (typeof gap.subtask !== "string" || !JIRA_ISSUE_KEY.test(gap.subtask)) violations.push("missing-subtask");
     if (typeof gap.gap !== "string" || gap.gap.length === 0) violations.push("missing-gap");
     if (typeof gap.recovery_action !== "string" || gap.recovery_action.length === 0) violations.push("missing-action");
     if (typeof gap.expected_readiness_effect !== "string" || gap.expected_readiness_effect.length === 0) violations.push("missing-effect");
@@ -148,7 +149,7 @@ export function candidateCanCommit(candidate: JsonObject): boolean {
       traceabilityMapValid(traceability.acceptance_criteria, acceptanceCriteria, subtaskRefs, acceptanceRelations) &&
       traceabilityMapValid(traceability.goal_definition_of_done, dodIds, subtaskRefs);
     const childTraceabilityValid = requirements !== null && acceptanceCriteria !== null && goalChildTraceabilityValid(value, requirements, acceptanceCriteria);
-    return deadlineFits && typeof value.story_ref === "string" && value.story_ref.startsWith("AIPLATFORM-") && typeof value.canonical_spec === "string" && VISIBLE_TEXT.test(value.canonical_spec) && typeof value.epic_parent === "string" && value.epic_parent.startsWith("AIPLATFORM-") && value.traceability_complete === true && traceabilityValid && childTraceabilityValid && value.readiness === "ready" && subtasksValid;
+    return deadlineFits && typeof value.story_ref === "string" && JIRA_ISSUE_KEY.test(value.story_ref) && typeof value.canonical_spec === "string" && VISIBLE_TEXT.test(value.canonical_spec) && typeof value.epic_parent === "string" && JIRA_ISSUE_KEY.test(value.epic_parent) && value.traceability_complete === true && traceabilityValid && childTraceabilityValid && value.readiness === "ready" && subtasksValid;
   });
 }
 
@@ -180,7 +181,7 @@ export function goalReadinessViolations(goal: JsonObject): string[] {
   const criteriaValid = requirementIds !== null && criterionIds !== null && goalAcceptanceCriterionErrors(goal.requirements, goal.acceptance_criteria, "/acceptance_criteria").length === 0;
   const childTraceabilityValid = criteriaValid && goalChildTraceabilityValid(goal, requirementIds, criterionIds);
   if (!criteriaValid || !childTraceabilityValid) violations.push("incomplete-acceptance-criteria");
-  if (typeof goal.epic_parent !== "string" || !goal.epic_parent.startsWith("AIPLATFORM-")) violations.push("unverified-epic-parent");
+  if (typeof goal.epic_parent !== "string" || !JIRA_ISSUE_KEY.test(goal.epic_parent)) violations.push("unverified-epic-parent");
   if (!Array.isArray(goal.subtasks) || goal.subtasks.length < 2) violations.push("insufficient-subtasks");
   if (Array.isArray(goal.subtasks) && goal.subtasks.some((value) => value === null || typeof value !== "object" || Array.isArray(value) || typeof value.estimate_hours !== "number" || value.estimate_hours <= 0 || value.estimate_hours > 4)) violations.push("invalid-subtask-estimate");
   if (typeof goal.estimate_hours === "number" && Array.isArray(goal.subtasks) && goal.subtasks.length > 0) violations.push("story-subtask-estimate-double-count");
