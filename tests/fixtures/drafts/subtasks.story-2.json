@@ -15,18 +15,20 @@
     "content_language": "vi-VN",
     "story_ref": "story-2",
     "goal": {
-      "goal_name": "Verify the rollback guide",
+      "content_language": "vi-VN",
+      "literal_preservation": {"policy_ref": ".kilo/config/jiraman.json#/language/preserved_literal_kinds", "mode": "exact"},
+      "goal_name": "Xác minh hướng dẫn quay lui",
       "target_completion_date": "2026-08-07",
       "definition_of_done": [
-        "A maintainer completes the rollback guide without undocumented steps",
-        "The reviewed guide links the successful validation evidence"
+        "Người bảo trì hoàn tất hướng dẫn quay lui mà không gặp bước chưa được mô tả",
+        "Hướng dẫn đã rà soát liên kết tới bằng chứng xác minh đạt yêu cầu"
       ],
       "requirements": ["REQ-2"],
       "acceptance_criteria": [
         {
           "id": "AC-2",
-          "statement": "Maintainer hoàn tất hướng dẫn rollback mà không gặp bước chưa được mô tả",
-          "verification": "Thực hiện walkthrough trong dự án tạm và ghi nhận không còn bước chưa xác định",
+          "statement": "Người bảo trì hoàn tất hướng dẫn quay lui mà không gặp bước chưa được mô tả",
+          "verification": "Kiểm tra từng bước trong dự án tạm và ghi nhận không còn bước chưa xác định",
           "requirement_refs": ["REQ-2"]
         }
       ]
@@ -34,23 +36,25 @@
     "subtasks": [
       {
         "draft_ref": "subtask-3",
-        "title": "Run the rollback guide walkthrough",
-        "outcome": "Every undocumented rollback step is identified",
-        "in_scope": ["rollback guide"],
-        "out_of_scope": ["production rollback"],
-        "steps": ["follow the guide in a temporary project", "record gaps"],
+        "content_language": "vi-VN",
+        "literal_preservation": {"policy_ref": ".kilo/config/jiraman.json#/language/preserved_literal_kinds", "mode": "exact"},
+        "title": "Kiểm tra từng bước của hướng dẫn quay lui",
+        "outcome": "Mọi bước quay lui chưa được mô tả đều được xác định",
+        "in_scope": ["hướng dẫn quay lui"],
+        "out_of_scope": ["quay lui môi trường sản xuất"],
+        "steps": ["làm theo hướng dẫn trong dự án tạm", "ghi nhận khoảng trống"],
         "affected_files": ["docs/rollback.md"],
         "dependencies": [],
-        "validation": "walkthrough notes contain no unresolved step",
-        "definition_of_done": "All guide gaps are recorded with a verification step",
+        "validation": "ghi chú kiểm tra không chứa bước chưa được xử lý",
+        "definition_of_done": "Mọi khoảng trống của hướng dẫn được ghi nhận cùng bước xác minh",
         "estimate_hours": 2,
         "requirements": ["REQ-2"],
         "parent_acceptance_criteria_refs": ["AC-2"],
         "acceptance_criteria": [
           {
             "id": "AC-1",
-            "statement": "Mọi bước rollback chưa được mô tả đều được ghi nhận",
-            "verification": "walkthrough notes contain no unresolved step",
+            "statement": "Mọi bước quay lui chưa được mô tả đều được ghi nhận",
+            "verification": "Ghi chú kiểm tra không chứa bước chưa được xử lý",
             "validation_ref": "VAL-1",
             "definition_of_done_ref": "DOD-1"
           }
@@ -58,23 +62,25 @@
       },
       {
         "draft_ref": "subtask-4",
-        "title": "Verify the corrected rollback guide",
-        "outcome": "A second walkthrough completes without undocumented steps",
-        "in_scope": ["corrected rollback guide"],
-        "out_of_scope": ["production rollback"],
-        "steps": ["repeat the temporary-project walkthrough", "link sanitized evidence"],
+        "content_language": "vi-VN",
+        "literal_preservation": {"policy_ref": ".kilo/config/jiraman.json#/language/preserved_literal_kinds", "mode": "exact"},
+        "title": "Xác minh hướng dẫn quay lui đã chỉnh sửa",
+        "outcome": "Lần kiểm tra thứ hai hoàn tất mà không có bước chưa được mô tả",
+        "in_scope": ["hướng dẫn quay lui đã chỉnh sửa"],
+        "out_of_scope": ["quay lui môi trường sản xuất"],
+        "steps": ["lặp lại quy trình kiểm tra trong dự án tạm", "liên kết bằng chứng đã làm sạch"],
         "affected_files": ["docs/rollback.md", "docs/manual-smoke-tests.md"],
         "dependencies": ["subtask-3"],
-        "validation": "second walkthrough passes",
-        "definition_of_done": "The reviewed guide links the passing walkthrough evidence",
+        "validation": "đối chiếu hướng dẫn với danh sách bước và xác nhận không còn bước thiếu",
+        "definition_of_done": "Hướng dẫn đã rà soát liên kết tới bằng chứng kiểm tra đạt yêu cầu",
         "estimate_hours": 3,
         "requirements": ["REQ-2"],
         "parent_acceptance_criteria_refs": ["AC-2"],
         "acceptance_criteria": [
           {
             "id": "AC-1",
-            "statement": "Walkthrough lần hai hoàn tất mà không có bước chưa được mô tả",
-            "verification": "second walkthrough passes",
+            "statement": "Lần kiểm tra thứ hai hoàn tất mà không có bước chưa được mô tả",
+            "verification": "Đối chiếu hướng dẫn với danh sách bước và xác nhận không còn bước thiếu",
             "validation_ref": "VAL-1",
             "definition_of_done_ref": "DOD-1"
           }

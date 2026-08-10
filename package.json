@@ -28,6 +28,7 @@
     "validate:subtask-drafts": "npm run build --silent && node dist/src/validate.js subtask-drafts",
     "validate:actions": "npm run build --silent && node dist/src/validate.js actions",
     "validate:workflow-fixtures": "npm run build --silent && node dist/src/validate.js workflow-fixtures",
+    "validate:jira-language-fixtures": "npm run build --silent && node dist/src/validate.js jira-language-fixtures",
     "validate:deliverable-fixtures": "npm run build --silent && node dist/src/validate.js deliverable-fixtures",
     "validate:mcp-fixtures": "npm run build --silent && node dist/src/validate.js mcp-fixtures",
     "validate:docs": "npm run build --silent && node dist/src/validate.js docs",

@@ -19,6 +19,8 @@
       "type": "object",
       "additionalProperties": false,
       "required": [
+        "content_language",
+        "literal_preservation",
         "goal_name",
         "target_completion_date",
         "definition_of_done",
@@ -26,6 +28,9 @@
         "acceptance_criteria"
       ],
       "properties": {
+        "content_language": {"$ref": "https://duvu.github.io/jiraman/schemas/jira-content-metadata.schema.json#/definitions/language-tag"},
+        "language_override": {"$ref": "https://duvu.github.io/jiraman/schemas/jira-content-metadata.schema.json#/definitions/language-override"},
+        "literal_preservation": {"$ref": "https://duvu.github.io/jiraman/schemas/jira-content-metadata.schema.json#/definitions/literal-preservation"},
         "goal_name": {"type": "string", "minLength": 1, "pattern": "^(?![\\s\\S]*[\\p{Default_Ignorable_Code_Point}\\p{Cc}])(?=[\\s\\S]*[\\p{L}\\p{N}])"},
         "target_completion_date": {"type": "string", "format": "date"},
         "definition_of_done": {
@@ -55,6 +60,8 @@
         "additionalProperties": false,
         "required": [
           "draft_ref",
+          "content_language",
+          "literal_preservation",
           "title",
           "outcome",
           "in_scope",
@@ -70,6 +77,9 @@
           "acceptance_criteria"
         ],
         "properties": {
+          "content_language": {"$ref": "https://duvu.github.io/jiraman/schemas/jira-content-metadata.schema.json#/definitions/language-tag"},
+          "language_override": {"$ref": "https://duvu.github.io/jiraman/schemas/jira-content-metadata.schema.json#/definitions/language-override"},
+          "literal_preservation": {"$ref": "https://duvu.github.io/jiraman/schemas/jira-content-metadata.schema.json#/definitions/literal-preservation"},
           "draft_ref": {
             "type": "string",
             "minLength": 1,

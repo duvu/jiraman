@@ -10,7 +10,7 @@ function criterion(): JsonObject {
   return {
     id: "AC-1",
     statement: "Bản sao lưu được khôi phục nguyên vẹn",
-    verification: "Chạy restore drill và đối chiếu byte",
+    verification: "Chạy diễn tập khôi phục và đối chiếu từng byte",
     requirement_refs: ["REQ-1"],
   };
 }
@@ -18,8 +18,8 @@ function criterion(): JsonObject {
 function localCriterion(): JsonObject {
   return {
     id: "AC-1",
-    statement: "Bằng chứng restore được lưu trong hồ sơ nghiệm thu",
-    verification: "review restore evidence checklist",
+    statement: "Bằng chứng khôi phục được lưu trong hồ sơ nghiệm thu",
+    verification: "Rà soát danh sách kiểm tra bằng chứng khôi phục",
     validation_ref: "VAL-1",
     definition_of_done_ref: "DOD-1",
   };
@@ -27,16 +27,16 @@ function localCriterion(): JsonObject {
 
 function readyGoal(): JsonObject {
   return {
-    goal_name: "Restore backups",
+    goal_name: "Khôi phục bản sao lưu",
     target_completion_date: "2026-08-07",
     deadline_evidence_verified: true,
-    definition_of_done: ["Restore evidence accepted"],
+    definition_of_done: ["Bằng chứng khôi phục được chấp nhận"],
     epic_parent: "AIPLATFORM-100",
     requirements: ["REQ-1"],
     acceptance_criteria: [criterion()],
     subtasks: [
-      {ref: "AIPLATFORM-101", summary: "Run restore drill", outcome: "Restore is verified", in_scope: ["restore drill"], out_of_scope: ["production restore"], steps: ["run the drill"], affected_files: ["docs/rollback.md"], validation: "restore test", definition_of_done: "Evidence is attached", dependencies: [], estimate_hours: 2, requirements: ["REQ-1"], parent_acceptance_criteria_refs: ["AC-1"], content_language: "vi-VN", acceptance_criteria_storage: "managed-description-section", acceptance_criteria: [localCriterion()]},
-      {ref: "AIPLATFORM-102", summary: "Review restore evidence", outcome: "Evidence is accepted", in_scope: ["restore evidence"], out_of_scope: ["production changes"], steps: ["review the evidence"], affected_files: ["docs/manual-smoke-tests.md"], validation: "review checklist", definition_of_done: "Review is recorded", dependencies: ["AIPLATFORM-101"], estimate_hours: 3, requirements: ["REQ-1"], parent_acceptance_criteria_refs: ["AC-1"], content_language: "vi-VN", acceptance_criteria_storage: "managed-description-section", acceptance_criteria: [localCriterion()]},
+      {ref: "AIPLATFORM-101", summary: "Chạy diễn tập khôi phục", outcome: "Việc khôi phục được xác minh", in_scope: ["diễn tập khôi phục"], out_of_scope: ["khôi phục môi trường sản xuất"], steps: ["chạy diễn tập"], affected_files: ["docs/rollback.md"], validation: "kiểm thử khôi phục", definition_of_done: "Bằng chứng được đính kèm", dependencies: [], estimate_hours: 2, requirements: ["REQ-1"], parent_acceptance_criteria_refs: ["AC-1"], content_language: "vi-VN", acceptance_criteria_storage: "managed-description-section", acceptance_criteria: [localCriterion()]},
+      {ref: "AIPLATFORM-102", summary: "Rà soát bằng chứng khôi phục", outcome: "Bằng chứng được chấp nhận", in_scope: ["bằng chứng khôi phục"], out_of_scope: ["thay đổi môi trường sản xuất"], steps: ["rà soát bằng chứng"], affected_files: ["docs/manual-smoke-tests.md"], validation: "rà soát danh sách kiểm tra", definition_of_done: "Kết quả rà soát được ghi nhận", dependencies: ["AIPLATFORM-101"], estimate_hours: 3, requirements: ["REQ-1"], parent_acceptance_criteria_refs: ["AC-1"], content_language: "vi-VN", acceptance_criteria_storage: "managed-description-section", acceptance_criteria: [localCriterion()]},
     ],
     traceability_complete: true,
     dependencies: [],
@@ -259,11 +259,11 @@ describe("Acceptance Criteria adversarial contract", () => {
     const approvedReferences = [{...criterion(), requirement_refs: ["REQ-1", "REQ-2"]}];
     const reorderedReferences = structuredClone(approvedReferences);
     asObject(reorderedReferences[0] ?? null, "reordered references criterion").requirement_refs = ["REQ-2", "REQ-1"];
-    const approvedSequence = [criterion(), {...criterion(), id: "AC-2", statement: "Bằng chứng restore được lưu trong hồ sơ nghiệm thu"}];
+    const approvedSequence = [criterion(), {...criterion(), id: "AC-2", statement: "Bằng chứng khôi phục được lưu trong hồ sơ nghiệm thu"}];
     const reorderedSequence = [approvedSequence[1] ?? {}, approvedSequence[0] ?? {}];
     const crlfCriterion = [{...criterion(), statement: "Dòng một\r\nDòng hai"}];
     const lfCriterion = [{...criterion(), statement: "Dòng một\nDòng hai"}];
-    const reorderedFields = [{verification: "Chạy restore drill và đối chiếu byte", requirement_refs: ["REQ-1"], statement: "Bản sao lưu được khôi phục nguyên vẹn", id: "AC-1"}];
+    const reorderedFields = [{verification: "Chạy diễn tập khôi phục và đối chiếu từng byte", requirement_refs: ["REQ-1"], statement: "Bản sao lưu được khôi phục nguyên vẹn", id: "AC-1"}];
     const approvedLocal = [{
       id: "AC-1",
       statement: "Bằng chứng được lưu trong hồ sơ nghiệm thu",
@@ -296,7 +296,7 @@ describe("Acceptance Criteria adversarial contract", () => {
     const uncoveredUpdate = goalHierarchyGroup();
     const uncoveredAction = asObject(asArray(uncoveredUpdate.actions, "coverage actions")[1] ?? null, "Story action");
     const uncoveredBefore = structuredClone(asObject(uncoveredAction.desired_state ?? null, "Story state"));
-    const secondCriterion = {...criterion(), id: "AC-2", statement: "Bằng chứng restore được lưu trong hồ sơ nghiệm thu"};
+    const secondCriterion = {...criterion(), id: "AC-2", statement: "Bằng chứng khôi phục được lưu trong hồ sơ nghiệm thu"};
     uncoveredAction.operation = "issue.update";
     uncoveredAction.target_version = 7;
     uncoveredAction.before_state = uncoveredBefore;
@@ -335,7 +335,7 @@ describe("Acceptance Criteria adversarial contract", () => {
       parent_ref: "AIPLATFORM-100",
       parent_state: {issue_key: "AIPLATFORM-100", issue_type: "Epic", project: "AIPLATFORM"},
     };
-    ordinaryAction.desired_state = {summary: "Restore backups"};
+    ordinaryAction.desired_state = {summary: "Khôi phục bản sao lưu"};
     ordinaryUpdate.actions = [ordinaryAction];
 
     const externalSubtask = goalHierarchyGroup();
@@ -390,7 +390,7 @@ describe("Acceptance Criteria adversarial contract", () => {
       {body: "Acceptance criteria are okay", managed_content_only: false},
       {purpose: "ordinary-note", body: "Acceptance criteria are okay", managed_content_only: false},
       {purpose: "acceptance-criteria-gap", content_language: "en-US", managed_content_only: false, acceptance_criteria: [criterion()]},
-      {purpose: "acceptance-criteria-gap", content_language: "vi-VN", managed_content_only: true, acceptance_criteria: [{id: "AC-1", statement: "Bản sao lưu được khôi phục nguyên vẹn", verification: "Chạy restore drill và đối chiếu byte"}]},
+      {purpose: "acceptance-criteria-gap", content_language: "vi-VN", managed_content_only: true, acceptance_criteria: [{id: "AC-1", statement: "Bản sao lưu được khôi phục nguyên vẹn", verification: "Chạy diễn tập khôi phục và đối chiếu từng byte"}]},
       {purpose: "acceptance-criteria-gap", content_language: "vi-VN", managed_content_only: true, acceptance_criteria: [{...criterion(), requirement_refs: ["REQ-999"]}]},
     ];
 

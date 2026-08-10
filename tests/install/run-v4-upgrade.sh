@@ -1,12 +1,13 @@
 #!/usr/bin/env bash
 set -euo pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
-TARGET="$ROOT/tests/install/output/upgraded-project"
-SPOOFED="$ROOT/tests/install/output/spoofed-v5-project"
-INVALID="$ROOT/tests/install/output/invalid-v5-project"
-MALFORMED="$ROOT/tests/install/output/malformed-v5-project"
-INTEGRITY="$ROOT/tests/install/output/state-integrity"
-rm -rf "$TARGET" "$SPOOFED" "$INVALID" "$MALFORMED" "$INTEGRITY"
+OUTPUT_ROOT="$(mktemp -d)"
+trap 'rm -rf "$OUTPUT_ROOT"' EXIT
+TARGET="$OUTPUT_ROOT/upgraded-project"
+SPOOFED="$OUTPUT_ROOT/spoofed-v5-project"
+INVALID="$OUTPUT_ROOT/invalid-v5-project"
+MALFORMED="$OUTPUT_ROOT/malformed-v5-project"
+INTEGRITY="$OUTPUT_ROOT/state-integrity"
 mkdir -p "$TARGET"
 cp -a "$ROOT/tests/install/fixtures/v4-project/." "$TARGET/"
 cp "$TARGET/.kilo/mcp.json" "$TARGET/mcp.before"

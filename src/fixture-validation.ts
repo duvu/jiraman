@@ -24,6 +24,7 @@ export const FIXTURE_DOMAINS: Readonly<Record<string, readonly string[]>> = {
   "subtask-drafts": ["tests/fixtures/drafts"],
   "workflow-fixtures": ["tests/fixtures/workflows"],
   "deliverable-fixtures": ["tests/fixtures/deliverables"],
+  "jira-language-fixtures": ["tests/fixtures/language"],
 };
 
 export function validateFixtures(domain: string): void {

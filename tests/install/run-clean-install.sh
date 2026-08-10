@@ -1,13 +1,14 @@
 #!/usr/bin/env bash
 set -euo pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
-TARGET="$ROOT/tests/install/output/clean-project"
-SYMLINK_TARGET="$ROOT/tests/install/output/symlink-project"
-OUTSIDE="$ROOT/tests/install/output/outside-agents"
-RACE_TARGET="$ROOT/tests/install/output/race-project"
-RACE_OUTSIDE="$ROOT/tests/install/output/race-outside"
-PERMISSION_ROOT="$ROOT/tests/install/output/permission-project"
-rm -rf "$TARGET" "$SYMLINK_TARGET" "$OUTSIDE" "$RACE_TARGET" "$RACE_OUTSIDE" "$PERMISSION_ROOT"-*
+OUTPUT_ROOT="$(mktemp -d)"
+trap 'rm -rf "$OUTPUT_ROOT"' EXIT
+TARGET="$OUTPUT_ROOT/clean-project"
+SYMLINK_TARGET="$OUTPUT_ROOT/symlink-project"
+OUTSIDE="$OUTPUT_ROOT/outside-agents"
+RACE_TARGET="$OUTPUT_ROOT/race-project"
+RACE_OUTSIDE="$OUTPUT_ROOT/race-outside"
+PERMISSION_ROOT="$OUTPUT_ROOT/permission-project"
 mkdir -p "$TARGET/.kilo"
 printf '%s\n' '{"servers":{"mcp-atlassian":{"command":"USER-OWNED-SENTINEL"}}}' > "$TARGET/.kilo/mcp.json"
 cp "$TARGET/.kilo/mcp.json" "$TARGET/mcp.before"
@@ -20,11 +21,27 @@ for relative in \
   "docs/project-management/templates/jira/sub-task.md"; do
   [[ -f "$TARGET/$relative" ]] || { echo "missing installed Jira template: $relative" >&2; exit 1; }
 done
+for relative in \
+  "docs/project-management/templates/jira/index.json" \
+  "docs/project-management/templates/jira/epic.md" \
+  "docs/project-management/templates/jira/goal-story.md" \
+  "docs/project-management/templates/jira/sub-task.md"; do
+  cmp "$ROOT/template/$relative" "$TARGET/$relative"
+done
+cmp "$ROOT/template/.kilo/config/jiraman.json" "$TARGET/.kilo/config/jiraman.json"
 grep -q '## Tiêu chí nghiệm thu' "$TARGET/docs/project-management/templates/jira/epic.md"
 grep -q '## Tiêu chí nghiệm thu' "$TARGET/docs/project-management/templates/jira/goal-story.md"
 grep -q '## Tiêu chí nghiệm thu' "$TARGET/docs/project-management/templates/jira/sub-task.md"
 "$ROOT/install.sh" "$TARGET" --check >/dev/null
 cmp "$TARGET/mcp.before" "$TARGET/.kilo/mcp.json"
+cp "$TARGET/.kilo/agents/jiraman.md" "$TARGET/agent.before"
+printf '\ncontent-drift-canary\n' >> "$TARGET/.kilo/agents/jiraman.md"
+if "$ROOT/install.sh" "$TARGET" --check >"$TARGET/drift-check.out" 2>&1; then echo "expected managed-content drift rejection" >&2; exit 1; fi
+grep -q 'managed content drift: .kilo/agents/jiraman.md' "$TARGET/drift-check.out"
+mv "$TARGET/agent.before" "$TARGET/.kilo/agents/jiraman.md"
+cp "$ROOT/tests/fixtures/state/vietnamese-content.valid.json" "$TARGET/.kilo/state/jiraman.json"
+cmp "$ROOT/tests/fixtures/state/vietnamese-content.valid.json" "$TARGET/.kilo/state/jiraman.json"
+"$ROOT/verify.sh" "$TARGET" >/dev/null
 if "$ROOT/install.sh" "$TARGET" >"$TARGET/reinstall.out" 2>&1; then echo "expected conflict refusal" >&2; exit 1; fi
 grep -q '.kilo/agents/jiraman.md' "$TARGET/reinstall.out"
 find "$TARGET/.kilo" -type f | while read -r path; do extension="${path##*.}"; [[ "$extension" != "p""y" ]]; done

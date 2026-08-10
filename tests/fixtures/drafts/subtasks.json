@@ -15,11 +15,13 @@
     "content_language": "vi-VN",
     "story_ref": "story-1",
     "goal": {
-      "goal_name": "Restore v4 backups safely",
+      "content_language": "vi-VN",
+      "literal_preservation": {"policy_ref": ".kilo/config/jiraman.json#/language/preserved_literal_kinds", "mode": "exact"},
+      "goal_name": "Khôi phục an toàn bản sao lưu v4",
       "target_completion_date": "2026-08-07",
       "definition_of_done": [
-        "A clean v5 installation is restored byte-for-byte from the v4 backup",
-        "The rollback drill evidence is attached to the Goal Story"
+        "Bản cài đặt v5 sạch được khôi phục từng byte từ bản sao lưu v4",
+        "Bằng chứng diễn tập quay lui được đính kèm vào Story mục tiêu"
       ],
       "requirements": ["REQ-1"],
       "acceptance_criteria": [
@@ -34,24 +36,26 @@
     "subtasks": [
       {
         "draft_ref": "subtask-1",
-        "title": "Verify v4 backup restoration",
-        "outcome": "A byte comparison proves restoration",
+        "content_language": "vi-VN",
+        "literal_preservation": {"policy_ref": ".kilo/config/jiraman.json#/language/preserved_literal_kinds", "mode": "exact"},
+        "title": "Xác minh việc khôi phục bản sao lưu v4",
+        "outcome": "Phép so sánh từng byte chứng minh việc khôi phục",
         "in_scope": [
-          "fixture backup"
+          "bản sao lưu fixture"
         ],
         "out_of_scope": [
-          "live project"
+          "dự án đang hoạt động"
         ],
         "steps": [
-          "install fixture",
-          "compare files"
+          "cài đặt fixture",
+          "so sánh tệp"
         ],
         "affected_files": [
           "install.sh"
         ],
         "dependencies": [],
         "validation": "./tests/install/run-v4-upgrade.sh",
-        "definition_of_done": "test exits zero",
+        "definition_of_done": "kiểm thử kết thúc với mã 0",
         "estimate_hours": 3,
         "requirements": [
           "REQ-1"
@@ -69,17 +73,19 @@
       },
       {
         "draft_ref": "subtask-2",
-        "title": "Attach rollback verification evidence",
-        "outcome": "The Goal Story contains the reviewed rollback evidence",
+        "content_language": "vi-VN",
+        "literal_preservation": {"policy_ref": ".kilo/config/jiraman.json#/language/preserved_literal_kinds", "mode": "exact"},
+        "title": "Đính kèm bằng chứng xác minh quay lui",
+        "outcome": "Story mục tiêu chứa bằng chứng quay lui đã được rà soát",
         "in_scope": [
-          "synthetic verification report"
+          "báo cáo xác minh tổng hợp"
         ],
         "out_of_scope": [
-          "live project"
+          "dự án đang hoạt động"
         ],
         "steps": [
-          "review the comparison output",
-          "attach the sanitized evidence reference"
+          "rà soát kết quả so sánh",
+          "đính kèm tham chiếu bằng chứng đã được làm sạch"
         ],
         "affected_files": [
           "docs/manual-smoke-tests.md"
@@ -88,7 +94,7 @@
           "subtask-1"
         ],
         "validation": "./verify.sh --source-tree",
-        "definition_of_done": "The sanitized evidence reference resolves and the source contract passes",
+        "definition_of_done": "Tham chiếu bằng chứng đã làm sạch truy cập được và contract nguồn đạt yêu cầu",
         "estimate_hours": 2,
         "requirements": [
           "REQ-1"
@@ -97,7 +103,7 @@
         "acceptance_criteria": [
           {
             "id": "AC-1",
-            "statement": "Goal Story chứa liên kết bằng chứng rollback đã được review",
+            "statement": "Story mục tiêu chứa liên kết bằng chứng quay lui đã được rà soát",
             "verification": "./verify.sh --source-tree",
             "validation_ref": "VAL-1",
             "definition_of_done_ref": "DOD-1"

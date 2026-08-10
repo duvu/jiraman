@@ -1,11 +1,22 @@
 import { describe, expect, test } from "vitest";
 
+import { canonicalPayloadHash } from "../../src/action-rules.js";
 import { asArray, asObject, asString, parseFrontmatter, readJson, readText, validateJson, type JsonObject } from "../../src/contracts.js";
 import { inspectUntrustedContent } from "../../src/security-rules.js";
 import { candidateCanCommit, sprintReviewAccepted } from "../../src/workflow-rules.js";
 import { goalPolicyMetadataValid } from "../../src/goal-rules.js";
 import { goalContractMetadataViolations, type IndexedGoalDocument } from "../../src/goal-contract-metadata-rules.js";
 import { goalHierarchyGroup } from "./goal-hierarchy-fixture.js";
+
+const VIETNAMESE_ACTION_METADATA = {
+  content_language: "vi-VN",
+  literal_preservation: {policy_ref: ".kilo/config/jiraman.json#/language/preserved_literal_kinds", mode: "exact"},
+};
+
+function rehash(group: JsonObject): JsonObject {
+  group.payload_hash = canonicalPayloadHash(asArray(group.actions, "actions"));
+  return group;
+}
 
 describe("goal hierarchy contracts", () => {
   test("configuration and draft schemas reject incomplete Goal hierarchies", () => {
@@ -174,13 +185,16 @@ describe("goal hierarchy contracts", () => {
     const validUpdateAction: JsonObject = structuredClone(updateEnvelope);
     validUpdateAction.before_state = {
       ...Object.fromEntries(Object.entries(story).filter(([key]) => key !== "draft_ref")),
+      issue_key: "AIPLATFORM-101",
+      human_content_language: "vi-VN",
       parent_ref: "AIPLATFORM-100",
       parent_state: {issue_key: "AIPLATFORM-100", issue_type: "Epic", project: "AIPLATFORM"},
     };
     validUpdateAction.desired_state = {
       target_completion_date: "2026-08-08",
       due_date: "2026-08-08",
-      target_completion_date_evidence: {source: "explicit-user-decision", reference: "approved date change", verified: true},
+      target_completion_date_evidence: {source: "explicit-user-decision", reference: "thay đổi ngày đã được phê duyệt", verified: true},
+      ...VIETNAMESE_ACTION_METADATA,
     };
     const validUpdateChildren = completeActions.slice(2, 4).map((action) => structuredClone(action));
     for (const action of validUpdateChildren) {
@@ -203,7 +217,7 @@ describe("goal hierarchy contracts", () => {
 
     // When
     const results = cases.map((item) => ({...item, result: validateJson("action-group.schema.json", item.group)}));
-    const validUpdateResult = validateJson("action-group.schema.json", validUpdate);
+    const validUpdateResult = validateJson("action-group.schema.json", rehash(validUpdate));
 
     // Then
     expect(validUpdateResult.valid).toBe(true);
@@ -224,8 +238,8 @@ describe("goal hierarchy contracts", () => {
       action.operation = "issue.update";
       action.target_ref = targetRef;
       action.target_version = "1";
-      action.before_state = {...Object.fromEntries(Object.entries(desired).filter(([key]) => key !== "draft_ref")), parent_ref: "AIPLATFORM-OLD"};
-      action.desired_state = {parent_ref: "epic-1"};
+      action.before_state = {...Object.fromEntries(Object.entries(desired).filter(([key]) => key !== "draft_ref")), issue_key: targetRef, human_content_language: "vi-VN", parent_ref: "AIPLATFORM-OLD"};
+      action.desired_state = {parent_ref: "epic-1", ...VIETNAMESE_ACTION_METADATA};
     }
     for (const [indexes, parentRef] of [[[2, 3], "AIPLATFORM-201"], [[5, 6], "AIPLATFORM-202"]] as const) {
       for (const index of indexes) asObject(epicActions[index]?.desired_state ?? null, "Sub-task desired state").parent_ref = parentRef;
@@ -239,13 +253,13 @@ describe("goal hierarchy contracts", () => {
       action.operation = "issue.update";
       action.target_ref = targetRef;
       action.target_version = "1";
-      action.before_state = {...Object.fromEntries(Object.entries(desired).filter(([key]) => key !== "draft_ref")), parent_ref: "AIPLATFORM-OLD"};
-      action.desired_state = {parent_ref: "goal-1"};
+      action.before_state = {...Object.fromEntries(Object.entries(desired).filter(([key]) => key !== "draft_ref")), issue_key: targetRef, human_content_language: "vi-VN", parent_ref: "AIPLATFORM-OLD"};
+      action.desired_state = {parent_ref: "goal-1", ...VIETNAMESE_ACTION_METADATA};
     }
 
     // When
-    const epicResult = validateJson("action-group.schema.json", epicWithUpdatedGoals);
-    const goalResult = validateJson("action-group.schema.json", goalWithUpdatedChildren);
+    const epicResult = validateJson("action-group.schema.json", rehash(epicWithUpdatedGoals));
+    const goalResult = validateJson("action-group.schema.json", rehash(goalWithUpdatedChildren));
 
     // Then
     expect(epicResult.valid, JSON.stringify(epicResult.errors)).toBe(true);
@@ -267,7 +281,7 @@ describe("goal hierarchy contracts", () => {
     const mutated: JsonObject = structuredClone(group);
     asObject(asArray(mutated.actions, "mutated actions")[2] ?? null, "mutated reuse").desired_state = {reuse: true, summary: "hidden write"};
 
-    const result = validateJson("action-group.schema.json", group);
+    const result = validateJson("action-group.schema.json", rehash(group));
     const mutationResult = validateJson("action-group.schema.json", mutated);
 
     expect(result.valid, JSON.stringify(result.errors)).toBe(true);

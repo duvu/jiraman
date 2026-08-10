@@ -29,4 +29,5 @@ while IFS= read -r path; do extension="${path##*.}"; if [[ "$extension" == "p""y
   npm run scan:secrets --silent >/dev/null
   npm run validate --silent >/dev/null
 )
+"$ROOT/tests/install/run-clean-install.sh" >/dev/null
 echo "package verification: PASS ($ARCHIVE)"

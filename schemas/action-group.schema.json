@@ -226,6 +226,56 @@
               }
             }
           }
+        },
+        {
+          "if": {
+            "properties": {
+              "operation": {
+                "enum": [
+                  "issue.create",
+                  "issue.update",
+                  "issue.reuse",
+                  "issue.comment",
+                  "issue.link",
+                  "issue.transition"
+                ]
+              }
+            },
+            "required": [
+              "operation"
+            ]
+          },
+          "then": {
+            "properties": {
+              "system": {
+                "const": "jira"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "operation": {
+                "enum": [
+                  "page.create",
+                  "page.update",
+                  "page.section-update",
+                  "page.comment"
+                ]
+              }
+            },
+            "required": [
+              "operation"
+            ]
+          },
+          "then": {
+            "properties": {
+              "system": {
+                "const": "confluence"
+              }
+            }
+          }
         }
       ]
     }

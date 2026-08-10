@@ -7,7 +7,9 @@ import { describe, expect, test } from "vitest";
 import { approvalSelectionAllowed, canonicalPayloadHash, canTransition, dependencyOrder, dependentWritesAllowed, evaluatePreflight, semanticallyEqual, targetPreflightBlockers, verificationOutcome, type PreflightInput, type TargetPreflightInput } from "../../src/action-rules.js";
 import { asArray, asObject, asString, readJson, requireValid, validDateTime, validateJson, type JsonObject, type JsonValue } from "../../src/contracts.js";
 import { findSensitiveValues } from "../../src/scan-secrets.js";
+import type { JiraLanguageValidationContext } from "../../src/jira-language-rules.js";
 import { releaseInvariantNames, sanitizeSensitiveText } from "../../scripts/sensitive-content.mjs";
+import { goalHierarchyGroup } from "./goal-hierarchy-fixture.js";
 
 function asBoolean(value: JsonValue | undefined, label: string): boolean {
   if (typeof value !== "boolean") throw new Error(label + " must be a boolean");
@@ -51,6 +53,22 @@ function targetPreflightInput(value: JsonObject): TargetPreflightInput {
 }
 
 describe("action-contracts", () => {
+  test("canonical payload hashing is independent of host collation", () => {
+    const actions: JsonValue[] = [{id: "PMA-20260801-01", status: "proposed", desired_state: {z: 1, "ä": 2, "å": 3, a: 4}}];
+    const originalLocaleCompare = String.prototype.localeCompare;
+    const hashUnder = (locale: string): string => {
+      String.prototype.localeCompare = function (this: string, compareString: string): number {
+        return originalLocaleCompare.call(this, compareString, locale);
+      };
+      return canonicalPayloadHash(actions);
+    };
+    try {
+      expect(hashUnder("en")).toBe(hashUnder("sv"));
+    } finally {
+      String.prototype.localeCompare = originalLocaleCompare;
+    }
+  });
+
   test("valid envelopes pass and high risk has per-action approval", () => {
     requireValid("action-group.schema.json", "tests/fixtures/actions/valid.json");
     const invalid = validateJson("action-group.schema.json", readJson("examples/action-group.invalid.json"));
@@ -95,6 +113,16 @@ describe("action-contracts", () => {
     expect(lifecycleMismatch.errors).toEqual(expect.arrayContaining([
       expect.objectContaining({ instancePath: "/actions", keyword: "actionLifecycle", schemaPath: "#/x-action-group-lifecycle/status" }),
     ]));
+
+    const forgedHash = structuredClone(high);
+    forgedHash.payload_hash = "0".repeat(64);
+    asObject(forgedHash.approval ?? null, "forged approval").payload_hash = forgedHash.payload_hash;
+    expect(validateJson("action-group.schema.json", forgedHash)).toEqual(expect.objectContaining({
+      valid: false,
+      errors: expect.arrayContaining([
+        expect.objectContaining({instancePath: "/payload_hash", keyword: "canonicalPayloadHash"}),
+      ]),
+    }));
   });
 
   test("create preflight and complete PMA selection are executable contracts", () => {
@@ -159,8 +187,150 @@ describe("action-preflight approved-actions security", () => {
         migration: { legacy_state_file: null, reapproval_required_ids: [] },
       };
       writeFileSync(statePath, JSON.stringify(state));
+      expect(readFileSync(statePath, "utf8")).toContain("Bản nháp đã bị từ chối");
       const installedValidation = spawnSync("./verify.sh", ["--validate-state-file", statePath], { encoding: "utf8" });
       expect(installedValidation.status, installedValidation.stderr).toBe(0);
+      const reuseGroup = structuredClone(group);
+      const reuseAction = asObject(asArray(reuseGroup.actions, "reuse actions")[0] ?? null, "reuse action");
+      reuseAction.operation = "issue.reuse";
+      reuseAction.target_version = "7";
+      reuseAction.before_state = {project: "AIPLATFORM", issue_type: "Bug", summary: "Sự cố đã tồn tại"};
+      reuseAction.desired_state = {reuse: true};
+      reuseGroup.payload_hash = canonicalPayloadHash(asArray(reuseGroup.actions, "reuse actions"));
+      const reuseState = {...state, pending_action_groups: {[groupId]: reuseGroup}};
+      writeFileSync(statePath, JSON.stringify(reuseState));
+      const installedReuseValidation = spawnSync("./verify.sh", ["--validate-state-file", statePath], { encoding: "utf8" });
+      expect(installedReuseValidation.status, installedReuseValidation.stderr).toBe(5);
+
+      const missingLanguage = structuredClone(group);
+      const missingLanguageAction = asObject(asArray(missingLanguage.actions, "missing language actions")[0] ?? null, "missing language action");
+      const missingLanguageDesired = asObject(missingLanguageAction.desired_state ?? null, "missing language desired state");
+      delete missingLanguageDesired.content_language;
+      delete missingLanguageDesired.literal_preservation;
+      missingLanguage.payload_hash = canonicalPayloadHash(asArray(missingLanguage.actions, "missing language actions"));
+      writeFileSync(statePath, JSON.stringify({...state, pending_action_groups: {[groupId]: missingLanguage}}));
+      const installedLanguageValidation = spawnSync("./verify.sh", ["--validate-state-file", statePath], { encoding: "utf8" });
+      expect(installedLanguageValidation.status, installedLanguageValidation.stderr).toBe(5);
+      expect(validateJson("state.schema.json", {...state, pending_action_groups: {[groupId]: missingLanguage}}).valid).toBe(false);
+
+      const relabeledOperation = structuredClone(group);
+      asObject(asArray(relabeledOperation.actions, "relabeled actions")[0] ?? null, "relabeled action").system = "confluence";
+      relabeledOperation.payload_hash = canonicalPayloadHash(asArray(relabeledOperation.actions, "relabeled actions"));
+      writeFileSync(statePath, JSON.stringify({...state, pending_action_groups: {[groupId]: relabeledOperation}}));
+      const installedRelabeledValidation = spawnSync("./verify.sh", ["--validate-state-file", statePath], {encoding: "utf8"});
+      expect(installedRelabeledValidation.status, installedRelabeledValidation.stderr).toBe(5);
+      expect(validateJson("state.schema.json", {...state, pending_action_groups: {[groupId]: relabeledOperation}}).valid).toBe(false);
+
+      const untrustedOverride = structuredClone(group);
+      const overrideAction = asObject(asArray(untrustedOverride.actions, "override actions")[0] ?? null, "override action");
+      const overrideDesired = asObject(overrideAction.desired_state ?? null, "override desired state");
+      overrideDesired.content_language = "en-US";
+      overrideDesired.language_override = {
+        requested_language: "en-US",
+        scope_type: "jira-action",
+        scope_ref: overrideAction.id ?? "",
+        source: "explicit-user-request",
+        evidence_reference: "active-user-authorization",
+      };
+      untrustedOverride.payload_hash = canonicalPayloadHash(asArray(untrustedOverride.actions, "override actions"));
+      const overrideState = {...state, pending_action_groups: {[groupId]: untrustedOverride}};
+      const trustedOverride: JiraLanguageValidationContext = {trustedUserAuthorizations: [{
+        reference: "active-user-authorization",
+        capability: "jira-language-override",
+        scopeType: "jira-action",
+        scopeRef: asString(overrideAction.id, "override action ID"),
+        requestedLanguage: "en-US",
+      }]};
+      expect(validateJson("state.schema.json", overrideState).valid).toBe(false);
+      expect(validateJson("state.schema.json", overrideState, trustedOverride).valid).toBe(true);
+      writeFileSync(statePath, JSON.stringify(overrideState));
+      const installedOverrideValidation = spawnSync("./verify.sh", ["--validate-state-file", statePath], {encoding: "utf8"});
+      expect(installedOverrideValidation.status, installedOverrideValidation.stderr).toBe(5);
+
+      const validReuse = goalHierarchyGroup();
+      const validReuseAction = asObject(asArray(validReuse.actions, "valid reuse actions")[0] ?? null, "valid reuse action");
+      const existingEpic = structuredClone(asObject(validReuseAction.desired_state ?? null, "existing Epic"));
+      validReuseAction.operation = "issue.reuse";
+      validReuseAction.target_ref = "AIPLATFORM-100";
+      validReuseAction.target_version = "7";
+      validReuseAction.before_state = {...existingEpic, issue_key: "AIPLATFORM-100", human_content_language: "vi-VN"};
+      validReuseAction.desired_state = {reuse: true};
+      validReuse.payload_hash = canonicalPayloadHash(asArray(validReuse.actions, "valid reuse actions"));
+      expect(validateJson("action-group.schema.json", validReuse)).toEqual({valid: true, errors: []});
+      const validReuseId = asString(validReuse.id, "valid reuse group ID");
+      writeFileSync(statePath, JSON.stringify({...state, pending_action_groups: {[validReuseId]: validReuse}}));
+      const installedValidReuse = spawnSync("./verify.sh", ["--validate-state-file", statePath], {encoding: "utf8"});
+      expect(installedValidReuse.status, installedValidReuse.stderr).toBe(0);
+
+      const translationGroup = goalHierarchyGroup();
+      const translationAction = asObject(asArray(translationGroup.actions, "translation actions")[0] ?? null, "translation action");
+      const existingTranslationState = structuredClone(asObject(translationAction.desired_state ?? null, "translation source state"));
+      translationAction.operation = "issue.update";
+      translationAction.target_ref = "AIPLATFORM-100";
+      translationAction.target_version = "8";
+      translationAction.risk = "high";
+      translationAction.approval_required = "per-action";
+      translationAction.before_state = {...existingTranslationState, issue_key: "AIPLATFORM-100", human_content_language: "en-US", description: "Keep REQ-1."};
+      translationAction.desired_state = {
+        content_language: "vi-VN",
+        literal_preservation: {policy_ref: ".kilo/config/jiraman.json#/language/preserved_literal_kinds", mode: "exact"},
+        existing_content_mode: "approved-full-translation",
+        description_update_mode: "approved-full-translation",
+        description: "Giữ REQ-1.",
+        translation_authorization: {source: "explicit-user-request", evidence_reference: "active-translation-authorization"},
+      };
+      translationGroup.payload_hash = canonicalPayloadHash(asArray(translationGroup.actions, "translation actions"));
+      const translationId = asString(translationGroup.id, "translation group ID");
+      const translationState = {...state, pending_action_groups: {[translationId]: translationGroup}};
+      const trustedTranslation: JiraLanguageValidationContext = {trustedUserAuthorizations: [{
+        reference: "active-translation-authorization",
+        capability: "jira-full-description-translation",
+        scopeType: "jira-action",
+        scopeRef: asString(translationAction.id, "translation action ID"),
+        requestedLanguage: "vi-VN",
+      }]};
+      expect(validateJson("state.schema.json", translationState).valid).toBe(false);
+      expect(validateJson("state.schema.json", translationState, trustedTranslation).valid).toBe(true);
+      writeFileSync(statePath, JSON.stringify(translationState));
+      const installedTranslationValidation = spawnSync("./verify.sh", ["--validate-state-file", statePath], {encoding: "utf8"});
+      expect(installedTranslationValidation.status, installedTranslationValidation.stderr).toBe(5);
+
+      const vagueAcceptanceGroup = goalHierarchyGroup();
+      const vagueAcceptanceAction = asObject(asArray(vagueAcceptanceGroup.actions, "vague Acceptance Criteria actions")[0] ?? null, "vague Acceptance Criteria action");
+      vagueAcceptanceAction.operation = "issue.comment";
+      vagueAcceptanceAction.target_ref = "AIPLATFORM-101";
+      vagueAcceptanceAction.target_version = "2026-08-01T00:00:00Z";
+      vagueAcceptanceAction.before_state = {issue_key: "AIPLATFORM-101", project: "AIPLATFORM", issue_type: "Epic", human_content_language: "vi-VN"};
+      vagueAcceptanceAction.desired_state = {
+        purpose: "acceptance-criteria-gap",
+        content_language: "vi-VN",
+        literal_preservation: {policy_ref: ".kilo/config/jiraman.json#/language/preserved_literal_kinds", mode: "exact"},
+        managed_content_only: true,
+        acceptance_criteria: [{id: "AC-1", statement: "Đạt yêu cầu", verification: "Kiểm tra"}],
+      };
+      vagueAcceptanceGroup.actions = [vagueAcceptanceAction];
+      vagueAcceptanceGroup.payload_hash = canonicalPayloadHash(asArray(vagueAcceptanceGroup.actions, "vague Acceptance Criteria actions"));
+      const vagueAcceptanceId = asString(vagueAcceptanceGroup.id, "vague Acceptance Criteria group ID");
+      const vagueAcceptanceState = {...state, pending_action_groups: {[vagueAcceptanceId]: vagueAcceptanceGroup}};
+      expect(validateJson("state.schema.json", vagueAcceptanceState).valid).toBe(false);
+      writeFileSync(statePath, JSON.stringify(vagueAcceptanceState));
+      const installedVagueAcceptanceValidation = spawnSync("./verify.sh", ["--validate-state-file", statePath], {encoding: "utf8"});
+      expect(installedVagueAcceptanceValidation.status, installedVagueAcceptanceValidation.stderr).toBe(5);
+
+      const nonAsciiHashGroup = goalHierarchyGroup();
+      const nonAsciiHashAction = asObject(asArray(nonAsciiHashGroup.actions, "non-ASCII hash actions")[0] ?? null, "non-ASCII hash action");
+      const nonAsciiHashDesired = asObject(nonAsciiHashAction.desired_state ?? null, "non-ASCII hash desired state");
+      Object.assign(nonAsciiHashDesired, {z: 1, "ä": 2, "å": 3, a: 4});
+      nonAsciiHashGroup.payload_hash = canonicalPayloadHash(asArray(nonAsciiHashGroup.actions, "non-ASCII hash actions"));
+      const nonAsciiHashId = asString(nonAsciiHashGroup.id, "non-ASCII hash group ID");
+      const nonAsciiHashState = {...state, pending_action_groups: {[nonAsciiHashId]: nonAsciiHashGroup}};
+      expect(validateJson("state.schema.json", nonAsciiHashState)).toEqual({valid: true, errors: []});
+      writeFileSync(statePath, JSON.stringify(nonAsciiHashState));
+      for (const locale of ["C.UTF-8", "sv_SE.UTF-8"]) {
+        const installedNonAsciiHashValidation = spawnSync("./verify.sh", ["--validate-state-file", statePath], {encoding: "utf8", env: {...process.env, LANG: locale}});
+        expect(installedNonAsciiHashValidation.status, `${locale}: ${installedNonAsciiHashValidation.stderr}`).toBe(0);
+      }
+
       writeFileSync(statePath, JSON.stringify({ ...state, pending_action_groups: { [groupId]: rejectedPartialApproval } }));
       const rejectedPartialState = spawnSync("./verify.sh", ["--validate-state-file", statePath], { encoding: "utf8" });
       expect(rejectedPartialState.status).toBe(5);
@@ -254,7 +424,8 @@ describe("action-preflight approved-actions security", () => {
 
       const raw = join(directory, "raw.log");
       const sanitized = join(directory, "sanitized.log");
-      writeFileSync(raw, canaries.map(([, canary]) => canary).join("\n\n") + "\n\nsafe diagnostic\n");
+      const safeVietnameseDiagnostic = "Xác minh tiếng Việt: khôi phục `REQ-1` bằng `npm run ci`.";
+      writeFileSync(raw, canaries.map(([, canary]) => canary).join("\n\n") + `\n\nsafe diagnostic\n${safeVietnameseDiagnostic}\n`);
       const sanitize = spawnSync("./scripts/sanitize_ci_log.sh", [raw, sanitized], { encoding: "utf8" });
       expect(sanitize.status).toBe(0);
       const output = readFileSync(sanitized, "utf8");
@@ -262,6 +433,12 @@ describe("action-preflight approved-actions security", () => {
       expect(output).not.toContain(privateKeyBody);
       expect(output).not.toContain(opaque);
       expect(output.match(/\[REDACTED SENSITIVE LINE\]/g)?.length ?? 0).toBeGreaterThanOrEqual(canaries.length);
+      const unicodeRaw = join(directory, "unicode-raw.log");
+      const unicodeSanitized = join(directory, "unicode-sanitized.log");
+      writeFileSync(unicodeRaw, `${safeVietnameseDiagnostic}\n`);
+      const unicodeSanitize = spawnSync("./scripts/sanitize_ci_log.sh", [unicodeRaw, unicodeSanitized], { encoding: "utf8" });
+      expect(unicodeSanitize.status).toBe(0);
+      expect(readFileSync(unicodeSanitized, "utf8")).toBe(`${safeVietnameseDiagnostic}\n`);
       const combined = sanitizeSensitiveText([
         "prefixAuthor",
         "ization: Bearer\n",
@@ -288,6 +465,7 @@ describe("action-preflight approved-actions security", () => {
       expect(failedGateOutput).not.toContain("untrusted suffix");
       expect(failedGateOutput).not.toContain(opaque);
       expect(sanitizeSensitiveText("safe diagnostic\nordinary output")).toBe("safe diagnostic\nordinary output");
+      expect(sanitizeSensitiveText(safeVietnameseDiagnostic)).toBe(safeVietnameseDiagnostic);
     } finally {
       rmSync(directory, { recursive: true, force: true });
     }

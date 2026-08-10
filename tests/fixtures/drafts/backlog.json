@@ -2,10 +2,16 @@
   "fixture_version": 1,
   "kind": "backlog-drafts",
   "metadata": {
-    "source": "synthetic-sanitized",
+    "source": "synthetic-english-source-translated",
     "version": "5.0",
     "sanitized": true,
-    "semantic_capability": "refinement.draft"
+    "semantic_capability": "refinement.draft",
+    "source_user_facing_content": {
+      "epic_outcome": "Upgrade safely",
+      "goal_name": "Restore the v4 backup safely",
+      "subtask_title": "Verify the v4 backup restoration"
+    },
+    "preserved_literals": ["./tests/install/run-v4-upgrade.sh", "REQ-1"]
   },
   "expected": {
     "complete": true
@@ -13,47 +19,52 @@
   "data": {
     "content_language": "vi-VN",
     "epic": {
+      "draft_ref": "epic-1",
+      "content_language": "vi-VN",
+      "literal_preservation": {"policy_ref": ".kilo/config/jiraman.json#/language/preserved_literal_kinds", "mode": "exact"},
       "disposition": "reuse",
       "key": "AIPLATFORM-100",
-      "outcome": "Safe upgrades",
-      "value_problem": "Operators need recoverable upgrades",
-      "in_scope": ["managed files"],
-      "out_of_scope": ["MCP configuration"],
-      "success_measures": ["restore drill passes"],
-      "constraints": ["one-week sprint"],
+      "outcome": "Nâng cấp an toàn",
+      "value_problem": "Nhân viên vận hành cần quy trình nâng cấp có thể khôi phục",
+      "in_scope": ["tệp được quản lý"],
+      "out_of_scope": ["cấu hình MCP"],
+      "success_measures": ["diễn tập khôi phục đạt yêu cầu"],
+      "constraints": ["Sprint một tuần"],
       "dependencies": [],
-      "risks": ["backup drift"],
+      "risks": ["sai lệch bản sao lưu"],
       "story_map": ["story-1", "story-2"],
       "acceptance_criteria": [
         {
           "id": "AC-1",
-          "statement": "Tất cả Goal Stories được nghiệm thu và bằng chứng khôi phục đạt thước đo thành công",
+          "statement": "Tất cả Story mục tiêu được nghiệm thu và bằng chứng khôi phục đạt thước đo thành công",
           "verification": "Đối chiếu trạng thái nghiệm thu của Story map và chạy ./tests/install/run-v4-upgrade.sh"
         }
       ],
-      "exit_criteria": ["rollback evidence accepted"],
+      "exit_criteria": ["bằng chứng quay lui được chấp nhận"],
       "blocking_gaps": []
     },
     "stories": [
       {
         "draft_ref": "story-1",
+        "content_language": "vi-VN",
+        "literal_preservation": {"policy_ref": ".kilo/config/jiraman.json#/language/preserved_literal_kinds", "mode": "exact"},
         "disposition": "create",
-        "goal_name": "Restore v4 backups safely",
+        "goal_name": "Khôi phục an toàn bản sao lưu v4",
         "target_completion_date": "2026-08-07",
         "target_completion_date_evidence": {
           "source": "sprint-end",
-          "reference": "AIPLATFORM Sprint 7 ends 2026-08-07",
+          "reference": "Sprint 7 của AIPLATFORM kết thúc ngày 2026-08-07",
           "verified": true
         },
         "definition_of_done": [
-          "A clean v5 installation is restored byte-for-byte from the v4 backup",
-          "The rollback drill evidence is attached to the Goal Story"
+          "Bản cài đặt v5 sạch được khôi phục từng byte từ bản sao lưu v4",
+          "Bằng chứng diễn tập quay lui được đính kèm vào Story mục tiêu"
         ],
-        "outcome": "Operators restore a v4 backup",
+        "outcome": "Nhân viên vận hành khôi phục được bản sao lưu v4",
         "canonical_spec": "Confluence page-200",
-        "context": "v5 migration safety",
+        "context": "An toàn di chuyển v5",
         "in_scope": [
-          "managed files"
+          "tệp được quản lý"
         ],
         "out_of_scope": [
           "MCP"
@@ -70,36 +81,38 @@
           }
         ],
         "constraints": [
-          "one sprint"
+          "một Sprint"
         ],
         "dependencies": [],
         "validation": [
-          "backup byte comparison"
+          "so sánh từng byte của bản sao lưu"
         ],
-        "rollout": "install into a temporary project",
-        "recovery": "restore timestamped backup",
-        "estimate_basis": "verified team unit",
+        "rollout": "cài đặt vào dự án tạm thời",
+        "recovery": "khôi phục bản sao lưu có dấu thời gian",
+        "estimate_basis": "đơn vị ước lượng của nhóm đã được xác minh",
         "blocking_gaps": []
       },
       {
         "draft_ref": "story-2",
+        "content_language": "vi-VN",
+        "literal_preservation": {"policy_ref": ".kilo/config/jiraman.json#/language/preserved_literal_kinds", "mode": "exact"},
         "disposition": "create",
-        "goal_name": "Verify the rollback guide",
+        "goal_name": "Xác minh hướng dẫn quay lui",
         "target_completion_date": "2026-08-07",
         "target_completion_date_evidence": {
           "source": "specification",
-          "reference": "Confluence page-200 target date",
+          "reference": "Ngày mục tiêu trên Confluence page-200",
           "verified": true
         },
         "definition_of_done": [
-          "A maintainer completes the rollback guide without undocumented steps",
-          "The reviewed guide links the successful validation evidence"
+          "Người bảo trì hoàn tất hướng dẫn quay lui mà không gặp bước chưa được mô tả",
+          "Hướng dẫn đã rà soát liên kết tới bằng chứng xác minh đạt yêu cầu"
         ],
-        "outcome": "Maintainers can follow the rollback guide",
+        "outcome": "Người bảo trì có thể làm theo hướng dẫn quay lui",
         "canonical_spec": "Confluence page-200",
-        "context": "v5 migration safety",
+        "context": "An toàn di chuyển v5",
         "in_scope": [
-          "rollback documentation"
+          "tài liệu quay lui"
         ],
         "out_of_scope": [
           "MCP"
@@ -110,21 +123,21 @@
         "acceptance_criteria": [
           {
             "id": "AC-2",
-            "statement": "Maintainer hoàn tất hướng dẫn rollback mà không gặp bước chưa được mô tả",
-            "verification": "Thực hiện walkthrough trong dự án tạm và ghi nhận không còn bước chưa xác định",
+            "statement": "Người bảo trì hoàn tất hướng dẫn quay lui mà không gặp bước chưa được mô tả",
+            "verification": "Kiểm tra từng bước trong dự án tạm và ghi nhận không còn bước chưa xác định",
             "requirement_refs": ["REQ-2"]
           }
         ],
         "constraints": [
-          "one sprint"
+          "một Sprint"
         ],
         "dependencies": [],
         "validation": [
-          "maintainer walkthrough"
+          "người bảo trì kiểm tra từng bước"
         ],
-        "rollout": "publish the verified guide",
-        "recovery": "restore the previously reviewed guide",
-        "estimate_basis": "verified team unit",
+        "rollout": "phát hành hướng dẫn đã được xác minh",
+        "recovery": "khôi phục hướng dẫn đã được rà soát trước đó",
+        "estimate_basis": "đơn vị ước lượng của nhóm đã được xác minh",
         "blocking_gaps": []
       }
     ]

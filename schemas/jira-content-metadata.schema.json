@@ -1,0 +1,31 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://duvu.github.io/jiraman/schemas/jira-content-metadata.schema.json",
+  "definitions": {
+    "language-tag": {
+      "type": "string",
+      "pattern": "^[A-Za-z]{2,8}(?:-[A-Za-z0-9]{1,8})*$"
+    },
+    "language-override": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["requested_language", "scope_type", "scope_ref", "source", "evidence_reference"],
+      "properties": {
+        "requested_language": {"$ref": "#/definitions/language-tag"},
+        "scope_type": {"enum": ["jira-draft", "jira-action"]},
+        "scope_ref": {"type": "string", "minLength": 1},
+        "source": {"const": "explicit-user-request"},
+        "evidence_reference": {"type": "string", "minLength": 1}
+      }
+    },
+    "literal-preservation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["policy_ref", "mode"],
+      "properties": {
+        "policy_ref": {"const": ".kilo/config/jiraman.json#/language/preserved_literal_kinds"},
+        "mode": {"const": "exact"}
+      }
+    }
+  }
+}

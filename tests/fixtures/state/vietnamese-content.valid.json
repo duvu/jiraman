@@ -1,0 +1,63 @@
+{
+  "schema_version": 5,
+  "project": "AIPLATFORM",
+  "pending_action_groups": {
+    "PMG-20260801-01": {
+      "schema_version": 5,
+      "id": "PMG-20260801-01",
+      "project": "AIPLATFORM",
+      "summary": "Thêm liên kết bằng chứng",
+      "created_at": "2026-08-01T00:00:00Z",
+      "expires_at": "2026-08-02T00:00:00Z",
+      "status": "proposed",
+      "payload_hash": "dee92dbdf83b6eedba040f7d762ae16024dc007b24dd7f853f79846b65fb5da6",
+      "approval": {
+        "group_approved_by": null,
+        "approved_action_ids": [],
+        "approved_at": null,
+        "payload_hash": null
+      },
+      "actions": [
+        {
+          "id": "PMA-20260801-01",
+          "system": "jira",
+          "operation": "issue.comment",
+          "target_ref": "AIPLATFORM-101",
+          "target_version": "2026-08-01T00:00:00Z",
+          "before_state": {
+            "issue_key": "AIPLATFORM-101",
+            "human_content_language": "en-US"
+          },
+          "desired_state": {
+            "body": "Bằng chứng: CI đã đạt",
+            "content_language": "vi-VN",
+            "literal_preservation": {
+              "policy_ref": ".kilo/config/jiraman.json#/language/preserved_literal_kinds",
+              "mode": "exact"
+            },
+            "existing_content_mode": "preserve-human-content"
+          },
+          "evidence": [
+            "kết quả CI của kho mã"
+          ],
+          "reason": "Ghi nhận bằng chứng xác minh",
+          "preconditions": [
+            "ticket vẫn thuộc AIPLATFORM"
+          ],
+          "dependencies": [],
+          "risk": "low",
+          "approval_required": "group",
+          "expires_at": "2026-08-02T00:00:00Z",
+          "rollback_guidance": "Gỡ bình luận thủ công nếu nội dung không chính xác",
+          "status": "proposed"
+        }
+      ]
+    }
+  },
+  "deliverable_candidates": {},
+  "run_records": [],
+  "migration": {
+    "legacy_state_file": null,
+    "reapproval_required_ids": []
+  }
+}
