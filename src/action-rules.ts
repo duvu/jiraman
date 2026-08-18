@@ -16,6 +16,7 @@ export interface PreflightInput {
   readonly ownershipAllowed: boolean;
   readonly fieldsExact: boolean;
   readonly dependenciesResolved: boolean;
+  readonly contextAllowed?: boolean;
 }
 
 export interface PreflightResult {
@@ -66,6 +67,7 @@ export function evaluatePreflight(input: PreflightInput): PreflightResult {
   if (!input.ownershipAllowed) violations.push("ownership");
   if (!input.fieldsExact) violations.push("field-expansion");
   if (!input.dependenciesResolved) violations.push("dependency");
+  if (input.contextAllowed === false) violations.push("context-mismatch");
   return { allowed: violations.length === 0, violations };
 }
 

@@ -1,67 +1,67 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "$id": "https://duvu.github.io/jiraman/schemas/state.schema.json",
-  "type": "object",
-  "additionalProperties": false,
-  "required": [
-    "schema_version",
-    "project",
-    "pending_action_groups",
-    "deliverable_candidates",
-    "run_records",
-    "migration"
-  ],
-  "properties": {
-    "schema_version": {
-      "const": 5
-    },
-    "project": {
-      "const": "AIPLATFORM"
-    },
-    "pending_action_groups": {
-      "type": "object",
-      "additionalProperties": {
-        "$ref": "action-group.schema.json"
-      }
-    },
-    "deliverable_candidates": {
-      "type": "object",
-      "propertyNames": {
-        "pattern": "^DLV-[0-9]{8}-[0-9]{2}$"
-      },
-      "additionalProperties": {
-        "type": "object"
-      }
-    },
-    "run_records": {
-      "type": "array",
-      "maxItems": 100,
-      "items": {
-        "$ref": "run-record.schema.json"
-      }
-    },
+  "anyOf": [{"$ref": "#/definitions/v5"}, {"$ref": "#/definitions/v6"}],
+  "definitions": {
     "migration": {
       "type": "object",
       "additionalProperties": false,
-      "required": [
-        "legacy_state_file",
-        "reapproval_required_ids"
-      ],
+      "required": ["legacy_state_file", "reapproval_required_ids"],
       "properties": {
-        "legacy_state_file": {
-          "type": [
-            "string",
-            "null"
-          ]
-        },
-        "reapproval_required_ids": {
-          "type": "array",
-          "uniqueItems": true,
-          "items": {
-            "type": "string",
-            "pattern": "^PM[AG]-[0-9]{8}-[0-9]{2}$"
-          }
-        }
+        "legacy_state_file": {"type": ["string", "null"]},
+        "reapproval_required_ids": {"type": "array", "uniqueItems": true, "items": {"type": "string", "pattern": "^PM[AG]-[0-9]{8}-[0-9]{2}$"}}
+      }
+    },
+    "pending": {"type": "object", "additionalProperties": {"$ref": "action-group.schema.json"}},
+    "deliverables": {"type": "object", "propertyNames": {"pattern": "^DLV-[0-9]{8}-[0-9]{2}$"}, "additionalProperties": {"type": "object"}},
+    "runs": {"type": "array", "maxItems": 100, "items": {"$ref": "run-record.schema.json"}},
+    "v5": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["schema_version", "project", "pending_action_groups", "deliverable_candidates", "run_records", "migration"],
+      "properties": {
+        "schema_version": {"const": 5},
+        "project": {"const": "AIPLATFORM"},
+        "pending_action_groups": {"$ref": "#/definitions/pending"},
+        "deliverable_candidates": {"$ref": "#/definitions/deliverables"},
+        "run_records": {"$ref": "#/definitions/runs"},
+        "migration": {"$ref": "#/definitions/migration"}
+      }
+    },
+    "context": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["project_id", "jira_project_key", "profile_revision", "context_fingerprint"],
+      "properties": {
+        "project_id": {"type": "string", "pattern": "^[a-z][a-z0-9-]{1,31}$"},
+        "jira_project_key": {"type": "string", "pattern": "^[A-Z][A-Z0-9_]{1,31}$"},
+        "profile_revision": {"type": "integer", "minimum": 1},
+        "context_fingerprint": {"type": "string", "pattern": "^[a-f0-9]{64}$"}
+      }
+    },
+    "projectState": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["project_id", "jira_project_key", "profile_revision", "context_fingerprint", "pending_action_groups", "deliverable_candidates", "run_records"],
+      "properties": {
+        "project_id": {"type": "string", "pattern": "^[a-z][a-z0-9-]{1,31}$"},
+        "jira_project_key": {"type": "string", "pattern": "^[A-Z][A-Z0-9_]{1,31}$"},
+        "profile_revision": {"type": "integer", "minimum": 1},
+        "context_fingerprint": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+        "pending_action_groups": {"$ref": "#/definitions/pending"},
+        "deliverable_candidates": {"$ref": "#/definitions/deliverables"},
+        "run_records": {"$ref": "#/definitions/runs"}
+      }
+    },
+    "v6": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["schema_version", "session", "projects", "migration"],
+      "properties": {
+        "schema_version": {"const": 6},
+        "session": {"type": "object", "additionalProperties": false, "required": ["project_id", "jira_project_key", "profile_revision", "context_fingerprint"], "properties": {"project_id": {"type": ["string", "null"]}, "jira_project_key": {"type": ["string", "null"], "pattern": "^[A-Z][A-Z0-9_]{1,31}$"}, "profile_revision": {"type": ["integer", "null"], "minimum": 1}, "context_fingerprint": {"type": ["string", "null"], "pattern": "^[a-f0-9]{64}$"}}, "anyOf": [{"properties": {"project_id": {"type": "null"}, "jira_project_key": {"type": "null"}, "profile_revision": {"type": "null"}, "context_fingerprint": {"type": "null"}}}, {"properties": {"project_id": {"type": "string", "pattern": "^[a-z][a-z0-9-]{1,31}$"}, "jira_project_key": {"type": "string", "pattern": "^[A-Z][A-Z0-9_]{1,31}$"}, "profile_revision": {"type": "integer", "minimum": 1}, "context_fingerprint": {"type": "string", "pattern": "^[a-f0-9]{64}$"}}}]},
+        "projects": {"type": "object", "minProperties": 1, "propertyNames": {"pattern": "^[a-z][a-z0-9-]{1,31}$"}, "additionalProperties": {"$ref": "#/definitions/projectState"}},
+        "migration": {"$ref": "#/definitions/migration"}
       }
     }
   }

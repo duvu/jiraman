@@ -1,6 +1,6 @@
 {
   "name": "jiraman",
-  "version": "5.0.0",
+  "version": "6.0.0",
   "private": true,
   "type": "module",
   "engines": {"node": ">=20"},
@@ -34,7 +34,7 @@
     "validate:docs": "npm run build --silent && node dist/src/validate.js docs",
     "scan:secrets": "npm run build --silent && node dist/src/scan-secrets.js",
     "package": "./scripts/package.sh",
-    "verify:package": "./scripts/verify_package.sh release/jiraman-5.0.0.tar.gz && ./scripts/verify_package.sh release/jiraman-5.0.0.zip",
+    "verify:package": "./scripts/verify_package.sh release/jiraman-6.0.0.tar.gz && ./scripts/verify_package.sh release/jiraman-6.0.0.zip",
     "ci": "./scripts/ci.sh"
   },
   "devDependencies": {

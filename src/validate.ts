@@ -22,6 +22,7 @@ import { goalContractMetadataViolations, goalTemplateSectionViolations, type Ind
 import { missingChecklistGates } from "./release-rules.js";
 import { goalPolicyMetadataValid } from "./goal-rules.js";
 import { namedPathBijectionViolations, type NamedPathEntry } from "./index-rules.js";
+import { profileRegistryViolations } from "./project-rules.js";
 import { jiraTemplateViolations } from "./jira-template-rules.js";
 import { commandTableRoutes } from "./routing-rules.js";
 
@@ -40,6 +41,7 @@ function validateSchemas(): void {
   requireInvalid("action-group.schema.json", "examples/action-group.invalid-date.json");
   requireValid("state.schema.json", "template/.kilo/state/jiraman.json");
   requireValid("config.schema.json", "template/.kilo/config/jiraman.json");
+  invariant(profileRegistryViolations(readJson("template/.kilo/config/jiraman.json")).length === 0, "project profile registry is invalid");
 }
 
 function validateSkills(): void {
@@ -128,7 +130,7 @@ function validateMcp(): void {
 function validateConfig(): void {
   requireValid("config.schema.json", "template/.kilo/config/jiraman.json");
   const policy = parseFrontmatter(readText("template/.kilo/policies/jiraman-safety.md"));
-  invariant(policy.get("policy_version") === "5" && policy.get("project") === "AIPLATFORM" && policy.get("write_mode") === "exact-apply-only", "invalid structured policy metadata");
+  invariant(policy.get("policy_version") === "6" && policy.get("project_context") === "resolved-profile-registry" && policy.get("write_mode") === "exact-apply-only", "invalid structured policy metadata");
   invariant(goalPolicyMetadataValid(policy), "invalid Goal delivery policy metadata");
 }
 
@@ -181,7 +183,7 @@ function validateActions(): void {
 }
 
 function validateDocs(): void {
-  const paths = ["README.md", "UPGRADE.md", "CHANGELOG.md", "docs/architecture/jiraman-v5.md", "docs/command-reference.md", "docs/configuration-reference.md", "docs/security-model.md", "docs/manual-smoke-tests.md", "docs/release-checklist.md", "docs/rollback.md", "docs/troubleshooting.md", "docs/run-records.md"] as const;
+  const paths = ["README.md", "UPGRADE.md", "CHANGELOG.md", "docs/multi-project-v6.md", "docs/architecture/jiraman-v5.md", "docs/command-reference.md", "docs/configuration-reference.md", "docs/security-model.md", "docs/manual-smoke-tests.md", "docs/release-checklist.md", "docs/rollback.md", "docs/troubleshooting.md", "docs/run-records.md"] as const;
   for (const path of paths) {
     invariant(existsSync(path), `missing documentation: ${path}`);
     for (const match of readText(path).matchAll(/\[[^\]]+\]\(([^)]+)\)/g)) {

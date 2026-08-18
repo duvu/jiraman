@@ -72,6 +72,17 @@
         "type": "string",
         "minLength": 1
       }
+    },
+    "context": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["project_id", "jira_project_key", "profile_revision", "context_fingerprint"],
+      "properties": {
+        "project_id": {"type": "string", "pattern": "^[a-z][a-z0-9-]{1,31}$"},
+        "jira_project_key": {"type": "string", "pattern": "^[A-Z][A-Z0-9_]{1,31}$"},
+        "profile_revision": {"type": "integer", "minimum": 1},
+        "context_fingerprint": {"type": "string", "pattern": "^[a-f0-9]{64}$"}
+      }
     }
   },
   "$id": "https://duvu.github.io/jiraman/schemas/run-record.schema.json"

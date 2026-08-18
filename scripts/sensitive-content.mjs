@@ -15,6 +15,7 @@ export const releaseInvariantNames = new Set([
   "SOURCE_CONTRACT",
   "CLEAN_INSTALL",
   "V4_MIGRATION",
+  "V5_MIGRATION",
   "PACKAGE_BUILD",
   "PACKAGE_REPRODUCIBILITY",
   "PACKAGE_INTEGRITY",

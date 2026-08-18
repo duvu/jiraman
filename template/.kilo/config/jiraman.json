@@ -1,10 +1,54 @@
 {
-  "schema_version": 5,
-  "project": {
-    "key": "AIPLATFORM",
-    "timezone": "Asia/Ho_Chi_Minh",
-    "sprint_length_days": 7
+  "schema_version": 6,
+  "default_project_id": "aiplatform",
+  "project": {"key": "AIPLATFORM", "timezone": "Asia/Ho_Chi_Minh", "sprint_length_days": 7},
+  "profiles": {
+    "aiplatform": {
+      "project_id": "aiplatform",
+      "aliases": [],
+      "jira_project_key": "AIPLATFORM",
+      "confluence": {
+        "allowed_space_keys": ["AIPLATFORM"],
+        "page_roots": {
+          "project_home": null,
+          "specifications": null,
+          "decisions": null,
+          "risks": null,
+          "meetings": null,
+          "reports": null
+        }
+      },
+      "timezone": "Asia/Ho_Chi_Minh",
+      "sprint_length_days": 7,
+      "language": {
+        "jira_ticket_content": "vi-VN",
+        "user_response": "vi-VN",
+        "mcp_schema_and_query": "preserve",
+        "explicit_override_allowed": true,
+        "existing_ticket_mode": "preserve-human-content",
+        "preserved_literal_kinds": ["jira-key", "req-id", "ac-id", "pmg-id", "pma-id", "dlv-id", "issue-type", "status", "custom-field", "source-excerpt", "jql", "json-key", "mcp-tool", "mcp-schema", "technical-term", "code-symbol", "path", "command", "url", "code-block", "stack-trace", "log"],
+        "preserved_technical_terms": ["API", "CI/CD", "Kubernetes", "OAuth", "OpenID Connect"]
+      },
+      "delivery": {
+        "hierarchy": ["Epic", "Story", "Sub-task"],
+        "story_semantics": "goal",
+        "minimum_goal_stories_per_epic": 2,
+        "minimum_subtasks_per_goal": 2,
+        "required_goal_fields": ["goal_name", "target_completion_date", "acceptance_criteria", "definition_of_done"],
+        "goal_deadline_sources": ["sprint-end", "milestone", "specification", "explicit-user-decision"],
+        "maximum_subtask_hours": 4,
+        "active_story_limit": 4,
+        "per_assignee_active_story_limit": 1,
+        "per_assignee_in_progress_subtask_limit": 1,
+        "review_queue_limit": 3,
+        "validation_queue_limit": 2,
+        "ready_horizon_sprints": 2,
+        "allow_issue_count_capacity": false
+      },
+      "profile_revision": 1
+    }
   },
+  "repository_mappings": [],
   "language": {
     "jira_ticket_content": "vi-VN",
     "user_response": "vi-VN",
@@ -16,14 +60,7 @@
   },
   "confluence": {
     "allowed_space_keys": ["AIPLATFORM"],
-    "page_roots": {
-      "project_home": null,
-      "specifications": null,
-      "decisions": null,
-      "risks": null,
-      "meetings": null,
-      "reports": null
-    }
+    "page_roots": {"project_home": null, "specifications": null, "decisions": null, "risks": null, "meetings": null, "reports": null}
   },
   "delivery": {
     "hierarchy": ["Epic", "Story", "Sub-task"],
@@ -41,16 +78,6 @@
     "ready_horizon_sprints": 2,
     "allow_issue_count_capacity": false
   },
-  "actions": {
-    "group_prefix": "PMG",
-    "action_prefix": "PMA",
-    "ttl_hours": 24,
-    "all_or_nothing_preflight": true,
-    "read_before_write": true,
-    "read_after_write": true
-  },
-  "state": {
-    "path": ".kilo/state/jiraman.json",
-    "run_retention_days": 30
-  }
+  "actions": {"group_prefix": "PMG", "action_prefix": "PMA", "ttl_hours": 24, "all_or_nothing_preflight": true, "read_before_write": true, "read_after_write": true},
+  "state": {"path": ".kilo/state/jiraman.json", "run_retention_days": 30}
 }

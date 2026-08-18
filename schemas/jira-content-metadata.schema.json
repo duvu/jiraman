@@ -23,7 +23,7 @@
       "additionalProperties": false,
       "required": ["policy_ref", "mode"],
       "properties": {
-        "policy_ref": {"const": ".kilo/config/jiraman.json#/language/preserved_literal_kinds"},
+        "policy_ref": {"type": "string", "pattern": "^\\.kilo/config/jiraman\\.json#/(?:language|profiles/[a-z][a-z0-9-]{1,31}/language)/preserved_literal_kinds"},
         "mode": {"const": "exact"}
       }
     }

@@ -1,228 +1,121 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "$id": "https://duvu.github.io/jiraman/schemas/config.schema.json",
-  "type": "object",
-  "additionalProperties": false,
-  "required": [
-    "schema_version",
-    "project",
-    "language",
-    "confluence",
-    "delivery",
-    "actions",
-    "state"
-  ],
-  "properties": {
-    "schema_version": {
-      "const": 5
-    },
-    "project": {
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "key",
-        "timezone",
-        "sprint_length_days"
-      ],
-      "properties": {
-        "key": {
-          "const": "AIPLATFORM"
-        },
-        "timezone": {
-          "type": "string",
-          "minLength": 1
-        },
-        "sprint_length_days": {
-          "type": "integer",
-          "minimum": 1
-        }
-      }
-    },
+  "anyOf": [{"$ref": "#/definitions/v5"}, {"$ref": "#/definitions/v6"}],
+  "definitions": {
     "language": {
       "type": "object",
       "additionalProperties": false,
-      "required": [
-        "jira_ticket_content",
-        "user_response",
-        "mcp_schema_and_query",
-        "explicit_override_allowed",
-        "existing_ticket_mode",
-        "preserved_literal_kinds",
-        "preserved_technical_terms"
-      ],
+      "required": ["jira_ticket_content", "user_response"],
       "properties": {
-        "jira_ticket_content": {"const": "vi-VN"},
-        "user_response": {"const": "vi-VN"},
+        "jira_ticket_content": {"type": "string", "pattern": "^[A-Za-z]{2,8}(?:-[A-Za-z0-9]{1,8})*$"},
+        "user_response": {"type": "string", "pattern": "^[A-Za-z]{2,8}(?:-[A-Za-z0-9]{1,8})*$"},
         "mcp_schema_and_query": {"const": "preserve"},
         "explicit_override_allowed": {"const": true},
         "existing_ticket_mode": {"const": "preserve-human-content"},
-        "preserved_literal_kinds": {
-          "const": ["jira-key", "req-id", "ac-id", "pmg-id", "pma-id", "dlv-id", "issue-type", "status", "custom-field", "source-excerpt", "jql", "json-key", "mcp-tool", "mcp-schema", "technical-term", "code-symbol", "path", "command", "url", "code-block", "stack-trace", "log"]
-        },
-        "preserved_technical_terms": {
-          "const": ["API", "CI/CD", "Kubernetes", "OAuth", "OpenID Connect"]
-        }
+        "preserved_literal_kinds": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "string", "minLength": 1}},
+        "preserved_technical_terms": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "string", "minLength": 1}}
       }
+    },
+    "compatLanguage": {
+      "allOf": [
+        {"$ref": "#/definitions/language"},
+        {"type": "object", "required": ["jira_ticket_content", "user_response"], "properties": {"jira_ticket_content": {"const": "vi-VN"}, "user_response": {"const": "vi-VN"}}}
+      ]
     },
     "confluence": {
       "type": "object",
       "additionalProperties": false,
-      "required": [
-        "allowed_space_keys",
-        "page_roots"
-      ],
+      "required": ["allowed_space_keys", "page_roots"],
       "properties": {
-        "allowed_space_keys": {
-          "type": "array",
-          "minItems": 1,
-          "uniqueItems": true,
-          "items": {
-            "type": "string",
-            "pattern": "^[A-Z][A-Z0-9_-]+$"
-          }
-        },
-        "page_roots": {
-          "type": "object",
-          "additionalProperties": {
-            "type": [
-              "string",
-              "null"
-            ]
-          }
-        }
+        "allowed_space_keys": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "string", "pattern": "^[A-Z][A-Z0-9_-]+$"}},
+        "page_roots": {"type": "object", "additionalProperties": {"type": ["string", "null"]}}
       }
     },
     "delivery": {
       "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "hierarchy",
-        "story_semantics",
-        "minimum_goal_stories_per_epic",
-        "minimum_subtasks_per_goal",
-        "required_goal_fields",
-        "goal_deadline_sources",
-        "maximum_subtask_hours",
-        "active_story_limit",
-        "per_assignee_active_story_limit",
-        "per_assignee_in_progress_subtask_limit",
-        "review_queue_limit",
-        "validation_queue_limit",
-        "ready_horizon_sprints",
-        "allow_issue_count_capacity"
-      ],
+      "additionalProperties": true,
+      "required": ["hierarchy", "story_semantics", "minimum_goal_stories_per_epic", "minimum_subtasks_per_goal", "maximum_subtask_hours", "required_goal_fields"],
       "properties": {
-        "hierarchy": {
-          "const": [
-            "Epic",
-            "Story",
-            "Sub-task"
-          ]
-        },
-        "story_semantics": {
-          "const": "goal"
-        },
-        "minimum_goal_stories_per_epic": {
-          "const": 2
-        },
-        "minimum_subtasks_per_goal": {
-          "const": 2
-        },
-        "required_goal_fields": {
-          "const": [
-            "goal_name",
-            "target_completion_date",
-            "acceptance_criteria",
-            "definition_of_done"
-          ]
-        },
-        "goal_deadline_sources": {
-          "const": [
-            "sprint-end",
-            "milestone",
-            "specification",
-            "explicit-user-decision"
-          ]
-        },
-        "maximum_subtask_hours": {
-          "const": 4
-        },
-        "active_story_limit": {
-          "type": "integer",
-          "minimum": 1
-        },
-        "per_assignee_active_story_limit": {
-          "type": "integer",
-          "minimum": 1
-        },
-        "per_assignee_in_progress_subtask_limit": {
-          "type": "integer",
-          "minimum": 1
-        },
-        "review_queue_limit": {
-          "type": "integer",
-          "minimum": 1
-        },
-        "validation_queue_limit": {
-          "type": "integer",
-          "minimum": 1
-        },
-        "ready_horizon_sprints": {
-          "const": 2
-        },
-        "allow_issue_count_capacity": {
-          "const": false
-        }
+        "hierarchy": {"const": ["Epic", "Story", "Sub-task"]},
+        "story_semantics": {"const": "goal"},
+        "minimum_goal_stories_per_epic": {"type": "integer", "minimum": 2},
+        "minimum_subtasks_per_goal": {"type": "integer", "minimum": 2},
+        "maximum_subtask_hours": {"type": "number", "exclusiveMinimum": 0, "maximum": 4},
+        "required_goal_fields": {"type": "array", "uniqueItems": true, "items": {"type": "string", "minLength": 1}}
       }
     },
     "actions": {
       "type": "object",
       "additionalProperties": false,
-      "required": [
-        "group_prefix",
-        "action_prefix",
-        "ttl_hours",
-        "all_or_nothing_preflight",
-        "read_before_write",
-        "read_after_write"
-      ],
+      "required": ["all_or_nothing_preflight", "read_before_write", "read_after_write"],
       "properties": {
-        "group_prefix": {
-          "const": "PMG"
-        },
-        "action_prefix": {
-          "const": "PMA"
-        },
-        "ttl_hours": {
-          "type": "integer",
-          "minimum": 1
-        },
-        "all_or_nothing_preflight": {
-          "const": true
-        },
-        "read_before_write": {
-          "const": true
-        },
-        "read_after_write": {
-          "const": true
-        }
+        "group_prefix": {"const": "PMG"},
+        "action_prefix": {"const": "PMA"},
+        "ttl_hours": {"type": "integer", "minimum": 1},
+        "all_or_nothing_preflight": {"const": true},
+        "read_before_write": {"const": true},
+        "read_after_write": {"const": true}
       }
     },
     "state": {
       "type": "object",
       "additionalProperties": false,
-      "required": [
-        "path",
-        "run_retention_days"
-      ],
+      "required": ["path"],
+      "properties": {"path": {"const": ".kilo/state/jiraman.json"}, "run_retention_days": {"type": "integer", "minimum": 1}}
+    },
+    "profile": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["project_id", "aliases", "jira_project_key", "confluence", "timezone", "sprint_length_days", "language", "delivery", "profile_revision"],
       "properties": {
-        "path": {
-          "const": ".kilo/state/jiraman.json"
-        },
-        "run_retention_days": {
-          "type": "integer",
-          "minimum": 1
-        }
+        "project_id": {"type": "string", "pattern": "^[a-z][a-z0-9-]{1,31}$"},
+        "aliases": {"type": "array", "uniqueItems": true, "items": {"type": "string", "pattern": "^[a-z][a-z0-9-]{1,31}$"}},
+        "jira_project_key": {"type": "string", "pattern": "^[A-Z][A-Z0-9_]{1,31}$"},
+        "confluence": {"$ref": "#/definitions/confluence"},
+        "timezone": {"type": "string", "minLength": 1},
+        "sprint_length_days": {"type": "integer", "minimum": 1},
+        "language": {"$ref": "#/definitions/language"},
+        "delivery": {"$ref": "#/definitions/delivery"},
+        "profile_revision": {"type": "integer", "minimum": 1}
+      }
+    },
+    "repositoryMapping": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["project_id"],
+      "properties": {"project_id": {"type": "string", "pattern": "^[a-z][a-z0-9-]{1,31}$"}, "repository_root": {"type": "string", "minLength": 1}, "git_remote": {"type": "string", "minLength": 1}},
+      "anyOf": [{"required": ["repository_root"], "properties": {"repository_root": {"type": "string", "minLength": 1}}}, {"required": ["git_remote"], "properties": {"git_remote": {"type": "string", "minLength": 1}}}]
+    },
+    "v5": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["schema_version", "project", "language", "confluence", "delivery", "actions", "state"],
+      "properties": {
+        "schema_version": {"const": 5},
+        "project": {"type": "object", "additionalProperties": false, "required": ["key", "timezone", "sprint_length_days"], "properties": {"key": {"const": "AIPLATFORM"}, "timezone": {"type": "string", "minLength": 1}, "sprint_length_days": {"type": "integer", "minimum": 1}}},
+        "language": {"$ref": "#/definitions/compatLanguage"},
+        "confluence": {"$ref": "#/definitions/confluence"},
+        "delivery": {"$ref": "#/definitions/delivery"},
+        "actions": {"$ref": "#/definitions/actions"},
+        "state": {"$ref": "#/definitions/state"}
+      }
+    },
+    "v6": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["schema_version", "default_project_id", "profiles", "repository_mappings", "actions", "state"],
+      "properties": {
+        "schema_version": {"const": 6},
+      "default_project_id": {"type": "string", "pattern": "^[a-z][a-z0-9-]{1,31}$"},
+        "project": {"type": "object", "additionalProperties": false, "required": ["key", "timezone", "sprint_length_days"], "properties": {"key": {"const": "AIPLATFORM"}, "timezone": {"type": "string", "minLength": 1}, "sprint_length_days": {"type": "integer", "minimum": 1}}},
+        "profiles": {"type": "object", "minProperties": 1, "propertyNames": {"pattern": "^[a-z][a-z0-9-]{1,31}$"}, "additionalProperties": {"$ref": "#/definitions/profile"}},
+        "repository_mappings": {"type": "array", "items": {"$ref": "#/definitions/repositoryMapping"}},
+        "actions": {"$ref": "#/definitions/actions"},
+        "state": {"$ref": "#/definitions/state"},
+        "language": {"$ref": "#/definitions/compatLanguage"},
+        "confluence": {"$ref": "#/definitions/confluence"},
+        "delivery": {"$ref": "#/definitions/delivery"}
       }
     }
   }

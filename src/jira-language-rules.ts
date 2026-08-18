@@ -1,6 +1,7 @@
 import { type ErrorObject } from "ajv";
 
 import { type JsonObject, type JsonValue } from "./contracts.js";
+import { type ProjectContext } from "./project-rules.js";
 
 interface ScopedContent {
   readonly path: string;
@@ -26,10 +27,17 @@ export interface TrustedUserAuthorization {
 
 export interface JiraLanguageValidationContext {
   readonly trustedUserAuthorizations?: readonly TrustedUserAuthorization[];
+  readonly jira_project_key?: string;
+  readonly default_content_language?: string;
+  readonly project_context?: ProjectContext;
 }
 
-export function resolveJiraContentLanguage(request: JiraLanguageRequest | null): string {
-  return request?.explicit === true && validLanguageTag(request.requestedLanguage) ? request.requestedLanguage : "vi-VN";
+function defaultContentLanguage(context: JiraLanguageValidationContext): string {
+  return context.project_context?.language.jira_ticket_content ?? context.default_content_language ?? "vi-VN";
+}
+
+export function resolveJiraContentLanguage(request: JiraLanguageRequest | null, defaultLanguage = "vi-VN"): string {
+  return request?.explicit === true && validLanguageTag(request.requestedLanguage) ? request.requestedLanguage : defaultLanguage;
 }
 
 function objectValue(value: JsonValue | undefined): JsonObject | null {
@@ -74,11 +82,12 @@ function hasTrustedAuthorization(
 
 function scopedContentErrors(content: ScopedContent, context: JiraLanguageValidationContext): ErrorObject[] {
   const language = content.value.content_language;
+  const defaultLanguage = defaultContentLanguage(context);
   const override = objectValue(content.value.language_override);
   if (typeof language !== "string") return [];
   if (!validLanguageTag(language)) return [languageError(`${content.path}/content_language`, "must be a well-formed language tag supported by the runtime")];
-  if (language === "vi-VN") {
-    return override === null ? [] : [languageError(`${content.path}/language_override`, "must be absent for the default vi-VN language")];
+  if (language === defaultLanguage) {
+    return override === null ? [] : [languageError(`${content.path}/language_override`, `must be absent for the default ${defaultLanguage} language`)];
   }
   if (override === null) return [languageError(`${content.path}/language_override`, "is required for a non-default content language")];
   const valid = override.requested_language === language && override.scope_type === content.scopeType &&
@@ -120,9 +129,12 @@ function requiresActionLanguage(action: JsonObject): boolean {
   return action.operation === "issue.create" || action.operation === "issue.update" || action.operation === "issue.comment";
 }
 
-function preservationValid(value: JsonValue | undefined): boolean {
+function preservationValid(value: JsonValue | undefined, context: JiraLanguageValidationContext): boolean {
   const preservation = objectValue(value);
-  return preservation?.policy_ref === ".kilo/config/jiraman.json#/language/preserved_literal_kinds" && preservation.mode === "exact";
+  const expected = context.project_context === undefined
+    ? ".kilo/config/jiraman.json#/language/preserved_literal_kinds"
+    : `.kilo/config/jiraman.json#/profiles/${context.project_context.project_id}/language/preserved_literal_kinds`;
+  return preservation?.policy_ref === expected && preservation.mode === "exact";
 }
 
 const MANAGED_SECTION_FIELDS = new Set([
@@ -164,6 +176,7 @@ function containsOnlyFields(value: JsonObject, fields: ReadonlySet<string>): boo
 }
 
 function existingContentErrors(action: JsonObject, desired: JsonObject, path: string, context: JiraLanguageValidationContext): ErrorObject[] {
+  const defaultLanguage = defaultContentLanguage(context);
   if (action.operation !== "issue.update" && action.operation !== "issue.comment") return [];
   const before = objectValue(action.before_state);
   if (before === null || typeof before.human_content_language !== "string" || before.issue_key !== action.target_ref) {
@@ -171,11 +184,11 @@ function existingContentErrors(action: JsonObject, desired: JsonObject, path: st
   }
   if (action.operation === "issue.comment") {
     return containsOnlyFields(desired, COMMENT_FIELDS) &&
-      (before.human_content_language === "vi-VN" || desired.existing_content_mode === "preserve-human-content")
+      (before.human_content_language === defaultLanguage || desired.existing_content_mode === "preserve-human-content")
       ? []
-      : [languageError(`${path}/desired_state/existing_content_mode`, "must preserve existing non-Vietnamese human content and limit the action to comment fields")];
+      : [languageError(`${path}/desired_state/existing_content_mode`, `must preserve existing non-${defaultLanguage} human content and limit the action to comment fields`)];
   }
-  if (before.human_content_language === "vi-VN") return [];
+  if (before.human_content_language === defaultLanguage) return [];
   if (desired.existing_content_mode === "managed-section-only") {
     const valid = desired.description_update_mode === "managed-section" && typeof desired.managed_section === "string" &&
       desired.managed_section.length > 0 && desired.description === undefined && desired.summary === undefined &&
@@ -202,7 +215,7 @@ function actionContentErrors(value: JsonValue, context: JiraLanguageValidationCo
     const path = `/actions/${index}`;
     return [
       ...(typeof desired.content_language === "string" ? scopedContentErrors({path: `${path}/desired_state`, scopeType: "jira-action", scopeRef: action.id, value: desired}, context) : [languageError(`${path}/desired_state/content_language`, "is required for Jira user-facing content")]),
-      ...(preservationValid(desired.literal_preservation) ? [] : [languageError(`${path}/desired_state/literal_preservation`, "must bind exact canonical literal preservation")]),
+      ...(preservationValid(desired.literal_preservation, context) ? [] : [languageError(`${path}/desired_state/literal_preservation`, "must bind exact canonical literal preservation")]),
       ...existingContentErrors(action, desired, path, context),
     ];
   });

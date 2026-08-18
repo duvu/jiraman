@@ -41,11 +41,13 @@ if grep -q 'pending_actions' "$SPOOFED/.kilo/state/jiraman.json"; then echo "leg
 
 mkdir -p "$INVALID"
 "$ROOT/install.sh" "$INVALID" >/dev/null
-node - "$INVALID/.kilo/state/jiraman.json" <<'NODE'
-const fs=require("fs"),path=process.argv[2];
-const state=JSON.parse(fs.readFileSync(path,"utf8"));
+node - "$ROOT" "$INVALID/.kilo/state/jiraman.json" <<'NODE'
+const fs=require("fs"),path=require("path");
+const [root,output]=process.argv.slice(2);
+const group=JSON.parse(fs.readFileSync(path.join(root,"tests/fixtures/actions/valid.json"),"utf8"));
+const state={schema_version:5,project:"AIPLATFORM",pending_action_groups:{[group.id]:group},deliverable_candidates:{},run_records:[],migration:{legacy_state_file:null,reapproval_required_ids:[]}};
 state.pending_action_groups["PMG-20260801-99"]={bad:true};
-fs.writeFileSync(path,`${JSON.stringify(state,null,2)}\n`);
+fs.writeFileSync(output,`${JSON.stringify(state,null,2)}\n`);
 NODE
 cp "$INVALID/.kilo/state/jiraman.json" "$INVALID/state.before"
 if "$ROOT/install.sh" "$INVALID" --force >"$INVALID/invalid-state.out" 2>&1; then echo "expected invalid v5 state rejection" >&2; exit 1; fi

@@ -96,8 +96,29 @@ function acceptanceUpdateModeValid(operation: JsonValue | undefined, desired: Js
   return desired.description_update_mode === "managed-section" && desired.managed_section === "acceptance-criteria" && desired.description === undefined;
 }
 
-export function goalActionSemanticErrors(value: JsonValue): ErrorObject[] {
+export interface GoalActionValidationContext {
+  readonly jira_project_key?: string;
+  readonly default_content_language?: string | undefined;
+}
+
+const DEFAULT_COMPATIBILITY_PROJECT = "AIPLATFORM";
+
+function contentLanguage(context: GoalActionValidationContext): string {
+  return context.default_content_language ?? "vi-VN";
+}
+
+function jiraProject(context: GoalActionValidationContext): string {
+  return context.jira_project_key ?? DEFAULT_COMPATIBILITY_PROJECT;
+}
+
+function jiraIssueKey(project: string): RegExp {
+  return new RegExp(`^${project}-[0-9]+$`);
+}
+
+export function goalActionSemanticErrors(value: JsonValue, context: GoalActionValidationContext = {}): ErrorObject[] {
+  const project = jiraProject(context);
   const group = objectValue(value);
+
   if (group === null || !Array.isArray(group.actions)) return [];
   const actions = group.actions.map(objectValue);
   const errors: ErrorObject[] = [];
@@ -114,11 +135,11 @@ export function goalActionSemanticErrors(value: JsonValue): ErrorObject[] {
       if (targetMissingAcceptance || comment?.purpose === "acceptance-criteria-gap") {
         const commentState = {...(before ?? {}), acceptance_criteria: comment?.acceptance_criteria ?? null};
         const commentErrors = targetType === null ? acceptanceCriterionSemanticErrors(comment?.acceptance_criteria, "") : hierarchyAcceptanceErrors(targetType, commentState);
-        const targetContractValid = targetType !== null && before?.project === "AIPLATFORM" && targetRef !== null && before.issue_key === targetRef && /^AIPLATFORM-[0-9]+$/.test(targetRef) &&
+        const targetContractValid = targetType !== null && before?.project === project && targetRef !== null && before.issue_key === targetRef && jiraIssueKey(project).test(targetRef) &&
           (targetType !== "Story" || stringSet(before.requirements) !== null);
-        const commentValid = comment !== null && targetMissingAcceptance && comment.purpose === "acceptance-criteria-gap" && comment.content_language === "vi-VN" && comment.managed_content_only === true && targetContractValid && acceptanceCriteriaIds(comment.acceptance_criteria) !== null && commentErrors.length === 0;
+        const commentValid = comment !== null && targetMissingAcceptance && comment.purpose === "acceptance-criteria-gap" && comment.content_language === contentLanguage(context) && comment.managed_content_only === true && targetContractValid && acceptanceCriteriaIds(comment.acceptance_criteria) !== null && commentErrors.length === 0;
         if (!commentValid) {
-          errors.push(semanticError(index, "acceptanceCriteriaComment", "Acceptance Criteria gap comments require complete approved Vietnamese managed content"));
+          errors.push(semanticError(index, "acceptanceCriteriaComment", `Acceptance Criteria gap comments require complete managed content in ${contentLanguage(context)}`));
         } else if (targetType === "Story" && targetRef !== null) {
           refs.push(targetRef);
           validActions.push({index, isCreate: false, validatesParentage: false, issueType: "Story", ref: targetRef, parentRef: null, parentState: null, state: commentState});
@@ -160,8 +181,8 @@ export function goalActionSemanticErrors(value: JsonValue): ErrorObject[] {
       authorityValid = false;
     }
     const effective = isCreate ? desired : isReuse ? (before ?? {}) : {...(before ?? {}), ...desired, issue_type: issueType, project: authoritativeProject ?? null};
-    const projectValid = authoritativeProject === "AIPLATFORM";
-    if (!projectValid) errors.push(semanticError(index, "project", "must target authoritative AIPLATFORM state"));
+    const projectValid = authoritativeProject === project;
+    if (!projectValid) errors.push(semanticError(index, "project", `must target authoritative ${project} state`));
     const ref = typeof effective.draft_ref === "string" ? effective.draft_ref : typeof action.target_ref === "string" ? action.target_ref : null;
     const acceptanceErrors = hierarchyAcceptanceErrors(issueType, effective);
     for (const error of acceptanceErrors) errors.push(semanticError(index, error.keyword, error.message ?? "invalid Acceptance Criteria"));
@@ -197,8 +218,8 @@ export function goalActionSemanticErrors(value: JsonValue): ErrorObject[] {
     if (parent !== undefined && parent.issueType !== expected) {
       errors.push(semanticError(action.index, "parentType", `${action.issueType} parent must resolve to ${expected}`));
       invalidParentage.add(action.index);
-    } else if (parent === undefined && (action.parentRef === null || !/^AIPLATFORM-[0-9]+$/.test(action.parentRef) || action.parentState?.issue_key !== action.parentRef || action.parentState.issue_type !== expected || action.parentState.project !== "AIPLATFORM")) {
-      errors.push(semanticError(action.index, "parentAuthority", `${action.issueType} external parent requires authoritative AIPLATFORM ${expected} state`));
+    } else if (parent === undefined && (action.parentRef === null || !jiraIssueKey(project).test(action.parentRef) || action.parentState?.issue_key !== action.parentRef || action.parentState.issue_type !== expected || action.parentState.project !== project)) {
+      errors.push(semanticError(action.index, "parentAuthority", `${action.issueType} external parent requires authoritative ${project} ${expected} state`));
       invalidParentage.add(action.index);
     }
     if (action.issueType === "Sub-task") {

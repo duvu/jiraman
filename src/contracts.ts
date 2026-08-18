@@ -9,6 +9,7 @@ import { validDate, validDateTime } from "./date-rules.js";
 import { goalDraftSemanticErrors } from "./goal-rules.js";
 import { goalActionSemanticErrors } from "./goal-action-rules.js";
 import { jiraLanguageSemanticErrors, type JiraLanguageValidationContext } from "./jira-language-rules.js";
+import { contextBindingViolations, profileRegistryViolations } from "./project-rules.js";
 
 export type JsonPrimitive = boolean | number | string | null;
 export type JsonValue = JsonPrimitive | JsonValue[] | { [key: string]: JsonValue };
@@ -214,10 +215,29 @@ function actionGroupApprovalErrors(value: JsonValue): ErrorObject[] {
   return errors;
 }
 
+function contextSemanticErrors(value: JsonValue, context: JiraLanguageValidationContext): ErrorObject[] {
+  if (context.project_context === undefined) return [];
+  return contextBindingViolations(value, context.project_context).map((violation) => ({
+    instancePath: "/context",
+    schemaPath: "#/x-project-context-binding",
+    keyword: "projectContextBinding",
+    params: {violation},
+    message: violation,
+  }));
+}
+
 function actionGroupSemanticErrors(value: JsonValue, context: JiraLanguageValidationContext): ErrorObject[] {
+  const group = value !== null && typeof value === "object" && !Array.isArray(value) ? value : null;
+  const groupContext = group !== null && group.context !== null && typeof group.context === "object" && !Array.isArray(group.context) ? group.context : null;
+  const effectiveContext = context.jira_project_key !== undefined || context.project_context !== undefined
+    ? {...context, default_content_language: context.default_content_language ?? context.project_context?.language.jira_ticket_content}
+    : (typeof groupContext?.jira_project_key === "string" ? {jira_project_key: groupContext.jira_project_key} : {});
+  const legacyProjectErrors: ErrorObject[] = group?.schema_version === 5 && group.project !== "AIPLATFORM" ? [{instancePath: "/project", schemaPath: "#/properties/project/const", keyword: "const", params: {allowedValue: "AIPLATFORM"}, message: "must be equal to constant"}] : [];
   return [
+    ...legacyProjectErrors,
+    ...contextSemanticErrors(value, context),
     ...actionGroupApprovalErrors(value),
-    ...goalActionSemanticErrors(value),
+    ...goalActionSemanticErrors(value, effectiveContext),
     ...jiraLanguageSemanticErrors("action-group.schema.json", value, context),
   ];
 }
@@ -227,21 +247,87 @@ function prefixedErrors(errors: readonly ErrorObject[], prefix: string): ErrorOb
 }
 
 function stateActionGroupErrors(value: JsonValue, context: JiraLanguageValidationContext): ErrorObject[] {
-  if (value === null || typeof value !== "object" || Array.isArray(value) || value.pending_action_groups === null ||
-      typeof value.pending_action_groups !== "object" || Array.isArray(value.pending_action_groups)) return [];
-  return Object.entries(value.pending_action_groups).flatMap(([id, group]) =>
-    prefixedErrors(actionGroupSemanticErrors(group, context), `/pending_action_groups/${id.replace(/~/g, "~0").replace(/\//g, "~1")}`),
-  );
+  if (value === null || typeof value !== "object" || Array.isArray(value)) return [];
+  const errors: ErrorObject[] = [];
+  const escapePointer = (id: string): string => id.replace(/~/g, "~0").replace(/\//g, "~1");
+  const validateGroups = (groups: JsonValue | undefined, prefix: string, projectKey?: string, projectId?: string, profileRevision?: number, contextFingerprint?: string): void => {
+    if (groups === null || typeof groups !== "object" || Array.isArray(groups)) return;
+    for (const [id, group] of Object.entries(groups)) {
+      const groupPath = `${prefix}/${escapePointer(id)}`;
+      const groupObject = group !== null && typeof group === "object" && !Array.isArray(group) ? group : null;
+      if (projectKey !== undefined && groupObject !== null) {
+        const groupContext = groupObject.context !== null && typeof groupObject.context === "object" && !Array.isArray(groupObject.context) ? groupObject.context : null;
+        if (groupObject.schema_version !== 6 || groupObject.project !== projectKey || groupContext?.jira_project_key !== projectKey || (projectId !== undefined && groupContext?.project_id !== projectId) || (profileRevision !== undefined && groupContext?.profile_revision !== profileRevision) || (contextFingerprint !== undefined && groupContext?.context_fingerprint !== contextFingerprint)) {
+          errors.push({instancePath: `${groupPath}/context`, schemaPath: "#/x-project-context-binding", keyword: "projectContextBinding", params: {violation: "jira-project-scope"}, message: "action group must remain in its project state partition"});
+        }
+      }
+      errors.push(...prefixedErrors(actionGroupSemanticErrors(group, projectKey === undefined ? context : {...context, jira_project_key: context.jira_project_key ?? projectKey}), groupPath));
+    }
+  };
+  validateGroups(value.pending_action_groups, "/pending_action_groups", context.jira_project_key);
+  const projects = value.projects !== null && typeof value.projects === "object" && !Array.isArray(value.projects) ? value.projects : null;
+  if (projects !== null) {
+    for (const [projectId, projectState] of Object.entries(projects)) {
+      if (projectState === null || typeof projectState !== "object" || Array.isArray(projectState)) continue;
+      const stateProjectKey = typeof projectState.jira_project_key === "string" ? projectState.jira_project_key : undefined;
+      const stateProfileRevision = typeof projectState.profile_revision === "number" ? projectState.profile_revision : undefined;
+      const stateFingerprint = typeof projectState.context_fingerprint === "string" ? projectState.context_fingerprint : undefined;
+      validateGroups(projectState.pending_action_groups, `/projects/${escapePointer(projectId)}/pending_action_groups`, stateProjectKey, projectId, stateProfileRevision, stateFingerprint);
+    }
+  }
+  return errors;
 }
 
 export function validateJson(schemaName: string, value: JsonValue, context: JiraLanguageValidationContext = {}): ValidationResult {
   const validator = schemaValidator(schemaName);
   const schemaValid = validator(value);
+  const draftContextErrors: ErrorObject[] = [];
+  if (schemaName === "subtask-draft.schema.json" && value !== null && typeof value === "object" && !Array.isArray(value)) {
+    const projectKey = context.jira_project_key ?? "AIPLATFORM";
+    if (typeof value.story_ref !== "string" || (!/^story-[0-9]+$/.test(value.story_ref) && !new RegExp(`^${projectKey}-[0-9]+$`).test(value.story_ref))) {
+      draftContextErrors.push({instancePath: "/story_ref", schemaPath: "#/properties/story_ref/pattern", keyword: "pattern", params: {}, message: "must be scoped to the selected Jira project"});
+    }
+  }
+  if (["deliverable-plan.schema.json", "backlog-draft.schema.json"].includes(schemaName) && value !== null && typeof value === "object" && !Array.isArray(value)) {
+    const projectKey = context.jira_project_key ?? "AIPLATFORM";
+    const issueKey = new RegExp(`^${projectKey}-[0-9]+$`);
+    const visit = (item: JsonValue, path: string): void => {
+      if (Array.isArray(item)) { item.forEach((child, index) => visit(child, `${path}/${index}`)); return; }
+      if (item === null || typeof item !== "object") return;
+      for (const [key, child] of Object.entries(item)) {
+        const childPath = `${path}/${key}`;
+        const referenceValues = Array.isArray(child) ? child : [child];
+        if (["story_ref", "epic_parent", "ref", "existing_key", "key", "dependencies"].includes(key) && referenceValues.some((candidate) => typeof candidate === "string" && candidate.includes("-") && !issueKey.test(candidate) && !/^REQ-|^AC-|^DLV-|^story-|^draft-|^subtask-/.test(candidate))) {
+          draftContextErrors.push({instancePath: childPath, schemaPath: "#/properties/reference/pattern", keyword: "pattern", params: {}, message: "must be scoped to the selected Jira project"});
+        }
+        visit(child, childPath);
+      }
+    };
+    visit(value, "");
+  }
+  if (schemaName === "config.schema.json" && value !== null && typeof value === "object" && !Array.isArray(value)) {
+    const config = value as JsonObject;
+    const profiles = config.profiles !== null && typeof config.profiles === "object" && !Array.isArray(config.profiles) ? config.profiles : null;
+    const defaultProfile = profiles !== null && typeof config.default_project_id === "string" && profiles[config.default_project_id] !== null && typeof profiles[config.default_project_id] === "object" && !Array.isArray(profiles[config.default_project_id]) ? profiles[config.default_project_id] as JsonObject : null;
+    const language = config.schema_version === 6 ? defaultProfile?.language ?? config.language : config.language;
+    const languagePath = config.schema_version === 6 && defaultProfile !== null && config.language === undefined ? `/profiles/${config.default_project_id}/language` : "/language";
+    const requiredLiterals = ["jira-key", "req-id", "ac-id", "pmg-id", "pma-id", "dlv-id", "issue-type", "status", "custom-field", "source-excerpt", "jql", "json-key", "mcp-tool", "mcp-schema", "technical-term", "code-symbol", "path", "command", "url", "code-block", "stack-trace", "log"];
+    const requiredTerms = ["API", "CI/CD", "Kubernetes", "OAuth", "OpenID Connect"];
+    const literalKinds = language !== null && typeof language === "object" && !Array.isArray(language) && Array.isArray(language.preserved_literal_kinds) ? language.preserved_literal_kinds : null;
+    const terms = language !== null && typeof language === "object" && !Array.isArray(language) && Array.isArray(language.preserved_technical_terms) ? language.preserved_technical_terms : null;
+    if (literalKinds === null || requiredLiterals.some((item) => !literalKinds.includes(item)) || terms === null || requiredTerms.some((item) => !terms.includes(item))) {
+      draftContextErrors.push({instancePath: languagePath, schemaPath: "#/definitions/compatLanguage", keyword: "canonicalLanguagePolicy", params: {}, message: "must preserve the canonical language and literal contract"});
+    }
+    if (config.schema_version === 6) for (const violation of profileRegistryViolations(config)) {
+      draftContextErrors.push({instancePath: "/profiles", schemaPath: "#/x-project-profile-registry", keyword: "projectProfileRegistry", params: {violation}, message: violation});
+    }
+  }
   const semanticErrors = [
     ...(schemaName === "action-group.schema.json" ? actionGroupSemanticErrors(value, context) : []),
     ...(schemaName === "state.schema.json" ? stateActionGroupErrors(value, context) : []),
     ...goalDraftSemanticErrors(schemaName, value),
     ...(schemaName === "action-group.schema.json" ? [] : jiraLanguageSemanticErrors(schemaName, value, context)),
+    ...draftContextErrors,
   ];
   return { valid: schemaValid && semanticErrors.length === 0, errors: [...(validator.errors ?? []), ...semanticErrors] };
 }
