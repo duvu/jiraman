@@ -1,5 +1,5 @@
 {
-  "schema_version": 5,
+  "schema_version": 6,
   "default_mode": "daily",
   "canonical": {
     "daily": "jiraman-daily",
@@ -15,7 +15,10 @@
     "retrospective": "jiraman-sprint-cadence",
     "propose": "jiraman-apply-actions",
     "apply": "jiraman-apply-actions",
-    "reject": "jiraman-apply-actions"
+    "reject": "jiraman-apply-actions",
+    "projects": "jiraman-daily",
+    "context": "jiraman-daily",
+    "use": "jiraman-daily"
   },
   "aliases": {
     "sprint-health": "health",

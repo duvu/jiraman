@@ -1,0 +1,41 @@
+{
+  "registry": {
+    "schema_version": 6,
+    "default_project_id": "aiplatform",
+    "profiles": {
+      "aiplatform": {
+        "project_id": "aiplatform",
+        "aliases": ["platform"],
+        "jira_project_key": "AIPLATFORM",
+        "confluence": {"allowed_space_keys": ["AIPLATFORM"], "page_roots": {"project_home": null, "specifications": null}},
+        "timezone": "Asia/Ho_Chi_Minh",
+        "sprint_length_days": 7,
+        "language": {"jira_ticket_content": "vi-VN", "user_response": "vi-VN"},
+        "delivery": {"hierarchy": ["Epic", "Story", "Sub-task"], "story_semantics": "goal", "minimum_goal_stories_per_epic": 2, "minimum_subtasks_per_goal": 2, "maximum_subtask_hours": 4, "required_goal_fields": ["goal_name", "target_completion_date", "acceptance_criteria", "definition_of_done"]},
+        "profile_revision": 1
+      },
+      "openstock": {
+        "project_id": "openstock",
+        "aliases": ["stocks"],
+        "jira_project_key": "OPENSTOCK",
+        "confluence": {"allowed_space_keys": ["OPENSTOCK", "STOCKS"], "page_roots": {"project_home": "page-openstock-home", "specifications": "page-openstock-specs"}},
+        "timezone": "America/New_York",
+        "sprint_length_days": 14,
+        "language": {"jira_ticket_content": "en-US", "user_response": "en-US"},
+        "delivery": {"hierarchy": ["Epic", "Story", "Sub-task"], "story_semantics": "goal", "minimum_goal_stories_per_epic": 2, "minimum_subtasks_per_goal": 2, "maximum_subtask_hours": 4, "required_goal_fields": ["goal_name", "target_completion_date", "acceptance_criteria", "definition_of_done"]},
+        "profile_revision": 3
+      }
+    },
+    "repository_mappings": [
+      {"project_id": "openstock", "repository_root": "/work/openstock"},
+      {"project_id": "aiplatform", "git_remote": "git@github.com:duvu/jiraman.git"}
+    ],
+    "actions": {"all_or_nothing_preflight": true, "read_before_write": true, "read_after_write": true},
+    "state": {"path": ".kilo/state/jiraman.json"}
+  },
+  "invalid": {
+    "empty": {"schema_version": 6, "default_project_id": "missing", "profiles": {}, "repository_mappings": [], "actions": {}, "state": {}},
+    "duplicate_jira_key": {"schema_version": 6, "default_project_id": "aiplatform", "profiles": {"aiplatform": {"project_id": "aiplatform", "jira_project_key": "SAME"}, "other": {"project_id": "other", "jira_project_key": "SAME"}}, "repository_mappings": [], "actions": {}, "state": {}},
+    "weak_policy": {"schema_version": 6, "default_project_id": "aiplatform", "profiles": {"aiplatform": {"project_id": "aiplatform", "aliases": ["bad alias"], "jira_project_key": "AIPLATFORM", "confluence": {"allowed_space_keys": []}, "timezone": "Not/AZone", "delivery": {"hierarchy": ["Epic"], "minimum_goal_stories_per_epic": 1, "minimum_subtasks_per_goal": 1, "maximum_subtask_hours": 8}, "profile_revision": 0}}, "repository_mappings": [], "actions": {"all_or_nothing_preflight": false}, "state": {}}
+  }
+}

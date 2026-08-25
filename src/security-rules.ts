@@ -7,16 +7,17 @@ export interface ScopeDecision {
   readonly boundedJql: string | null;
 }
 
-export function evaluateScope(request: string): ScopeDecision {
+export function evaluateScope(request: string, scope?: {readonly jira_project_key: string}): ScopeDecision {
+  const projectKey = scope?.jira_project_key ?? "AIPLATFORM";
   const keys = request.match(/\b[A-Z][A-Z0-9_]+-[0-9]+\b/g) ?? [];
-  const rejected = keys.filter((key) => !key.startsWith("AIPLATFORM-"));
+  const rejected = keys.filter((key) => !key.startsWith(`${projectKey}-`));
   const externalLink = /https:\/\/(?![^/]*\.example\.com)[^\s]+/i.test(request);
   if (rejected.length > 0 || externalLink || /outside configured root/i.test(request)) return { allowed: false, rejectedIdentifiers: rejected, boundedJql: null };
   const boundedJql = keys.length === 0
-    ? "project = AIPLATFORM"
+    ? `project = ${projectKey}`
     : keys.length === 1
-      ? `project = AIPLATFORM AND key = ${keys[0]}`
-      : `project = AIPLATFORM AND key in (${keys.join(", ")})`;
+      ? `project = ${projectKey} AND key = ${keys[0]}`
+      : `project = ${projectKey} AND key in (${keys.join(", ")})`;
   return { allowed: true, rejectedIdentifiers: [], boundedJql };
 }
 
@@ -52,13 +53,13 @@ function negatesDirective(words: readonly string[], prefixes: readonly string[])
   });
 }
 
-function scopeOverride(content: string, words: ReadonlySet<string>): boolean {
+function scopeOverride(content: string, words: ReadonlySet<string>, projectKey: string): boolean {
   const movement = hasPrefix(words, ["chang", "creat", "handl", "mov", "operat", "put", "reassign", "relocat", "switch", "transfer", "updat", "work", "writ"]);
   const external = hasAny(words, ["alternate", "another", "different", "other", "outside"]);
   const context = hasAny(words, ["in", "portfolio", "project", "scope", "team", "to", "under", "workspace"]);
-  const foreignIssue = /\b(?!AIPLATFORM-)[A-Z][A-Z0-9_]+-[0-9]+\b/.test(content);
+  const foreignIssue = (content.match(/[A-Z][A-Z0-9_]+-[0-9]+/g) ?? []).some((key) => !key.startsWith(`${projectKey}-`));
   const foreignProject = (content.match(/\b[A-Z][A-Z0-9_]{2,}\b/g) ?? [])
-    .some((token) => !["AC", "AIPLATFORM", "API", "JIRA", "MCP", "REQ", "SSH"].includes(token)) && context;
+    .some((token) => !["AC", projectKey, "API", "JIRA", "MCP", "REQ", "SSH"].includes(token)) && context;
   return movement && (external || foreignIssue || foreignProject) && (context || foreignIssue);
 }
 
@@ -108,10 +109,11 @@ function goalPolicyOverride(words: ReadonlySet<string>): boolean {
   return deadline && (invented || (selected && (relative || missingEvidence || words.has("any") || (words.has("make") && words.has("up")))));
 }
 
-export function inspectUntrustedContent(source: string, content: string): SecurityFinding {
+export function inspectUntrustedContent(source: string, content: string, scope?: {readonly jira_project_key: string}): SecurityFinding {
+  const projectKey = scope?.jira_project_key ?? "AIPLATFORM";
   const clauses = content.split(/[,.;!?]+|\b(?:but|however)\b/i).map((text) => ({text, ordered: wordList(text)})).filter((clause) => clause.ordered.length > 0);
   const effects: string[] = [];
-  if (clauses.some((clause) => scopeOverride(clause.text, new Set(clause.ordered)) && !negatesDirective(clause.ordered, ["chang", "creat", "handl", "mov", "operat", "put", "reassign", "relocat", "switch", "transfer", "updat", "work", "writ"]))) effects.push("scope change");
+  if (clauses.some((clause) => scopeOverride(clause.text, new Set(clause.ordered), projectKey) && !negatesDirective(clause.ordered, ["chang", "creat", "handl", "mov", "operat", "put", "reassign", "relocat", "switch", "transfer", "updat", "work", "writ"]))) effects.push("scope change");
   if (clauses.some((clause) => toolOverride(new Set(clause.ordered)) && !negatesDirective(clause.ordered, ["call", "choos", "chos", "direct", "hand", "invok", "pick", "rely", "rout", "select", "switch", "use", "using"]))) effects.push("tool selection");
   const fullWords = wordList(content);
   if ((clauses.some((clause) => approvalOverride(new Set(clause.ordered)) && !negatesDirective(clause.ordered, ["avoid", "bypass", "forgo", "ignor", "omit", "skip", "waiv", "appl", "chang", "commit", "creat", "deploy", "execut", "proceed", "publish", "sav", "ship", "submit", "updat", "writ"])) ||
@@ -171,7 +173,7 @@ export function distinctScenarioSelections(plan: JsonObject): boolean {
 }
 
 export function sensitiveKeyViolations(value: JsonValue): string[] {
-  const forbidden = /^(?:remote_body|authorization|cookie|set-cookie|password|access_token|refresh_token|client_secret|productivity)$/i;
+  const forbidden = /^(?:remote[-_]?body|authorization(?:[-_]?header)?|cookie|set-cookie|password|access[-_]?token|refresh[-_]?token|client[-_]?secret|private[-_]?url|remote[-_]?url|credential|secret|productivity)$/i;
   const violations: string[] = [];
   const visit = (item: JsonValue, path: string): void => {
     if (Array.isArray(item)) {

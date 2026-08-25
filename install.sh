@@ -5,7 +5,7 @@ usage() {
   cat <<'USAGE'
 Usage: ./install.sh [PROJECT_ROOT] [--force|--check]
 
-  --force  Back up every existing v4/v5 managed file, then migrate and replace.
+  --force  Back up every existing v4/v5/v6 managed file, then migrate and replace.
   --check  Make no changes; verify an existing installation.
 
 Exit codes: 0 success, 1 conflict/verification failure, 2 invalid arguments.
@@ -133,7 +133,8 @@ for relative in "${managed[@]}" "${legacy[@]}"; do
   reject_symlink_path "$relative"
 done
 
-preserve_v5_state=0
+preserve_v6_state=0
+migrate_v5_state=0
 migrate_v4_state=0
 state_path="$STAGE/new/.kilo/state/jiraman.json"
 if [[ -f "$state_path" ]]; then
@@ -146,7 +147,13 @@ if [[ -f "$state_path" ]]; then
   state_status=$?
   set -e
   case "$state_status" in
-    0) preserve_v5_state=1 ;;
+    0)
+      if node -e 'const fs=require("fs"); const value=JSON.parse(fs.readFileSync(process.argv[1], "utf8")); process.exit(value.schema_version === 5 ? 0 : 1)' "$state_path"; then
+        migrate_v5_state=1
+      else
+        preserve_v6_state=1
+      fi
+      ;;
     3) migrate_v4_state=1 ;;
     4) echo "Existing state is not valid JSON; installation stopped before backup or mutation." >&2; exit 1 ;;
     5) echo "Existing v5 state fails the full state schema; installation stopped before backup or mutation." >&2; exit 1 ;;
@@ -182,11 +189,42 @@ if [[ "${#existing[@]}" -gt 0 ]]; then
 fi
 
 for relative in "${managed[@]}"; do
-  if [[ "$relative" == ".kilo/state/jiraman.json" && "$preserve_v5_state" -eq 1 ]]; then continue; fi
+  if [[ "$relative" == ".kilo/state/jiraman.json" && "$preserve_v6_state" -eq 1 ]]; then continue; fi
   mkdir -p "$STAGE/new/$(dirname "$relative")"
   cp --no-dereference "$TEMPLATE/$relative" "$STAGE/new/$relative"
 done
 
+if [[ "$migrate_v5_state" -eq 1 ]]; then
+  old_state="$backup/.kilo/state/jiraman.json"
+  preserved="$STAGE/new/.kilo/state/jiraman.v5.json"
+  cp --no-dereference "$old_state" "$preserved"
+  node - "$old_state" "$STAGE/new/.kilo/state/jiraman.json" <<'NODE'
+const fs = require("fs");
+const [oldPath, newPath] = process.argv.slice(2);
+const oldState = JSON.parse(fs.readFileSync(oldPath, "utf8"));
+const next = JSON.parse(fs.readFileSync(newPath, "utf8"));
+const session = next.session;
+if (!session || typeof session.project_id !== "string" || typeof session.jira_project_key !== "string" || !Number.isInteger(session.profile_revision) || typeof session.context_fingerprint !== "string") {
+  throw new Error("v6 template state has no complete session binding");
+}
+const context = {
+  project_id: session.project_id,
+  jira_project_key: session.jira_project_key,
+  profile_revision: session.profile_revision,
+  context_fingerprint: session.context_fingerprint,
+};
+const projectState = {
+  ...context,
+  pending_action_groups: Object.fromEntries(Object.entries(oldState.pending_action_groups ?? {}).map(([id, group]) => [id, group && typeof group === "object" && group.schema_version === 5 ? {...group, schema_version: 6, context} : group])),
+  deliverable_candidates: oldState.deliverable_candidates ?? {},
+  run_records: (oldState.run_records ?? []).map((record) => ({...record, context})),
+};
+next.projects[session.project_id] = projectState;
+next.migration.legacy_state_file = ".kilo/state/jiraman.v5.json";
+next.migration.reapproval_required_ids = [...new Set(Object.values(oldState.pending_action_groups ?? {}).flatMap((group) => [group.id, ...(group.actions ?? []).map((action) => action.id)]))].filter((id) => typeof id === "string").sort();
+fs.writeFileSync(newPath, JSON.stringify(next, null, 2) + "\n");
+NODE
+fi
 if [[ "$migrate_v4_state" -eq 1 ]]; then
   old_state="$backup/.kilo/state/jiraman.json"
   preserved="$STAGE/new/.kilo/state/jiraman.v4.json"
@@ -238,7 +276,7 @@ swap_path ".gitignore"
 committed=1
 
 cat <<SUMMARY
-Installed Jiraman v5 into: $ROOT
+Installed Jiraman v6 into: $ROOT
 Primary agent: .kilo/agents/jiraman.md
 Skills: .kilo/skills/
 Configuration: .kilo/config/jiraman.json

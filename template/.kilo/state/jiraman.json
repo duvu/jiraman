@@ -1,9 +1,22 @@
 {
-  "schema_version": 5,
-  "project": "AIPLATFORM",
-  "pending_action_groups": {},
-  "deliverable_candidates": {},
-  "run_records": [],
+  "schema_version": 6,
+  "session": {
+    "project_id": "aiplatform",
+    "jira_project_key": "AIPLATFORM",
+    "profile_revision": 1,
+    "context_fingerprint": "fa4402613b7eff308392f5b0a167b54fb99cb1507ba4ddd32176ed2dd1ff80ea"
+  },
+  "projects": {
+    "aiplatform": {
+      "project_id": "aiplatform",
+      "jira_project_key": "AIPLATFORM",
+      "profile_revision": 1,
+      "context_fingerprint": "fa4402613b7eff308392f5b0a167b54fb99cb1507ba4ddd32176ed2dd1ff80ea",
+      "pending_action_groups": {},
+      "deliverable_candidates": {},
+      "run_records": []
+    }
+  },
   "migration": {
     "legacy_state_file": null,
     "reapproval_required_ids": []

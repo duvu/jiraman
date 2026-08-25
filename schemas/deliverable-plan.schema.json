@@ -245,8 +245,8 @@
                   "items": {
                     "type": "object",
                     "properties": {
-                      "story_ref": {"type": "string", "pattern": "^AIPLATFORM-[0-9]+$"},
-                      "epic_parent": {"type": "string", "pattern": "^AIPLATFORM-[0-9]+$"},
+                      "story_ref": {"type": "string", "pattern": "^[A-Z][A-Z0-9_]{1,31}-[0-9]+$"},
+                      "epic_parent": {"type": "string", "pattern": "^[A-Z][A-Z0-9_]{1,31}-[0-9]+$"},
                       "target_completion_date": {"type": "string", "format": "date"},
                       "target_completion_date_evidence": true,
                       "definition_of_done": {"type": "array", "minItems": 1, "uniqueItems": true},
@@ -260,7 +260,7 @@
                           "type": "object",
                           "required": ["ref", "summary", "outcome", "in_scope", "out_of_scope", "steps", "affected_files", "validation", "definition_of_done", "dependencies", "estimate_hours", "requirements", "parent_acceptance_criteria_refs", "content_language", "acceptance_criteria_storage", "acceptance_criteria"],
                           "properties": {
-                            "ref": {"type": "string", "pattern": "^AIPLATFORM-[0-9]+$"},
+                            "ref": {"type": "string", "pattern": "^[A-Z][A-Z0-9_]{1,31}-[0-9]+$"},
                             "summary": true,
                             "outcome": true,
                             "in_scope": true,
@@ -272,7 +272,7 @@
                             "dependencies": {
                               "type": "array",
                               "uniqueItems": true,
-                              "items": {"type": "string", "pattern": "^AIPLATFORM-[0-9]+$"}
+                              "items": {"type": "string", "pattern": "^[A-Z][A-Z0-9_]{1,31}-[0-9]+$"}
                             },
                             "estimate_hours": true,
                             "requirements": true,

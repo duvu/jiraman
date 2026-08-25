@@ -43,8 +43,8 @@ const canonicalPayloadHash = (actions) => {
     .sort((left, right) => compareCodeUnits(left.id, right.id));
   return crypto.createHash("sha256").update(JSON.stringify(canonical(immutable))).digest("hex");
 };
-const literalPreservation = (value) => exact(value, ["policy_ref", "mode"]) &&
-  value.policy_ref === ".kilo/config/jiraman.json#/language/preserved_literal_kinds" && value.mode === "exact";
+const literalPreservation = (value, projectId = null) => exact(value, ["policy_ref", "mode"]) &&
+  (value.policy_ref === ".kilo/config/jiraman.json#/language/preserved_literal_kinds" || (typeof projectId === "string" && value.policy_ref === `.kilo/config/jiraman.json#/profiles/${projectId}/language/preserved_literal_kinds`)) && value.mode === "exact";
 const languageTag = (value) => {
   if (typeof value !== "string" || !/^[A-Za-z]{2,8}(?:-[A-Za-z0-9]{1,8})*$/.test(value)) return false;
   try { Intl.getCanonicalLocales(value); return true; } catch (error) { if (error instanceof RangeError) return false; throw error; }
@@ -90,18 +90,20 @@ const concreteVerification = (raw) => {
   return !unresolvedPlaceholder(value) && !incompleteTechnicalLocator.test(value) && !genericAssessmentEnd.test(value) &&
     (technicalVerification.test(value) || (value.match(verificationMethod) !== null && specificBeyondMethod(value)));
 };
-const validJiraLanguageAction = (action) => {
+const validJiraLanguageAction = (action, projectId = null) => {
   if (action.system !== "jira" || !["issue.create", "issue.update", "issue.comment"].includes(action.operation)) return true;
   const desired = action.desired_state;
-  if (!languageTag(desired.content_language) || !literalPreservation(desired.literal_preservation)) return false;
-  if (desired.content_language !== "vi-VN" || desired.language_override !== undefined || desired.translation_authorization !== undefined) return false;
+  if (!languageTag(desired.content_language) || !literalPreservation(desired.literal_preservation, projectId)) return false;
+  if (projectId === null && (desired.content_language !== "vi-VN" || desired.language_override !== undefined || desired.translation_authorization !== undefined)) return false;
+  if (projectId !== null && (desired.language_override !== undefined || desired.translation_authorization !== undefined)) return false;
   if (!["issue.update", "issue.comment"].includes(action.operation)) return true;
   const before = action.before_state;
   if (before.issue_key !== action.target_ref || !nonEmpty(before.human_content_language)) return false;
+  const defaultLanguage = projectId === null ? "vi-VN" : desired.content_language;
   if (action.operation === "issue.comment") {
-    return onlyFields(desired, commentFields) && (before.human_content_language === "vi-VN" || desired.existing_content_mode === "preserve-human-content");
+    return onlyFields(desired, commentFields) && (before.human_content_language === defaultLanguage || desired.existing_content_mode === "preserve-human-content");
   }
-  if (before.human_content_language === "vi-VN") return true;
+  if (before.human_content_language === defaultLanguage) return true;
   if (desired.existing_content_mode === "managed-section-only") {
     return desired.description_update_mode === "managed-section" && nonEmpty(desired.managed_section) &&
       desired.description === undefined && desired.summary === undefined && onlyFields(desired, managedFields);
@@ -144,7 +146,7 @@ const hierarchyState = (kind, value, ref) => {
     stringArray(value.requirements, true) && unique(value.requirements) && stringArray(value.parent_acceptance_criteria_refs, true) && unique(value.parent_acceptance_criteria_refs) &&
     languageTag(value.content_language) && value.acceptance_criteria_storage === "managed-description-section" && criterionIds(value.acceptance_criteria, kind) !== null;
 };
-const validHierarchyActions = (actions) => {
+const validHierarchyActions = (actions, projectKey = "AIPLATFORM") => {
   const candidates = [];
   for (const [index, action] of actions.entries()) {
     if (action.system === "jira" && action.operation === "issue.comment") {
@@ -152,7 +154,7 @@ const validHierarchyActions = (actions) => {
       const requirements = kind === "Story" && Array.isArray(before.requirements) ? before.requirements : [];
       const targetMissingAcceptance = kind !== null && criterionIds(before.acceptance_criteria, kind, requirements) === null;
       if (targetMissingAcceptance || desired.purpose === "acceptance-criteria-gap") {
-        const targetValid = kind !== null && before.project === "AIPLATFORM" && before.issue_key === action.target_ref && /^AIPLATFORM-[0-9]+$/.test(action.target_ref) &&
+        const targetValid = kind !== null && before.project === projectKey && before.issue_key === action.target_ref && new RegExp(`^${projectKey}-[0-9]+$`).test(action.target_ref) &&
           (kind !== "Story" || (stringArray(before.requirements, true) && unique(before.requirements)));
         const commentValid = targetMissingAcceptance && desired.purpose === "acceptance-criteria-gap" && desired.content_language === "vi-VN" &&
           desired.managed_content_only === true && targetValid && criterionIds(desired.acceptance_criteria, kind, requirements) !== null;
@@ -165,7 +167,7 @@ const validHierarchyActions = (actions) => {
     const create = action.operation === "issue.create", reuse = action.operation === "issue.reuse";
     const authoritative = create ? action.desired_state : action.before_state;
     const kind = hierarchyType(authoritative.issue_type);
-    if (kind === null || authoritative.project !== "AIPLATFORM") return false;
+    if (kind === null || authoritative.project !== projectKey) return false;
     if (["parent_state", "parent_issue_type", "parent_project", "parent_requirement_ids", "parent_acceptance_criteria_ids"].some((field) => action.desired_state[field] !== undefined)) return false;
     if (reuse && (!exact(action.desired_state, ["reuse"]) || action.desired_state.reuse !== true)) return false;
     if (!create && !reuse && ((action.desired_state.issue_type !== undefined && action.desired_state.issue_type !== kind) ||
@@ -185,7 +187,7 @@ const validHierarchyActions = (actions) => {
   for (const candidate of candidates.filter((item) => item.kind !== "Epic" && item.validatesParentage)) {
     const expected = candidate.kind === "Story" ? "Epic" : "Story";
     const parent = candidate.parentRef === null ? null : byRef.get(candidate.parentRef) ?? null;
-    if (parent !== null ? parent.kind !== expected : candidate.parentState?.issue_key !== candidate.parentRef || candidate.parentState?.issue_type !== expected || candidate.parentState?.project !== "AIPLATFORM") return false;
+    if (parent !== null ? parent.kind !== expected : candidate.parentState?.issue_key !== candidate.parentRef || candidate.parentState?.issue_type !== expected || candidate.parentState?.project !== projectKey) return false;
     if (candidate.kind === "Sub-task") {
       const contract = parent?.state ?? candidate.parentState;
       if (!object(contract) || !stringArray(contract.requirements, true) || !unique(contract.requirements)) return false;
@@ -237,13 +239,18 @@ const acyclic = (actions) => {
   };
   return actions.every((action) => visit(action.id));
 };
-const validGroup = (value) => {
-  if (!exact(value, ["schema_version", "id", "project", "summary", "created_at", "expires_at", "status", "payload_hash", "approval", "actions"]) ||
-      value.schema_version !== 5 || !groupId(value.id) || value.project !== "AIPLATFORM" || !nonEmpty(value.summary) ||
+const validContext = (value) => object(value) && nonEmpty(value.project_id) && /^[A-Z][A-Z0-9_]{1,31}$/.test(value.jira_project_key) && Number.isInteger(value.profile_revision) && value.profile_revision >= 1 && hash(value.context_fingerprint);
+const validGroup = (value, projectKey = "AIPLATFORM", projectId = undefined) => {
+  const schema6 = value?.schema_version === 6;
+  const contextValid = !schema6 || (validContext(value.context) && value.context.jira_project_key === projectKey && (projectId === undefined || value.context.project_id === projectId));
+  const keysValid = schema6
+    ? exact(value, ["schema_version", "id", "project", "summary", "created_at", "expires_at", "status", "payload_hash", "approval", "actions", "context"])
+    : exact(value, ["schema_version", "id", "project", "summary", "created_at", "expires_at", "status", "payload_hash", "approval", "actions"]);
+  if (!keysValid || (schema6 ? value.schema_version !== 6 || !contextValid : value.schema_version !== 5) || !groupId(value.id) || value.project !== projectKey || !nonEmpty(value.summary) ||
       !validDateTime(value.created_at) || !validDateTime(value.expires_at) || Date.parse(value.created_at) >= Date.parse(value.expires_at) ||
       !statuses.has(value.status) || !hash(value.payload_hash) || !validApproval(value.approval) ||
       !Array.isArray(value.actions) || value.actions.length === 0 || !value.actions.every(validAction)) return false;
-  if (!value.actions.every(validJiraLanguageAction) || !validHierarchyActions(value.actions)) return false;
+  if (!value.actions.every((action) => validJiraLanguageAction(action, schema6 ? value.context.project_id : null)) || !validHierarchyActions(value.actions, projectKey)) return false;
   const ids = value.actions.map((action) => action.id);
   if (!unique(ids) || value.actions.some((action) => action.dependencies.includes(action.id) || action.dependencies.some((dependency) => !ids.includes(dependency))) || !acyclic(value.actions)) return false;
   if (value.actions.some((action) => Date.parse(action.expires_at) > Date.parse(value.expires_at))) return false;
@@ -269,20 +276,30 @@ const validGroup = (value) => {
   if (!lifecycleValid) return false;
   return true;
 };
-const validRun = (value) => exact(value, ["workflow_id", "command_mode", "started_at", "ended_at", "capability_health", "tool_results", "action_ids", "verification_result", "artifact_refs"]) &&
-  nonEmpty(value.workflow_id) && nonEmpty(value.command_mode) && validDateTime(value.started_at) && validDateTime(value.ended_at) && ["healthy", "degraded", "blocked"].includes(value.capability_health) &&
-  Array.isArray(value.tool_results) && value.tool_results.every((item) => ["success", "tool-failure", "missing-evidence", "policy-rejection", "stale-action", "verification-failure"].includes(item)) &&
-  Array.isArray(value.action_ids) && unique(value.action_ids) && value.action_ids.every(stateId) && ["passed", "failed", "not-applicable", "not-verified"].includes(value.verification_result) && stringArray(value.artifact_refs);
+const validRun = (value, requireContext = false) => {
+  const keys = requireContext ? ["workflow_id", "command_mode", "started_at", "ended_at", "capability_health", "tool_results", "action_ids", "verification_result", "artifact_refs", "context"] : ["workflow_id", "command_mode", "started_at", "ended_at", "capability_health", "tool_results", "action_ids", "verification_result", "artifact_refs"];
+  return exact(value, keys) && nonEmpty(value.workflow_id) && nonEmpty(value.command_mode) && validDateTime(value.started_at) && validDateTime(value.ended_at) && ["healthy", "degraded", "blocked"].includes(value.capability_health) &&
+    Array.isArray(value.tool_results) && value.tool_results.every((item) => ["success", "tool-failure", "missing-evidence", "policy-rejection", "stale-action", "verification-failure"].includes(item)) &&
+    Array.isArray(value.action_ids) && unique(value.action_ids) && value.action_ids.every(stateId) && ["passed", "failed", "not-applicable", "not-verified"].includes(value.verification_result) && stringArray(value.artifact_refs) && (!requireContext || validContext(value.context));
+};
 const stateKeys = ["schema_version", "project", "pending_action_groups", "deliverable_candidates", "run_records", "migration"];
 const looksV5 = exact(state, stateKeys);
 const validMigration = exact(state?.migration, ["legacy_state_file", "reapproval_required_ids"]) && (state.migration.legacy_state_file === null || typeof state.migration.legacy_state_file === "string") &&
   Array.isArray(state.migration.reapproval_required_ids) && unique(state.migration.reapproval_required_ids) && state.migration.reapproval_required_ids.every(stateId);
 const valid = looksV5 && state.schema_version === 5 && state.project === "AIPLATFORM" && object(state.pending_action_groups) && Object.entries(state.pending_action_groups).every(([key, value]) => validGroup(value) && key === value.id) &&
   object(state.deliverable_candidates) && Object.entries(state.deliverable_candidates).every(([key, value]) => /^DLV-[0-9]{8}-[0-9]{2}$/.test(key) && object(value)) &&
-  Array.isArray(state.run_records) && state.run_records.length <= 100 && state.run_records.every(validRun) && validMigration;
+  Array.isArray(state.run_records) && state.run_records.length <= 100 && state.run_records.every((value) => validRun(value)) && validMigration;
+const validProjectState = (value, projectId) => object(value) && value.project_id === projectId && /^[A-Z][A-Z0-9_]{1,31}$/.test(value.jira_project_key) && Number.isInteger(value.profile_revision) && value.profile_revision >= 1 && hash(value.context_fingerprint) &&
+  object(value.pending_action_groups) && Object.entries(value.pending_action_groups).every(([key, item]) => item.schema_version === 6 && validGroup(item, value.jira_project_key, projectId) && key === item.id) && object(value.deliverable_candidates) &&
+  Object.entries(value.deliverable_candidates).every(([key, item]) => /^DLV-[0-9]{8}-[0-9]{2}$/.test(key) && object(item)) && Array.isArray(value.run_records) && value.run_records.length <= 100 && value.run_records.every((item) => validRun(item, true));
+const sessionEmpty = object(state.session) && state.session.project_id === null && state.session.jira_project_key === null && state.session.profile_revision === null && state.session.context_fingerprint === null;
+const sessionBound = object(state.session) && nonEmpty(state.session.project_id) && /^[A-Z][A-Z0-9_]{1,31}$/.test(state.session.jira_project_key) && Number.isInteger(state.session.profile_revision) && state.session.profile_revision >= 1 && hash(state.session.context_fingerprint);
+const validV6 = object(state) && state.schema_version === 6 && Object.keys(state).every((key) => ["schema_version", "session", "projects", "migration"].includes(key)) &&
+  (sessionEmpty || sessionBound) &&
+  object(state.projects) && Object.keys(state.projects).length > 0 && Object.entries(state.projects).every(([projectId, value]) => validProjectState(value, projectId)) && validMigration;
 const recognizableLegacy = object(state) && Object.prototype.hasOwnProperty.call(state, "pending_actions");
 const declaresV5 = object(state) && state.schema_version === 5;
-process.exit(valid ? 0 : recognizableLegacy ? 3 : declaresV5 ? 5 : 3);
+process.exit(state?.schema_version === 6 ? (validV6 ? 0 : 5) : valid ? 0 : recognizableLegacy ? 3 : declaresV5 ? 5 : 3);
 NODE
   exit 0
 fi
@@ -316,7 +333,7 @@ if [[ "$SOURCE" -eq 1 ]]; then
   agent="$ROOT/template/.kilo/agents/jiraman.md"; command="$ROOT/template/.kilo/commands/jiraman.md"; config_root="$ROOT/template/.kilo/config"; state="$ROOT/template/.kilo/state/jiraman.json"
 fi
 if grep -q '^agent: jiraman$' "$command" && grep -q '^write_mode: exact-apply-only$' "$agent"; then echo "OK   canonical agent routing"; else echo "FAIL canonical agent routing"; failed=1; fi
-if grep -q '^project: AIPLATFORM$' "$agent" && grep -q '^mcp_server: mcp-atlassian$' "$agent" && grep -q '^untrusted_content: evidence-only$' "$agent"; then echo "OK   primary safety metadata"; else echo "FAIL primary safety metadata"; failed=1; fi
+if grep -q '^project_context: resolved-from-local-trusted-inputs$' "$agent" && grep -q '^mcp_server: mcp-atlassian$' "$agent" && grep -q '^untrusted_content: evidence-only$' "$agent"; then echo "OK   primary safety metadata"; else echo "FAIL primary safety metadata"; failed=1; fi
 if ! command -v node >/dev/null 2>&1; then echo "FAIL Node is required for verification tooling"; exit 1; fi
 if ! node - "$config_root" "$state" <<'NODE'
 const fs=require("fs"), path=require("path");
@@ -325,11 +342,15 @@ const object=(value)=>value!==null&&typeof value==="object"&&!Array.isArray(valu
 const config=JSON.parse(fs.readFileSync(path.join(configRoot,"jiraman.json"),"utf8"));
 const router=JSON.parse(fs.readFileSync(path.join(configRoot,"command-router.json"),"utf8"));
 const mcp=JSON.parse(fs.readFileSync(path.join(configRoot,"mcp-atlassian.json"),"utf8"));
+const canonical=(value)=>Array.isArray(value)?value.map(canonical):object(value)?Object.fromEntries(Object.entries(value).sort(([a],[b])=>a.localeCompare(b)).map(([key,item])=>[key,canonical(item)])):value;
+const same=(left,right)=>JSON.stringify(canonical(left))===JSON.stringify(canonical(right));
 const literalKinds=["jira-key","req-id","ac-id","pmg-id","pma-id","dlv-id","issue-type","status","custom-field","source-excerpt","jql","json-key","mcp-tool","mcp-schema","technical-term","code-symbol","path","command","url","code-block","stack-trace","log"];
 const technicalTerms=["API","CI/CD","Kubernetes","OAuth","OpenID Connect"];
-const language=config.language;
-if(config.schema_version!==5||config.project?.key!=="AIPLATFORM"||!object(language)||language.jira_ticket_content!=="vi-VN"||language.user_response!=="vi-VN"||language.mcp_schema_and_query!=="preserve"||language.explicit_override_allowed!==true||language.existing_ticket_mode!=="preserve-human-content"||JSON.stringify(language.preserved_literal_kinds)!==JSON.stringify(literalKinds)||JSON.stringify(language.preserved_technical_terms)!==JSON.stringify(technicalTerms)||!object(config.confluence)||!object(config.delivery)||!object(config.actions)||!object(config.state)) throw new Error("invalid config contract");
-if(router.schema_version!==5||router.default_mode!=="daily"||!object(router.canonical)||!object(router.aliases)||router.canonical.apply!=="jiraman-apply-actions") throw new Error("invalid router contract");
+const language=config.schema_version===6?config.profiles?.[config.default_project_id]?.language:config.language;
+const legacyLanguageValid=object(language)&&language.jira_ticket_content==="vi-VN"&&language.user_response==="vi-VN"&&language.mcp_schema_and_query==="preserve"&&language.explicit_override_allowed===true&&language.existing_ticket_mode==="preserve-human-content"&&JSON.stringify(language.preserved_literal_kinds)===JSON.stringify(literalKinds)&&JSON.stringify(language.preserved_technical_terms)===JSON.stringify(technicalTerms);
+if((config.schema_version!==5&&config.schema_version!==6)||!legacyLanguageValid||!object(config.confluence)&&!object(config.profiles?.[config.default_project_id]?.confluence)||!object(config.delivery)&&!object(config.profiles?.[config.default_project_id]?.delivery)||!object(config.actions)||!object(config.state)) throw new Error("invalid config contract");
+if(config.schema_version===6){const profile=config.profiles?.[config.default_project_id]; if(!object(config.profiles)||typeof config.default_project_id!=="string"||!object(profile)||profile.jira_project_key!=="AIPLATFORM") throw new Error("invalid project registry contract"); if(config.project!==undefined&&(!same(config.project,{key:profile.jira_project_key,timezone:profile.timezone,sprint_length_days:profile.sprint_length_days})||config.language!==undefined&&!same(config.language,profile.language)||config.confluence!==undefined&&!same(config.confluence,profile.confluence)||config.delivery!==undefined&&!same(config.delivery,profile.delivery))) throw new Error("inconsistent compatibility projection");}
+if((router.schema_version!==5&&router.schema_version!==6)||router.default_mode!=="daily"||!object(router.canonical)||!object(router.aliases)||router.canonical.apply!=="jiraman-apply-actions"||router.canonical.projects!=="jiraman-daily"||router.canonical.context!=="jiraman-daily"||router.canonical.use!=="jiraman-daily") throw new Error("invalid router contract");
 if(mcp.schema_version!==5||mcp.server_ownership!=="external-user-owned"||!Array.isArray(mcp.capabilities)||!object(mcp.profiles)||!Array.isArray(mcp.denied)) throw new Error("invalid MCP contract");
 NODE
 then echo "FAIL JSON contract validation"; failed=1; else echo "OK   JSON contracts"; fi

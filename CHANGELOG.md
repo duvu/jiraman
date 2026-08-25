@@ -1,5 +1,12 @@
 # Changelog
 
+## v6.0.0
+
+- Added a validated multi-project profile registry with stable project IDs, Jira keys, Confluence scope, timezone, delivery contract, language defaults, aliases, and profile revisions while preserving AIPLATFORM as the compatibility default.
+- Added deterministic project resolution and `projects`, `context`, and exact `use <project-id>` session commands. Unknown, conflicting, ambiguous, stale, remote-injected, and inferred project selection fails closed.
+- Bound action groups, PMG/PMA state, project partitions, and run records to project/profile fingerprints; cross-project, stale-profile, nested-private-content, and duplicate-action violations are rejected before MCP writes.
+- Parameterized Jira scope/JQL, Jira hierarchy validators, templates, schemas, install migration, source verification, and docs. Preserved the external user-owned `mcp-atlassian` boundary, exact apply-only authorization, read-before-write/read-after-write checks, and destructive-operation denial.
+
 ## v5.0.0
 
 - Made Vietnamese (`vi-VN`) the canonical default for every user-facing Jira draft/proposal/create/update/comment; added trusted local-input single-scope overrides, fail-closed offline verification for context-dependent authorization and non-testable Acceptance Criteria, complete exact technical-literal/source-excerpt and Unicode preservation, exact existing-English managed-update/full-translation field boundaries, locale-independent canonical approval-hash verification, dereferenceable name-addressed proposal/apply routing metadata, and process-isolated release-blocking adversarial fixtures across state, CI sanitization, install, and package surfaces.

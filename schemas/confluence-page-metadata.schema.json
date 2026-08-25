@@ -64,14 +64,14 @@
       "format": "date"
     },
     "jira_project": {
-      "const": "AIPLATFORM"
+      "type": "string", "pattern": "^[A-Z][A-Z0-9_]{1,31}$"
     },
     "related_epics": {
       "type": "array",
       "uniqueItems": true,
       "items": {
         "type": "string",
-        "pattern": "^AIPLATFORM-[0-9]+$"
+        "pattern": "^[A-Z][A-Z0-9_]{1,31}-[0-9]+$"
       }
     },
     "related_stories": {
@@ -79,7 +79,7 @@
       "uniqueItems": true,
       "items": {
         "type": "string",
-        "pattern": "^AIPLATFORM-[0-9]+$"
+        "pattern": "^[A-Z][A-Z0-9_]{1,31}-[0-9]+$"
       }
     },
     "deliverable_id": {
